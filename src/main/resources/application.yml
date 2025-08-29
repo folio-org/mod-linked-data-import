@@ -1,0 +1,85 @@
+spring:
+  application:
+    name: mod-linked-data-import
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+  datasource:
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_DATABASE:okapi_modules}
+  liquibase:
+    change-log: classpath:changelog/changelog-master.xml
+  main:
+    allow-bean-definition-overriding: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        event:
+          merge:
+            entity_copy_observer: allow
+    open-in-view: false
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+    consumer:
+      max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:200}
+    security:
+      protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+    ssl:
+      key-store-password: ${KAFKA_SSL_KEYSTORE_PASSWORD:}
+      key-store-location: ${KAFKA_SSL_KEYSTORE_LOCATION:}
+      trust-store-password: ${KAFKA_SSL_TRUSTSTORE_PASSWORD:}
+      trust-store-location: ${KAFKA_SSL_TRUSTSTORE_LOCATION:}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        retries: 5
+        spring.json.add.type.headers: false
+
+folio:
+  environment: ${ENV:folio}
+  okapiUrl: ${okapi.url}
+  tenant:
+    validation:
+      enabled: true
+  logging:
+    request:
+      enabled: true
+    feign:
+      enabled: true
+  retry:
+    enabled: true
+  kafka:
+    retry-interval-ms: ${KAFKA_RETRY_INTERVAL_MS:2000}
+    retry-delivery-attempts: ${KAFKA_RETRY_DELIVERY_ATTEMPTS:6}
+    topics:
+
+mod-linked-data-import:
+  kafka:
+    topic:
+
+  cache:
+    ttl:
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,liquibase,threaddump,heapdump,loggers,env,httptrace,metrics,prometheus
+      base-path: /admin
+  endpoint:
+    loggers:
+      access: unrestricted
+  influx:
+    metrics:
+      export:
+        enabled: false
+
+server:
+  port: ${SERVER_PORT:8081}

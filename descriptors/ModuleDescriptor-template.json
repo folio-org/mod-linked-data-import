@@ -1,0 +1,52 @@
+{
+  "id": "@artifactId@-@version@",
+  "name": "Linked Data Import Module",
+  "provides": [
+  ],
+  "requires": [
+    {
+      "id": "linked-data",
+      "version": "2.0"
+    },
+    {
+      "id": "search-inventory",
+      "version": "1.0"
+    }
+  ],
+  "permissionSets": [
+  ],
+  "launchDescriptor": {
+    "dockerImage": "@artifactId@:@version@",
+    "dockerPull": false,
+    "dockerArgs": {
+      "HostConfig": {
+        "Memory": 1073741824,
+        "PortBindings": { "8081/tcp": [ { "HostPort": "%p" } ] }
+      }
+    },
+    "env": [
+      { "name": "SERVER_PORT", "value": "8081" },
+      { "name": "ENV", "value": "folio" },
+      { "name": "JAVA_OPTIONS", "value": "-XX:MaxRAMPercentage=85.0 -Xss4m" },
+      { "name": "DB_HOST", "value": "postgres" },
+      { "name": "DB_PORT", "value": "5432" },
+      { "name": "DB_USERNAME", "value": "folio_admin" },
+      { "name": "DB_PASSWORD", "value": "folio_admin" },
+      { "name": "DB_DATABASE", "value": "okapi_modules" },
+      { "name": "SPRING_PROFILES_ACTIVE", "value": "" },
+      { "name": "KAFKA_HOST", "value": "kafka" },
+      { "name": "KAFKA_PORT", "value": "9092" },
+      { "name": "KAFKA_SECURITY_PROTOCOL", "value": "PLAINTEXT" },
+      { "name": "KAFKA_SSL_KEYSTORE_LOCATION", "value": "" },
+      { "name": "KAFKA_SSL_KEYSTORE_PASSWORD", "value": "" },
+      { "name": "KAFKA_SSL_TRUSTSTORE_LOCATION", "value": "" },
+      { "name": "KAFKA_SSL_TRUSTSTORE_PASSWORD", "value": "" },
+      { "name": "KAFKA_CONSUMER_MAX_POLL_RECORDS", "value": "200" },
+      { "name": "KAFKA_RETRY_INTERVAL_MS", "value": "2000" },
+      { "name": "KAFKA_RETRY_DELIVERY_ATTEMPTS", "value": "6" },
+      { "name": "CACHE_TTL_SPEC_RULES_MS", "value": "18000000" },
+      { "name": "CACHE_TTL_SETTINGS_ENTRIES_MS", "value": "18000000" },
+      { "name": "CACHE_TTL_MODULE_STATE_MS", "value": "18000000" }
+    ]
+  }
+}
