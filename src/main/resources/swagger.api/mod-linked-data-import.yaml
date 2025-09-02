@@ -1,0 +1,9 @@
+openapi: 3.0.0
+info:
+  title: Linked Data Import API
+  version: v1
+  description: Linked Data Import API
+
+paths: {}
+
+components: {}
