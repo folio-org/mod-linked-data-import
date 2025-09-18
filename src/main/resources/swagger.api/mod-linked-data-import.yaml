@@ -4,6 +4,32 @@ info:
   version: v1
   description: Linked Data Import API
 
-paths: {}
+paths:
+  /linked-data-import/start:
+    post:
+      operationId: startImport
+      tags:
+        - import, start
+      description: Start the process of Linked Data Import
+      parameters:
+        - name: fileUrl
+          in: query
+          required: true
+          description: The URL of the file to be imported from S3
+          schema:
+            type: string
+        - name: contentType
+          in: query
+          required: false
+          description: Content type of the file to be imported (e.g., application/ld+json, text/turtle)
+          schema:
+            type: string
+      responses:
+        '202':
+          description: The process of Linked Data Import was started
+        '404':
+          description: No file is found in S3
+        '500':
+          description: Internal Server Error
 
 components: {}
