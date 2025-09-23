@@ -2,6 +2,18 @@
   "id": "@artifactId@-@version@",
   "name": "Linked Data Import Module",
   "provides": [
+    {
+      "id": "linked-data",
+      "version": "2.0",
+      "handlers": [
+        {
+          "methods": [ "POST" ],
+          "pathPattern": "/linked-data-import/start",
+          "permissionsRequired": [ "linked-data-import.start" ],
+          "modulePermissions": []
+        }
+      ]
+    }
   ],
   "requires": [
     {
