@@ -1,4 +1,4 @@
-package org.folio.linked.data.imprt.service;
+package org.folio.linked.data.imprt.service.imprt;
 
 public interface ImportJobService {
 
