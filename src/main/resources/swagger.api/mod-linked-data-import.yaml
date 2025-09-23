@@ -21,7 +21,7 @@ paths:
         - name: contentType
           in: query
           required: false
-          description: Content type of the file to be imported (e.g., application/ld+json, text/turtle)
+          description: Content type of the file to be imported (e.g., application/ld+json, text/turtle). JSON by default.
           schema:
             type: string
       responses:

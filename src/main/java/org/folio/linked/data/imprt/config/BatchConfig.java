@@ -70,8 +70,8 @@ public class BatchConfig {
 
   @Bean
   public Step downloadFileStep(JobRepository jobRepository,
-                          Tasklet fileDownloadTasklet,
-                          PlatformTransactionManager transactionManager) {
+                               Tasklet fileDownloadTasklet,
+                               PlatformTransactionManager transactionManager) {
     return new StepBuilder(STEP_DOWNLOAD_FILE, jobRepository)
       .tasklet(fileDownloadTasklet, transactionManager)
       .build();
