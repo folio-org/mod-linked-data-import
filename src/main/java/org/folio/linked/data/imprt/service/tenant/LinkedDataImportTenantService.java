@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import org.folio.spring.FolioExecutionContext;
+import org.folio.spring.exception.FolioContextExecutionException;
 import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
 import org.folio.tenant.domain.dto.TenantAttributes;
@@ -32,7 +33,7 @@ public class LinkedDataImportTenantService extends TenantService {
     try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
       return reader.lines().collect(Collectors.joining("\n"));
     } catch (Exception e) {
-      throw new RuntimeException("Error reading Spring Batch SQL file", e);
+      throw new FolioContextExecutionException("Error reading Spring Batch SQL file", e);
     }
   }
 }
