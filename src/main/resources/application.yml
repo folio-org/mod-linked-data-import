@@ -54,6 +54,7 @@ folio:
     topics:
 
 mod-linked-data-import:
+  chunk-size: 1000
   kafka:
     topic:
 

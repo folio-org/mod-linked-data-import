@@ -82,9 +82,10 @@ public class BatchConfig {
                               PlatformTransactionManager transactionManager,
                               FlatFileItemReader<String> rdfLineItemReader,
                               Rdf2LdProcessor rdf2LdProcessor,
-                              LdKafkaSender ldKafkaSender) {
+                              LdKafkaSender ldKafkaSender,
+                              @Value("${mod-linked-data-import.chunk-size}") int chunkSize) {
     return new StepBuilder("processFileStep", jobRepository)
-      .<String, Set<Resource>>chunk(100, transactionManager)
+      .<String, Set<Resource>>chunk(chunkSize, transactionManager)
       .reader(rdfLineItemReader)
       .processor(rdf2LdProcessor)
       .writer(ldKafkaSender)
