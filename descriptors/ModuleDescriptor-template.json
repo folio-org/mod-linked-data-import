@@ -2,6 +2,18 @@
   "id": "@artifactId@-@version@",
   "name": "Linked Data Import Module",
   "provides": [
+    {
+      "id": "linked-data-import",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": [ "POST" ],
+          "pathPattern": "/linked-data-import/start",
+          "permissionsRequired": [ "linked-data-import.start" ],
+          "modulePermissions": []
+        }
+      ]
+    }
   ],
   "requires": [
     {
@@ -14,6 +26,11 @@
     }
   ],
   "permissionSets": [
+    {
+      "permissionName": "linked-data-import.start",
+      "displayName": "Linked Data Import: Start Linked Data Import process",
+      "description": "Start Linked Data Import process"
+    }
   ],
   "launchDescriptor": {
     "dockerImage": "@artifactId@:@version@",
