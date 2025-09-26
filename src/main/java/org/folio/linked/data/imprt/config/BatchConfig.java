@@ -1,6 +1,7 @@
 package org.folio.linked.data.imprt.config;
 
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 
 import java.io.File;
 import java.util.Set;
@@ -30,7 +31,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class BatchConfig {
 
-  private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
   private static final String JOB_RDF_IMPORT = "rdfImportJob";
   private static final String STEP_DOWNLOAD_FILE = "downloadFileStep";
 
