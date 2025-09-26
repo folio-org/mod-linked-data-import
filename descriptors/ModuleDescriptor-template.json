@@ -63,7 +63,13 @@
       { "name": "KAFKA_RETRY_DELIVERY_ATTEMPTS", "value": "6" },
       { "name": "CACHE_TTL_SPEC_RULES_MS", "value": "18000000" },
       { "name": "CACHE_TTL_SETTINGS_ENTRIES_MS", "value": "18000000" },
-      { "name": "CACHE_TTL_MODULE_STATE_MS", "value": "18000000" }
+      { "name": "CACHE_TTL_MODULE_STATE_MS", "value": "18000000" },
+      { "name": "S3_URL", "value": "" },
+      { "name": "S3_REGION", "value": "" },
+      { "name": "S3_BUCKET", "value": "" },
+      { "name": "S3_ACCESS_KEY_ID", "value": "" },
+      { "name": "S3_SECRET_ACCESS_KEY", "value": "" },
+      { "name": "S3_IS_AWS", "value": "false" }
     ]
   }
 }
