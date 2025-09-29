@@ -39,6 +39,7 @@
     <folio-spring-base.version>10.0.0-SNAPSHOT</folio-spring-base.version>
     <folio-service-tools.version>5.1.0-SNAPSHOT</folio-service-tools.version>
     <folio-kafka-wrapper.version>3.4.0-SNAPSHOT</folio-kafka-wrapper.version>
+    <folio-s3-client.version>2.4.0-SNAPSHOT </folio-s3-client.version>
 
     <!-- LD dependencies versions -->
     <lib-linked-data-dictionary.version>2.0.0-SNAPSHOT</lib-linked-data-dictionary.version>
@@ -81,11 +82,20 @@
       <artifactId>folio-spring-base</artifactId>
       <version>${folio-spring-base.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-service-tools-spring-dev</artifactId>
       <version>${folio-service-tools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-kafka-wrapper</artifactId>
+      <version>${folio-kafka-wrapper.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-s3-client</artifactId>
+      <version>${folio-s3-client.version}</version>
     </dependency>
 
     <dependency>
@@ -104,12 +114,6 @@
       <groupId>org.folio</groupId>
       <artifactId>lib-linked-data-rdf4ld</artifactId>
       <version>${lib-linked-data-rdf4ld.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-kafka-wrapper</artifactId>
-      <version>${folio-kafka-wrapper.version}</version>
     </dependency>
 
     <dependency>
