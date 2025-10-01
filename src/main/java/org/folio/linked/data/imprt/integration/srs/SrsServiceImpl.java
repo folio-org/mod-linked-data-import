@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.integration.client.SrsClient;
 import org.folio.marc4ld.service.marc2ld.authority.MarcAuthority2ldMapper;
@@ -14,6 +15,7 @@ import org.folio.rest.jaxrs.model.Record;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class SrsServiceImpl implements SrsService {
@@ -36,6 +38,7 @@ public class SrsServiceImpl implements SrsService {
         try {
           return objectMapper.writeValueAsString(content);
         } catch (JsonProcessingException e) {
+          log.error("Error converting SRS content to JSON string: {}", content, e);
           return null;
         }
       });

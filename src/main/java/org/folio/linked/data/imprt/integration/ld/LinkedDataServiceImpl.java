@@ -9,11 +9,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.domain.dto.SearchResourcesRequestDto;
 import org.folio.linked.data.imprt.integration.client.LinkedDataClient;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class LinkedDataServiceImpl implements LinkedDataService {
@@ -36,6 +38,7 @@ public class LinkedDataServiceImpl implements LinkedDataService {
     try {
       return Optional.of(objectMapper.readValue(json, Resource.class));
     } catch (JsonProcessingException e) {
+      log.error("Error reading Resource from JSON: {}", json, e);
       return Optional.empty();
     }
   }
