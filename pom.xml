@@ -45,6 +45,8 @@
     <lib-linked-data-dictionary.version>2.0.0-SNAPSHOT</lib-linked-data-dictionary.version>
     <lib-linked-data-fingerprint.version>2.0.0-SNAPSHOT</lib-linked-data-fingerprint.version>
     <lib-linked-data-rdf4ld.version>1.0.0-SNAPSHOT</lib-linked-data-rdf4ld.version>
+    <lib-linked-data-marc4ld.version>2.0.0-SNAPSHOT</lib-linked-data-marc4ld.version>
+    <mod-source-record-storage-client.version>5.11.0-SNAPSHOT</mod-source-record-storage-client.version>
 
     <!-- Dependencies versions -->
     <apache-commons-io.version>2.20.0</apache-commons-io.version>
@@ -97,23 +99,31 @@
       <artifactId>folio-s3-client</artifactId>
       <version>${folio-s3-client.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>mod-source-record-storage-client</artifactId>
+      <version>${mod-source-record-storage-client.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>lib-linked-data-dictionary</artifactId>
       <version>${lib-linked-data-dictionary.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>lib-linked-data-fingerprint</artifactId>
       <version>${lib-linked-data-fingerprint.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>lib-linked-data-rdf4ld</artifactId>
       <version>${lib-linked-data-rdf4ld.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>lib-linked-data-marc4ld</artifactId>
+      <version>${lib-linked-data-marc4ld.version}</version>
     </dependency>
 
     <dependency>
@@ -426,8 +436,8 @@
               <inputSpec>${swagger.yaml.file}</inputSpec>
               <output>${project.build.directory}/generated-sources</output>
               <generatorName>spring</generatorName>
-              <modelPackage>${project.groupId}.linked.data.domain.dto</modelPackage>
-              <apiPackage>${project.groupId}.linked.data.rest.resource</apiPackage>
+              <modelPackage>${project.groupId}.linked.data.imprt.domain.dto</modelPackage>
+              <apiPackage>${project.groupId}.linked.data.imprt.rest.resource</apiPackage>
               <generateApis>true</generateApis>
               <generateApiTests>true</generateApiTests>
               <generateApiDocumentation>true</generateApiDocumentation>

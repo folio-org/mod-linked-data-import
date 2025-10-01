@@ -1,0 +1,25 @@
+{
+  "description": "Wrapper for search response",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "authorities": {
+      "type": "array",
+      "description": "Found authority items",
+      "items": {
+        "type": "object",
+        "title": "AuthorityItem",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Authority UUID"
+          },
+          "naturalId": {
+            "type": "string",
+            "description": "Authority Natural ID"
+          }
+        }
+      }
+    }
+  }
+}

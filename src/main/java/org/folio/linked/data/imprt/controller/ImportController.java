@@ -3,8 +3,8 @@ package org.folio.linked.data.imprt.controller;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 
 import lombok.RequiredArgsConstructor;
+import org.folio.linked.data.imprt.rest.resource.ImportStartApi;
 import org.folio.linked.data.imprt.service.imprt.ImportJobService;
-import org.folio.linked.data.rest.resource.ImportStartApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
