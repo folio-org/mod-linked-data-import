@@ -16,24 +16,19 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LccnResourceProvider implements Function<String, Optional<Resource>> {
 
-    private final SrsService srsService;
-    private final SearchService searchService;
-    private final LinkedDataService linkedDataService;
+  private final SrsService srsService;
+  private final SearchService searchService;
+  private final LinkedDataService linkedDataService;
 
-    @Override
-    public Optional<Resource> apply(String lccn) {
-        return searchService.searchForInventoryId(lccn)
-                .flatMap(inventoryId -> {
-                    log.info("InventoryId has been found for LCCN {}: {}", lccn, inventoryId);
-                    return linkedDataService.searchResources(Set.of(inventoryId))
-                            .stream()
-                            .findFirst()
-                            .or(() -> {
-                                log.info("Resource not found in LD for inventoryId {}, fetching from SRS",
-                                        inventoryId);
-                                return srsService.fetchAuthorityFromSrs(inventoryId);
-                            });
-                });
-    }
+  @Override
+  public Optional<Resource> apply(String lccn) {
+    return searchService.searchForInventoryId(lccn).flatMap(inventoryId -> {
+      log.info("InventoryId has been found for LCCN {}: {}", lccn, inventoryId);
+      return linkedDataService.searchResources(Set.of(inventoryId)).stream().findFirst().or(() -> {
+        log.info("Resource not found in LD for inventoryId {}, fetching from SRS", inventoryId);
+        return srsService.fetchAuthorityFromSrs(inventoryId);
+      });
+    });
+  }
 
 }
