@@ -32,4 +32,9 @@ paths:
         '500':
           description: Internal Server Error
 
-components: {}
+components:
+  schemas:
+    searchResourcesRequestDto:
+      $ref: folio-modules/linked.data/searchResourcesRequestDto.json
+    authoritySearchResponse:
+      $ref: folio-modules/search/authoritySearchResponse.json
