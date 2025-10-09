@@ -52,9 +52,12 @@ folio:
     retry-interval-ms: ${KAFKA_RETRY_INTERVAL_MS:2000}
     retry-delivery-attempts: ${KAFKA_RETRY_DELIVERY_ATTEMPTS:6}
     topics:
-
+      - name: ${mod-linked-data-import.kafka.topic.linked_data_import-output}
+        numPartitions: ${KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_PARTITIONS:3}
+        replicationFactor: ${KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_REPLICATION_FACTOR:}
 mod-linked-data-import:
   chunk-size: 1000
+  result-chunk-size: 1000
   remote-files-storage:
     endpoint: ${S3_URL:http://localhost:9000/}
     region: ${S3_REGION:}
@@ -62,7 +65,9 @@ mod-linked-data-import:
     accessKey: ${S3_ACCESS_KEY_ID:}
     secretKey: ${S3_SECRET_ACCESS_KEY:}
     awsSdk: ${S3_IS_AWS:false}
-
+  kafka:
+    topic:
+      linked_data_import-output: ${KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC:linked_data_import.output}
 management:
   endpoints:
     web:

@@ -38,3 +38,5 @@ components:
       $ref: folio-modules/linked.data/searchResourcesRequestDto.json
     authoritySearchResponse:
       $ref: folio-modules/search/authoritySearchResponse.json
+    importResultDto:
+      $ref: kafka/importResult.json
