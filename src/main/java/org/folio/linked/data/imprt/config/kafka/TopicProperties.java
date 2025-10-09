@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("mod-linked-data-import.kafka.topic")
 public class TopicProperties {
 
-  private String linkedDataImportResults;
+  private String linkedDataImportOutput;
 
 }

@@ -27,7 +27,7 @@ public class ProducerConfiguration {
   @Bean
   public FolioMessageProducer<ImportResult> importResultMessageProducer(
     KafkaTemplate<String, ImportResult> importResultMessageTemplate) {
-    var producer = new FolioMessageProducer<>(importResultMessageTemplate, topicProperties::getLinkedDataImportResults);
+    var producer = new FolioMessageProducer<>(importResultMessageTemplate, topicProperties::getLinkedDataImportOutput);
     producer.setKeyMapper(ImportResult::getTs);
     return producer;
   }
@@ -44,7 +44,7 @@ public class ProducerConfiguration {
   }
 
   private @NonNull Map<String, Object> getProducerProperties() {
-    Map<String, Object> configProps = new HashMap<>(kafkaProperties.buildProducerProperties(null));
+    var configProps = new HashMap<>(kafkaProperties.buildProducerProperties(null));
     configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
     return configProps;
