@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.folio.s3.client.FolioS3Client;
 import org.folio.tenant.domain.dto.TenantAttributes;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -34,6 +35,8 @@ public class TenantInstallationExtension implements Extension, BeforeEachCallbac
           .headers(defaultHeaders(env))
           .contentType(APPLICATION_JSON))
         .andExpect(status().isNoContent());
+      var s3Client = context.getBean(FolioS3Client.class);
+      s3Client.createBucketIfNotExists();
       init = true;
     }
   }
