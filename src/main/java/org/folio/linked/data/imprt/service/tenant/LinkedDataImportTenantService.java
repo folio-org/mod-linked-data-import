@@ -43,6 +43,11 @@ public class LinkedDataImportTenantService extends TenantService {
     jdbcTemplate.execute(readSpringBatchSchemaSql());
   }
 
+  @Override
+  protected void afterTenantDeletion(TenantAttributes tenantAttributes) {
+    kafkaAdminService.deleteTopics(context.getTenantId());
+  }
+
   private String readSpringBatchSchemaSql() {
     var resource = new ClassPathResource("org/springframework/batch/core/schema-postgresql.sql");
     try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {

@@ -16,7 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.web.servlet.MockMvc;
 
 @IntegrationTest
-public class ImportIT {
+class ImportIT {
 
   @Autowired
   private Environment env;
