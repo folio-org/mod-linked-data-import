@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.folio.linked.data.imprt.LinkedDataImportApplication;
 import org.folio.spring.testing.extension.EnableKafka;
-import org.folio.spring.testing.extension.EnableMinio;
 import org.folio.spring.testing.extension.EnableOkapi;
 import org.folio.spring.testing.extension.EnablePostgres;
 import org.folio.spring.tools.kafka.FolioKafkaProperties;
@@ -22,7 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 @Target(ElementType.TYPE)
 @EnableOkapi
 @EnableKafka
-@EnableMinio
 @EnablePostgres
 @DirtiesContext
 @AutoConfigureMockMvc

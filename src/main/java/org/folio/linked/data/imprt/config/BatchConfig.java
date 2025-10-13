@@ -17,15 +17,12 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
-import org.springframework.batch.core.scope.JobScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.PassThroughLineMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -36,15 +33,6 @@ public class BatchConfig {
 
   private static final String JOB_RDF_IMPORT = "rdfImportJob";
   private static final String STEP_DOWNLOAD_FILE = "downloadFileStep";
-
-  @Bean
-  public static BeanFactoryPostProcessor jobAndStepScopeConfigurer() {
-    return beanFactory -> {
-      var configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
-      configurableBeanFactory.registerScope("job", new JobScope());
-      configurableBeanFactory.registerScope("step", new org.springframework.batch.core.scope.StepScope());
-    };
-  }
 
   @Bean
   public JobRepository jobRepository(DataSource dataSource,
