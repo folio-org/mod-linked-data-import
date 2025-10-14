@@ -55,16 +55,16 @@ folio:
       - name: ${mod-linked-data-import.kafka.topic.linked_data_import-output}
         numPartitions: ${KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_PARTITIONS:3}
         replicationFactor: ${KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_REPLICATION_FACTOR:}
-mod-linked-data-import:
-  chunk-size: 1000
-  result-chunk-size: 1000
-  remote-files-storage:
+  remote-storage:
     endpoint: ${S3_URL:http://localhost:9000/}
     region: ${S3_REGION:}
     bucket: ${S3_BUCKET:}
     accessKey: ${S3_ACCESS_KEY_ID:}
     secretKey: ${S3_SECRET_ACCESS_KEY:}
     awsSdk: ${S3_IS_AWS:false}
+mod-linked-data-import:
+  chunk-size: 1000
+  result-chunk-size: 1000
   kafka:
     topic:
       linked_data_import-output: ${KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC:linked_data_import.output}
