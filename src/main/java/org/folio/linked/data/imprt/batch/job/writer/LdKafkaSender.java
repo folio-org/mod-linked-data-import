@@ -23,7 +23,7 @@ public class LdKafkaSender implements ItemWriter<Set<Resource>> {
 
   @Qualifier("importResultMessageProducer")
   private final FolioMessageProducer<ImportResult> importResultFolioMessageProducer;
-  @Value("${mod-linked-data-import.result-chunk-size}")
+  @Value("${mod-linked-data-import.output-chunk-size}")
   private Integer chunkSize;
 
   @Override

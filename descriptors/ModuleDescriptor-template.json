@@ -65,7 +65,10 @@
       { "name": "S3_BUCKET", "value": "" },
       { "name": "S3_ACCESS_KEY_ID", "value": "" },
       { "name": "S3_SECRET_ACCESS_KEY", "value": "" },
-      { "name": "S3_IS_AWS", "value": "false" }
+      { "name": "S3_IS_AWS", "value": "false" },
+      { "name": "CHUNK_SIZE", "value": "1000" },
+      { "name": "OUTPUT_CHUNK_SIZE", "value": "1000" },
+      { "name": "PROCESS_FILE_MAX_POOL_SIZE", "value": "1000" }
     ]
   }
 }
