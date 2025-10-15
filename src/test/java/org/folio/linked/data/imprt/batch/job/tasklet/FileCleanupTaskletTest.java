@@ -28,7 +28,7 @@ class FileCleanupTaskletTest {
     var fileName = "temp_test_file.txt";
     var tempFile = new File(TMP_DIR, fileName);
     Files.writeString(tempFile.toPath(), "data");
-    assertThat(tempFile.exists()).isTrue();
+    assertThat(tempFile).exists();
     var fileUrl = "s3://bucket/" + fileName;
     var chunkContext = mockChunkContext(fileUrl);
     var stepContribution = mock(StepContribution.class);
@@ -37,7 +37,7 @@ class FileCleanupTaskletTest {
     tasklet.execute(stepContribution, chunkContext);
 
     // then
-    assertThat(tempFile.exists()).isFalse();
+    assertThat(tempFile).doesNotExist();
   }
 
   private ChunkContext mockChunkContext(String fileUrl) {

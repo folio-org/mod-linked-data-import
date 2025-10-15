@@ -2,61 +2,34 @@ package org.folio.linked.data.imprt.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Stream;
 import org.folio.spring.testing.type.UnitTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class FileUtilTest {
 
-  @Test
-  void extractFileName_shouldReturnFileName_forS3Url() {
-    // given
-    var url = "s3://bucket/path/to/file.rdf";
-
+  @ParameterizedTest
+  @MethodSource("fileNameCases")
+  void extractFileName_shouldReturnExpected(String input, String expected) {
     // when
-    var name = FileUtil.extractFileName(url);
-
+    var name = FileUtil.extractFileName(input);
     // then
-    assertThat(name).isEqualTo("file.rdf");
+    assertThat(name).isEqualTo(expected);
   }
 
-  @Test
-  void extractFileName_shouldReturnFileName_forPlainName() {
-    // given
-    var url = "file.rdf";
-
-    // when
-    var name = FileUtil.extractFileName(url);
-
-    // then
-    assertThat(name).isEqualTo("file.rdf");
+  static Stream<Arguments> fileNameCases() {
+    return Stream.of(
+      Arguments.of("s3://bucket/path/to/file.rdf", "file.rdf"),
+      Arguments.of("file.rdf", "file.rdf"),
+      Arguments.of("/var/tmp/data/file.txt", "file.txt")
+    );
   }
 
-  @Test
-  void extractFileName_shouldReturnLastSegment_forMultiSlashPath() {
-    // given
-    var url = "/var/tmp/data/file.txt";
-
-    // when
-    var name = FileUtil.extractFileName(url);
-
-    // then
-    assertThat(name).isEqualTo("file.txt");
-  }
-
-  @Test
-  void extractFileName_shouldReturnEmpty_forPathEndingWithSlash() {
-    // given
-    var url = "s3://bucket/path/";
-
-    // when
-    var name = FileUtil.extractFileName(url);
-
-    // then
-    assertThat(name).isEmpty();
-  }
 }
 

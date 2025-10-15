@@ -31,7 +31,7 @@ public class Rdf2LdProcessor implements ItemProcessor<String, Set<Resource>> {
 
   @Override
   public Set<Resource> process(@NotNull String rdfLine) {
-    log.info("Processing RDF line of contentType[{}]: {}", contentType, rdfLine);
+    log.trace("Processing RDF line of contentType[{}]: {}", contentType, rdfLine);
     return rdf4LdService.mapBibframe2RdfToLd(new ByteArrayInputStream(rdfLine.getBytes(UTF_8)), contentType);
   }
 }

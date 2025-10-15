@@ -26,7 +26,11 @@ public class LccnResourceProvider implements Function<String, Optional<Resource>
       log.info("InventoryId has been found for LCCN {}: {}", lccn, inventoryId);
       return linkedDataService.searchResources(Set.of(inventoryId)).stream().findFirst().or(() -> {
         log.info("Resource not found in LD for inventoryId {}, fetching from SRS", inventoryId);
-        return srsService.fetchAuthorityFromSrs(inventoryId);
+        var srsResource = srsService.fetchAuthorityFromSrs(inventoryId);
+        if (srsResource.isEmpty()) {
+          log.info("Suitable resource not found in SRS for inventoryId {}", inventoryId);
+        }
+        return srsResource;
       });
     });
   }

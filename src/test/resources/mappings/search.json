@@ -1,0 +1,30 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/search/authorities?query=lccn%20%3D%20n00000000"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\n  \"authorities\": [\n    {\n      \"id\": \"inv_id_00000000\",\n      \"naturalId\": \"n00000000\"\n    }\n  ]\n}"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/search/authorities?query=lccn%20%3D%20n00000001"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\n  \"authorities\": [\n    {\n      \"id\": \"inv_id_00000001\",\n      \"naturalId\": \"n00000001\"\n    }\n  ]\n}"
+      }
+    }
+  ]
+}
