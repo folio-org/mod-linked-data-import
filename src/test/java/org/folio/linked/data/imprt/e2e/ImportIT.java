@@ -2,7 +2,9 @@ package org.folio.linked.data.imprt.e2e;
 
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
+import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
 import static org.folio.linked.data.imprt.test.TestUtil.getTitleLabel;
 import static org.folio.linked.data.imprt.test.TestUtil.validateInstanceWithTitles;
@@ -10,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
 import java.util.stream.IntStream;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
@@ -65,6 +68,8 @@ class ImportIT {
             () -> fail("Resource not found: " + getTitleLabel("Title", i))
           );
       });
+
+    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName).exists()).isFalse());
   }
 
 }

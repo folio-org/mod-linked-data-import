@@ -2,6 +2,7 @@ package org.folio.linked.data.imprt.config;
 
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
+import static org.folio.linked.data.imprt.util.FileUtil.extractFileName;
 
 import java.io.File;
 import java.util.Set;
@@ -124,12 +125,21 @@ public class BatchConfig {
 
   @Bean
   @StepScope
-  public FlatFileItemReader<String> rdfLineItemReader(@Value("#{jobParameters['" + FILE_URL + "']}") String fileName) {
-    var file = new File(TMP_DIR, fileName);
+  public FlatFileItemReader<String> rdfLineItemReader(@Value("#{jobParameters['" + FILE_URL + "']}") String fileUrl) {
+    var file = new File(TMP_DIR, extractFileName(fileUrl));
     return new FlatFileItemReaderBuilder<String>()
       .name("lineItemReader")
       .resource(new org.springframework.core.io.FileSystemResource(file))
       .lineMapper(new PassThroughLineMapper())
+      .build();
+  }
+
+  @Bean
+  public Step cleaningStep(JobRepository jobRepository,
+                           Tasklet fileCleanupTasklet,
+                           PlatformTransactionManager transactionManager) {
+    return new StepBuilder("cleaningStep", jobRepository)
+      .tasklet(fileCleanupTasklet, transactionManager)
       .build();
   }
 
