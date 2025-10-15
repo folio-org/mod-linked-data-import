@@ -43,7 +43,7 @@ class ImportIT {
     // then
     resultActions
       .andExpect(status().isAccepted());
-    var messages = outputTopicListener.readImportResultMessages(4);
+    var messages = outputTopicListener.readImportOutputMessages(4);
 
     var message1 = messages.getFirst();
     assertThat(message1.getResources()).hasSize(3);

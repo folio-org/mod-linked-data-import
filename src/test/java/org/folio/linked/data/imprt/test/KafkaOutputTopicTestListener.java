@@ -27,7 +27,7 @@ public class KafkaOutputTopicTestListener {
     messages.add(consumerRecord.value().toString());
   }
 
-  public List<ImportResult> readImportResultMessages(int expectedSize) {
+  public List<ImportResult> readImportOutputMessages(int expectedSize) {
     awaitAndAssert(() ->
       assertThat(messages).hasSize(expectedSize)
     );
