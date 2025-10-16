@@ -11,6 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.domain.dto.ImportResult;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,14 @@ public class KafkaOutputTopicTestListener {
     messages.add(consumerRecord.value().toString());
   }
 
-  public List<ImportResult> readImportOutputMessages(int expectedSize) {
+  public List<Resource> getImportOutputMessagesResources(int expectedSize) {
     awaitAndAssert(() ->
-      assertThat(messages).hasSize(expectedSize)
+      assertThat(getResourcesFromMessages()).hasSize(expectedSize)
     );
+    return getResourcesFromMessages();
+  }
+
+  private List<Resource> getResourcesFromMessages() {
     var om = new ObjectMapper();
     return messages.stream()
       .map(s -> {
@@ -41,6 +46,8 @@ public class KafkaOutputTopicTestListener {
         }
       })
       .sorted(comparing(ImportResult::getTs))
+      .map(ImportResult::getResources)
+      .flatMap(List::stream)
       .toList();
   }
 

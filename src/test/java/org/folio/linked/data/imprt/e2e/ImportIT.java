@@ -1,15 +1,28 @@
 package org.folio.linked.data.imprt.e2e;
 
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.folio.ld.dictionary.PredicateDictionary.INSTANTIATES;
+import static org.folio.ld.dictionary.PredicateDictionary.SUBJECT;
+import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
+import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
+import static org.folio.linked.data.imprt.test.TestUtil.getTitleLabel;
 import static org.folio.linked.data.imprt.test.TestUtil.validateInstanceWithTitles;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.File;
+import java.util.List;
+import java.util.stream.IntStream;
+import org.folio.ld.dictionary.PredicateDictionary;
+import org.folio.ld.dictionary.model.Resource;
+import org.folio.ld.dictionary.model.ResourceEdge;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
 import org.folio.s3.client.FolioS3Client;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -27,8 +40,13 @@ class ImportIT {
   @Autowired
   private KafkaOutputTopicTestListener outputTopicListener;
 
+  @BeforeEach
+  void clean() {
+    outputTopicListener.getMessages().clear();
+  }
+
   @Test
-  void tenRecordsLocalImport_shouldEndWith4MessagesWith3ResourcesChunks() throws Exception {
+  void tenRecordsLocalImport_shouldProduce10Resources() throws Exception {
     // given
     var fileName = "10_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/" + fileName);
@@ -41,31 +59,65 @@ class ImportIT {
     var resultActions = mockMvc.perform(requestBuilder);
 
     // then
-    resultActions
-      .andExpect(status().isAccepted());
-    var messages = outputTopicListener.readImportOutputMessages(4);
+    resultActions.andExpect(status().isAccepted());
 
-    var message1 = messages.getFirst();
-    assertThat(message1.getResources()).hasSize(3);
-    validateInstanceWithTitles(message1.getResources().getFirst(), 0);
-    validateInstanceWithTitles(message1.getResources().get(1), 1);
-    validateInstanceWithTitles(message1.getResources().getLast(), 2);
+    var allResources = outputTopicListener.getImportOutputMessagesResources(10);
 
-    var message2 = messages.get(1);
-    assertThat(message2.getResources()).hasSize(3);
-    validateInstanceWithTitles(message2.getResources().getFirst(), 3);
-    validateInstanceWithTitles(message2.getResources().get(1), 4);
-    validateInstanceWithTitles(message2.getResources().getLast(), 5);
+    IntStream.range(0, 10)
+      .forEach(i -> allResources.stream()
+        .filter(r -> r.getLabel().equals(getTitleLabel("Title", i)))
+        .findAny()
+        .ifPresentOrElse(r -> validateInstanceWithTitles(r, i),
+          () -> fail("Resource not found: " + getTitleLabel("Title", i)))
+      );
 
-    var message3 = messages.get(2);
-    assertThat(message3.getResources()).hasSize(3);
-    validateInstanceWithTitles(message3.getResources().getFirst(), 6);
-    validateInstanceWithTitles(message3.getResources().get(1), 7);
-    validateInstanceWithTitles(message3.getResources().getLast(), 8);
+    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+  }
 
-    var message4 = messages.getLast();
-    assertThat(message4.getResources()).hasSize(1);
-    validateInstanceWithTitles(message4.getResources().getFirst(), 9);
+  @Test
+  void recordsImportWithLccnResources_shouldProduceResourcesUsingSearchAndLinkedDataAndSrs() throws Exception {
+    // given
+    var fileName = "2_records_lccn_json.rdf";
+    var input = this.getClass().getResourceAsStream("/" + fileName);
+    s3Client.write(fileName, input);
+    var requestBuilder = post(PATH_START_IMPORT)
+      .param("fileUrl", fileName)
+      .headers(defaultHeaders(env));
+
+    // when
+    var resultActions = mockMvc.perform(requestBuilder);
+
+    // then
+    resultActions.andExpect(status().isAccepted());
+
+    var allResources = outputTopicListener.getImportOutputMessagesResources(2);
+
+    IntStream.range(0, 1)
+      .forEach(i -> allResources.stream()
+        .filter(r -> r.getLabel().equals(getTitleLabel("Title", i)))
+        .findAny()
+        .ifPresentOrElse(r -> validateFetchedAuthority(r, i),
+          () -> fail("Resource not found: " + getTitleLabel("Title", i)))
+      );
+
+    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+  }
+
+  private void validateFetchedAuthority(Resource instance, int number) {
+    var works = getEdgeResources(instance, INSTANTIATES);
+    assertThat(works).hasSize(1);
+    var subjects = getEdgeResources(works.getFirst(), SUBJECT);
+    assertThat(subjects).hasSize(1);
+    assertThat(subjects.getFirst().getLabel())
+      .isEqualTo(number == 0 ? "LCCN resource fetched from LD" : "Lccn resource fetched from SRS");
+  }
+
+  private List<Resource> getEdgeResources(Resource resource, PredicateDictionary predicate) {
+    return resource.getOutgoingEdges()
+      .stream()
+      .filter(oe -> oe.getPredicate() == predicate)
+      .map(ResourceEdge::getTarget)
+      .toList();
   }
 
 }

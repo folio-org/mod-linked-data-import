@@ -1,6 +1,7 @@
 package org.folio.linked.data.imprt.service.s3;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.folio.linked.data.imprt.util.FileUtil.extractFileName;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +30,6 @@ public class S3ServiceImpl implements S3Service {
     Files.copy(is, targetFile.toPath(), REPLACE_EXISTING);
     is.close();
     log.info("File {} downloaded successfully to {}", fileUrl, destinationPath + "/" + fileName);
-  }
-
-  private String extractFileName(String fileUrl) {
-    return fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
   }
 
 }

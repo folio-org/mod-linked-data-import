@@ -1,6 +1,6 @@
 mod-linked-data-import:
   chunk-size: 3
-  result-chunk-size: 3
+  output-chunk-size: 3
 
 spring:
   kafka:

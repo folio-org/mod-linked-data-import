@@ -2,6 +2,7 @@ package org.folio.linked.data.imprt.config;
 
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
+import static org.folio.linked.data.imprt.util.FileUtil.extractFileName;
 
 import java.io.File;
 import java.util.Set;
@@ -28,7 +29,9 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -73,10 +76,12 @@ public class BatchConfig {
   @Bean
   public Job rdfImportJob(JobRepository jobRepository,
                           Step downloadFileStep,
-                          Step processFileStep) {
+                          Step processFileStep,
+                          Step cleaningStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
       .start(downloadFileStep)
       .next(processFileStep)
+      .next(cleaningStep)
       .build();
   }
 
@@ -90,28 +95,51 @@ public class BatchConfig {
   }
 
   @Bean
+  public TaskExecutor processFileTaskExecutor(
+    @Value("${mod-linked-data-import.process-file.max-pool-size}") int maxPoolSize
+  ) {
+    var exec = new ThreadPoolTaskExecutor();
+    exec.setMaxPoolSize(maxPoolSize);
+    exec.setQueueCapacity(0);
+    exec.setThreadNamePrefix("process-file-");
+    exec.initialize();
+    return exec;
+  }
+
+  @Bean
   public Step processFileStep(JobRepository jobRepository,
                               PlatformTransactionManager transactionManager,
                               FlatFileItemReader<String> rdfLineItemReader,
                               Rdf2LdProcessor rdf2LdProcessor,
                               LdKafkaSender ldKafkaSender,
-                              @Value("${mod-linked-data-import.chunk-size}") int chunkSize) {
+                              @Value("${mod-linked-data-import.chunk-size}") int chunkSize,
+                              TaskExecutor processFileTaskExecutor) {
     return new StepBuilder("processFileStep", jobRepository)
       .<String, Set<Resource>>chunk(chunkSize, transactionManager)
       .reader(rdfLineItemReader)
       .processor(rdf2LdProcessor)
       .writer(ldKafkaSender)
+      .taskExecutor(processFileTaskExecutor)
       .build();
   }
 
   @Bean
   @StepScope
-  public FlatFileItemReader<String> rdfLineItemReader(@Value("#{jobParameters['" + FILE_URL + "']}") String fileName) {
-    var file = new File(TMP_DIR, fileName);
+  public FlatFileItemReader<String> rdfLineItemReader(@Value("#{jobParameters['" + FILE_URL + "']}") String fileUrl) {
+    var file = new File(TMP_DIR, extractFileName(fileUrl));
     return new FlatFileItemReaderBuilder<String>()
       .name("lineItemReader")
       .resource(new org.springframework.core.io.FileSystemResource(file))
       .lineMapper(new PassThroughLineMapper())
+      .build();
+  }
+
+  @Bean
+  public Step cleaningStep(JobRepository jobRepository,
+                           Tasklet fileCleanupTasklet,
+                           PlatformTransactionManager transactionManager) {
+    return new StepBuilder("cleaningStep", jobRepository)
+      .tasklet(fileCleanupTasklet, transactionManager)
       .build();
   }
 
