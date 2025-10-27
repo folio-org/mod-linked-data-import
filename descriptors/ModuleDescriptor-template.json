@@ -3,6 +3,22 @@
   "name": "Linked Data Import Module",
   "provides": [
     {
+      "id": "_tenant",
+      "version": "2.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": [ "POST" ],
+          "pathPattern": "/_/tenant",
+          "modulePermissions": []
+        },
+        {
+          "methods": [ "DELETE", "GET" ],
+          "pathPattern": "/_/tenant/{id}"
+        }
+      ]
+    },
+    {
       "id": "linked-data-import",
       "version": "1.0",
       "handlers": [
