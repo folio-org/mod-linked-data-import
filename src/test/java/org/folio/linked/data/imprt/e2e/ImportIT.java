@@ -59,8 +59,9 @@ class ImportIT {
     var resultActions = mockMvc.perform(requestBuilder);
 
     // then
-    resultActions.andExpect(status().isAccepted());
-
+    var result = resultActions.andExpect(status().isOk())
+      .andReturn();
+    assertThat(result.getResponse().getContentAsString()).isNotBlank();
     var allResources = outputTopicListener.getImportOutputMessagesResources(10);
 
     IntStream.range(0, 10)
@@ -88,8 +89,10 @@ class ImportIT {
     var resultActions = mockMvc.perform(requestBuilder);
 
     // then
-    resultActions.andExpect(status().isAccepted());
+    var result = resultActions.andExpect(status().isOk())
+      .andReturn();
 
+    assertThat(result.getResponse().getContentAsString()).isNotBlank();
     var allResources = outputTopicListener.getImportOutputMessagesResources(2);
 
     IntStream.range(0, 1)

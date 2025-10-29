@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.stream.Stream;
@@ -27,6 +28,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -61,14 +64,19 @@ class ImportJobServiceTest {
     JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
     // given
     var fileUrl = "http://example.com/file";
-    var contentType = "application/json";
     doReturn(true).when(s3Service).exists(fileUrl);
-    var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
+    var jobExecutionMock = mock(JobExecution.class);
+    doReturn(jobExecutionMock).when(jobLauncher).run(any(), any());
+    var jobInstanceMock = mock(JobInstance.class);
+    doReturn(jobInstanceMock).when(jobExecutionMock).getJobInstance();
+    doReturn(123L).when(jobInstanceMock).getInstanceId();
+    var contentType = "application/json";
 
     // when
     importJobService.start(fileUrl, contentType);
 
     // then
+    var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
     verify(jobLauncher).run(eq(rdfImportJob), jobParametersCaptor.capture());
     assertThat(jobParametersCaptor.getValue().getParameter(FILE_URL).getValue()).isEqualTo(fileUrl);
     assertThat(jobParametersCaptor.getValue().getParameter(CONTENT_TYPE).getValue()).isEqualTo(contentType);
@@ -82,12 +90,17 @@ class ImportJobServiceTest {
     // given
     var fileUrl = "http://example.com/file";
     doReturn(true).when(s3Service).exists(fileUrl);
-    var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
+    var jobExecutionMock = mock(JobExecution.class);
+    doReturn(jobExecutionMock).when(jobLauncher).run(any(), any());
+    var jobInstanceMock = mock(JobInstance.class);
+    doReturn(jobInstanceMock).when(jobExecutionMock).getJobInstance();
+    doReturn(123L).when(jobInstanceMock).getInstanceId();
 
     // when
     importJobService.start(fileUrl, null);
 
     // then
+    var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
     verify(jobLauncher).run(eq(rdfImportJob), jobParametersCaptor.capture());
     assertThat(jobParametersCaptor.getValue().getParameter(FILE_URL).getValue()).isEqualTo(fileUrl);
     assertThat(jobParametersCaptor.getValue().getParameter(CONTENT_TYPE).getValue()).isEqualTo("application/ld+json");

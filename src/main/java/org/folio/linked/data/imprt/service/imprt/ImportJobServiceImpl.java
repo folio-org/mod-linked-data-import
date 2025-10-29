@@ -27,7 +27,7 @@ public class ImportJobServiceImpl implements ImportJobService {
   private final S3Service s3Service;
 
   @Override
-  public void start(String fileUrl, String contentType) {
+  public Long start(String fileUrl, String contentType) {
     checkFile(fileUrl);
     var jobParameters = new JobParametersBuilder()
       .addString(FILE_URL, fileUrl)
@@ -36,7 +36,8 @@ public class ImportJobServiceImpl implements ImportJobService {
       .toJobParameters();
 
     try {
-      jobLauncher.run(rdfImportJob, jobParameters);
+      var jobExecution = jobLauncher.run(rdfImportJob, jobParameters);
+      return jobExecution.getJobInstance().getInstanceId();
     } catch (JobExecutionAlreadyRunningException
              | JobRestartException
              | JobInstanceAlreadyCompleteException

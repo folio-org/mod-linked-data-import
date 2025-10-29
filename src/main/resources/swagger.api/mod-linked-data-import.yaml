@@ -25,8 +25,12 @@ paths:
           schema:
             type: string
       responses:
-        '202':
-          description: The process of Linked Data Import was started
+        '200':
+          description: ID of Linked Data Import job instance started
+          content:
+            text/plain:
+              schema:
+                type: String
         '404':
           description: No file is found in S3
         '500':
