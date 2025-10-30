@@ -30,7 +30,7 @@ paths:
           content:
             text/plain:
               schema:
-                type: String
+                type: string
         '404':
           description: No file is found in S3
         '500':
