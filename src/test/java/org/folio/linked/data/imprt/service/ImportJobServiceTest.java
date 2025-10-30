@@ -3,6 +3,7 @@ package org.folio.linked.data.imprt.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.DATE_START;
+import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.stream.Stream;
+import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.service.imprt.ImportJobServiceImpl;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.folio.spring.exception.NotFoundException;
@@ -71,9 +73,10 @@ class ImportJobServiceTest {
     doReturn(jobInstanceMock).when(jobExecutionMock).getJobInstance();
     doReturn(123L).when(jobInstanceMock).getInstanceId();
     var contentType = "application/json";
+    var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
     // when
-    importJobService.start(fileUrl, contentType);
+    importJobService.start(fileUrl, contentType, defaultWorkType);
 
     // then
     var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
@@ -81,6 +84,7 @@ class ImportJobServiceTest {
     assertThat(jobParametersCaptor.getValue().getParameter(FILE_URL).getValue()).isEqualTo(fileUrl);
     assertThat(jobParametersCaptor.getValue().getParameter(CONTENT_TYPE).getValue()).isEqualTo(contentType);
     assertThat(jobParametersCaptor.getValue().getParameter(DATE_START)).isNotNull();
+    assertThat(jobParametersCaptor.getValue().getParameter(DEFAULT_WORK_TYPE).getValue()).isEqualTo(defaultWorkType);
   }
 
   @Test
@@ -95,9 +99,10 @@ class ImportJobServiceTest {
     var jobInstanceMock = mock(JobInstance.class);
     doReturn(jobInstanceMock).when(jobExecutionMock).getJobInstance();
     doReturn(123L).when(jobInstanceMock).getInstanceId();
+    var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
     // when
-    importJobService.start(fileUrl, null);
+    importJobService.start(fileUrl, null, defaultWorkType);
 
     // then
     var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
@@ -105,6 +110,7 @@ class ImportJobServiceTest {
     assertThat(jobParametersCaptor.getValue().getParameter(FILE_URL).getValue()).isEqualTo(fileUrl);
     assertThat(jobParametersCaptor.getValue().getParameter(CONTENT_TYPE).getValue()).isEqualTo("application/ld+json");
     assertThat(jobParametersCaptor.getValue().getParameter(DATE_START)).isNotNull();
+    assertThat(jobParametersCaptor.getValue().getParameter(DEFAULT_WORK_TYPE).getValue()).isEqualTo(defaultWorkType);
   }
 
   @Test
@@ -114,7 +120,7 @@ class ImportJobServiceTest {
 
     // when
     var thrown = assertThrows(IllegalArgumentException.class,
-      () -> importJobService.start(fileUrl, null));
+      () -> importJobService.start(fileUrl, null, null));
 
     // then
     assertThat(thrown.getMessage()).isEqualTo("File URL should be provided");
@@ -128,7 +134,7 @@ class ImportJobServiceTest {
 
     // when
     var thrown = assertThrows(NotFoundException.class,
-      () -> importJobService.start(fileUrl, null));
+      () -> importJobService.start(fileUrl, null, null));
 
     // then
     assertThat(thrown.getMessage()).isEqualTo("File with provided URL doesn't exist: " + fileUrl);
@@ -146,7 +152,7 @@ class ImportJobServiceTest {
 
     // when
     var thrown = assertThrows(IllegalArgumentException.class,
-      () -> importJobService.start(fileUrl, null));
+      () -> importJobService.start(fileUrl, null, null));
 
     // then
     assertThat(thrown.getMessage()).isEqualTo("Job launch exception");

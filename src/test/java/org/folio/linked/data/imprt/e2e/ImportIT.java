@@ -4,6 +4,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.folio.ld.dictionary.PredicateDictionary.INSTANTIATES;
 import static org.folio.ld.dictionary.PredicateDictionary.SUBJECT;
+import static org.folio.ld.dictionary.ResourceTypeDictionary.CONTINUING_RESOURCES;
+import static org.folio.ld.dictionary.ResourceTypeDictionary.WORK;
+import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
@@ -15,10 +19,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.ld.dictionary.model.ResourceEdge;
+import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
 import org.folio.s3.client.FolioS3Client;
@@ -52,7 +58,7 @@ class ImportIT {
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
-      .param("fileUrl", fileName)
+      .param(FILE_URL, fileName)
       .headers(defaultHeaders(env));
 
     // when
@@ -82,7 +88,7 @@ class ImportIT {
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
-      .param("fileUrl", fileName)
+      .param(FILE_URL, fileName)
       .headers(defaultHeaders(env));
 
     // when
@@ -104,6 +110,28 @@ class ImportIT {
       );
 
     awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+  }
+
+  @Test
+  void recordImportWithNoWorkExtraType_shouldProduceWorkWithDefaultExtraType() throws Exception {
+    // given
+    var fileName = "record_with_work_with_no_extra_type_json.rdf";
+    var input = this.getClass().getResourceAsStream("/" + fileName);
+    s3Client.write(fileName, input);
+    var requestBuilder = post(PATH_START_IMPORT)
+      .param(FILE_URL, fileName)
+      .param(DEFAULT_WORK_TYPE, DefaultWorkType.SERIAL.getValue())
+      .headers(defaultHeaders(env));
+
+    // when
+    var resultActions = mockMvc.perform(requestBuilder);
+
+    // then
+    resultActions.andExpect(status().isOk());
+    var allResources = outputTopicListener.getImportOutputMessagesResources(1);
+    var works = getEdgeResources(allResources.getFirst(), INSTANTIATES);
+    assertThat(works).hasSize(1);
+    assertThat(works.getFirst().getTypes()).containsAll(Set.of(WORK, CONTINUING_RESOURCES));
   }
 
   private void validateFetchedAuthority(Resource instance, int number) {
