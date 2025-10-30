@@ -1,21 +1,19 @@
 package org.folio.linked.data.imprt.controller;
 
-import static org.springframework.http.HttpStatus.ACCEPTED;
-
 import lombok.RequiredArgsConstructor;
 import org.folio.linked.data.imprt.rest.resource.ImportStartApi;
 import org.folio.linked.data.imprt.service.imprt.ImportJobService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ImportController implements ImportStartApi {
   private final ImportJobService importJobService;
 
   @Override
-  public ResponseEntity<Void> startImport(String fileUrl, String contentType) {
-    importJobService.start(fileUrl, contentType);
-    return new ResponseEntity<>(ACCEPTED);
+  public ResponseEntity<String> startImport(String fileUrl, String contentType) {
+    var jobId = importJobService.start(fileUrl, contentType);
+    return ResponseEntity.ok(String.valueOf(jobId));
   }
 }

@@ -1,8 +1,7 @@
 package org.folio.linked.data.imprt.controller;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.mockito.Mockito.doReturn;
 
 import org.folio.linked.data.imprt.service.imprt.ImportJobService;
 import org.folio.spring.testing.type.UnitTest;
@@ -24,15 +23,14 @@ class ImportControllerTest {
 
   @Test
   void importStart_shouldReturnAcceptedResponse() {
-    // given
     var fileUrl = "http://example.com/file";
     var contentType = "application/json";
+    var jobId = 123L;
+    doReturn(jobId).when(importJobService).start(fileUrl, contentType);
 
-    // when
     var result = importController.startImport(fileUrl, contentType);
 
-    // then
-    verify(importJobService).start(fileUrl, contentType);
-    assertThat(result).isEqualTo(new ResponseEntity<>(ACCEPTED));
+    assertThat(result).isEqualTo(ResponseEntity.ok(String.valueOf(jobId)));
   }
 }
+
