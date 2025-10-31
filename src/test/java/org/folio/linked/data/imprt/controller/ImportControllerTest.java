@@ -3,6 +3,7 @@ package org.folio.linked.data.imprt.controller;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.doReturn;
 
+import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.service.imprt.ImportJobService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -22,15 +23,15 @@ class ImportControllerTest {
   private ImportJobService importJobService;
 
   @Test
-  void importStart_shouldReturnAcceptedResponse() {
+  void importStart_shouldReturnOkResponse() {
     var fileUrl = "http://example.com/file";
     var contentType = "application/json";
+    var defaultWorkType = DefaultWorkType.MONOGRAPH;
     var jobId = 123L;
-    doReturn(jobId).when(importJobService).start(fileUrl, contentType);
+    doReturn(jobId).when(importJobService).start(fileUrl, contentType, defaultWorkType);
 
-    var result = importController.startImport(fileUrl, contentType);
+    var result = importController.startImport(fileUrl, contentType, defaultWorkType);
 
     assertThat(result).isEqualTo(ResponseEntity.ok(String.valueOf(jobId)));
   }
 }
-

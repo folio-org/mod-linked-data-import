@@ -24,6 +24,12 @@ paths:
           description: Content type of the file to be imported (e.g., application/ld+json, text/turtle). JSON by default.
           schema:
             type: string
+        - name: defaultWorkType
+          in: query
+          required: false
+          description: Default Work extra type - MONOGRAPH or SERIAL
+          schema:
+            $ref: defaultWorkType.json
       responses:
         '200':
           description: ID of Linked Data Import job instance started

@@ -18,7 +18,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
-import org.springframework.batch.core.scope.JobScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.file.FlatFileItemReader;
@@ -41,10 +40,10 @@ public class BatchConfig {
   private static final String STEP_DOWNLOAD_FILE = "downloadFileStep";
 
   @Bean
-  public static BeanFactoryPostProcessor jobAndStepScopeConfigurer() {
+  public BeanFactoryPostProcessor jobAndStepScopeConfigurer() {
     return beanFactory -> {
       var configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
-      configurableBeanFactory.registerScope("job", new JobScope());
+      configurableBeanFactory.registerScope("job", new org.springframework.batch.core.scope.JobScope());
       configurableBeanFactory.registerScope("step", new org.springframework.batch.core.scope.StepScope());
     };
   }

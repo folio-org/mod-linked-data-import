@@ -1,11 +1,14 @@
 package org.folio.linked.data.imprt.service.imprt;
 
+import static java.util.Objects.nonNull;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.DATE_START;
+import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 import lombok.RequiredArgsConstructor;
+import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.folio.spring.exception.NotFoundException;
 import org.springframework.batch.core.Job;
@@ -27,13 +30,16 @@ public class ImportJobServiceImpl implements ImportJobService {
   private final S3Service s3Service;
 
   @Override
-  public Long start(String fileUrl, String contentType) {
+  public Long start(String fileUrl, String contentType, DefaultWorkType defaultWorkType) {
     checkFile(fileUrl);
-    var jobParameters = new JobParametersBuilder()
+    var jobParametersBuilder = new JobParametersBuilder()
       .addString(FILE_URL, fileUrl)
       .addString(CONTENT_TYPE, isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType)
-      .addLong(DATE_START, System.currentTimeMillis())
-      .toJobParameters();
+      .addLong(DATE_START, System.currentTimeMillis());
+    if (nonNull(defaultWorkType)) {
+      jobParametersBuilder.addJobParameter(DEFAULT_WORK_TYPE, defaultWorkType, DefaultWorkType.class);
+    }
+    var jobParameters = jobParametersBuilder.toJobParameters();
 
     try {
       var jobExecution = jobLauncher.run(rdfImportJob, jobParameters);
