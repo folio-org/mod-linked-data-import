@@ -31,6 +31,7 @@ import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.PropertyDictionary;
 import org.folio.ld.dictionary.ResourceTypeDictionary;
 import org.folio.ld.dictionary.model.Resource;
+import org.folio.linked.data.imprt.config.ObjectMapperConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
@@ -40,7 +41,7 @@ public class TestUtil {
 
   public static final String TENANT_ID = "test_tenant";
   private static final String FOLIO_OKAPI_URL = "folio.okapi-url";
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
 
   @SneakyThrows
   public static String asJsonString(Object value) {

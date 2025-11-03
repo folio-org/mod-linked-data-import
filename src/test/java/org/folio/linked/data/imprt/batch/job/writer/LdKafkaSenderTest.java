@@ -3,14 +3,11 @@ package org.folio.linked.data.imprt.batch.job.writer;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +33,6 @@ class LdKafkaSenderTest {
 
   @Mock
   private FolioMessageProducer<ImportOutput> importOutputFolioMessageProducer;
-  @Mock
-  private ObjectMapper objectMapper;
   @InjectMocks
   private LdKafkaSender sender;
 
@@ -71,7 +66,6 @@ class LdKafkaSenderTest {
       .collect(toCollection(HashSet::new));
     chunk.add(set);
     var captor = ArgumentCaptor.forClass(List.class);
-    when(objectMapper.writeValueAsString(any())).thenReturn("serialized-resource");
 
     // when
     sender.write(chunk);
@@ -97,7 +91,6 @@ class LdKafkaSenderTest {
     chunk.add(set1);
     chunk.add(set2);
     var captor = ArgumentCaptor.forClass(List.class);
-    when(objectMapper.writeValueAsString(any())).thenReturn("serialized-resource");
 
     // when
     sender.write(chunk);

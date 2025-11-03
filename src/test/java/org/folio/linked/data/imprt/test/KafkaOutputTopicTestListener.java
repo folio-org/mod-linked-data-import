@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.folio.ld.dictionary.model.Resource;
@@ -19,7 +20,9 @@ import org.springframework.stereotype.Component;
 @Getter
 @Log4j2
 @Component
+@RequiredArgsConstructor
 public class KafkaOutputTopicTestListener {
+  private final ObjectMapper objectMapper;
   private final List<String> messages = new CopyOnWriteArrayList<>();
 
   @KafkaListener(topics = "folio.test_tenant.linked_data_import.output")
@@ -36,11 +39,10 @@ public class KafkaOutputTopicTestListener {
   }
 
   private List<Resource> getResourcesFromMessages() {
-    var om = new ObjectMapper();
     return messages.stream()
       .map(s -> {
         try {
-          return om.readValue(s, ImportOutput.class);
+          return objectMapper.readValue(s, ImportOutput.class);
         } catch (JsonProcessingException e) {
           throw new RuntimeException(e);
         }
@@ -48,13 +50,6 @@ public class KafkaOutputTopicTestListener {
       .sorted(comparing(ImportOutput::getTs))
       .map(ImportOutput::getResources)
       .flatMap(List::stream)
-      .map(s -> {
-        try {
-          return om.readValue(s, Resource.class);
-        } catch (JsonProcessingException e) {
-          throw new RuntimeException(e);
-        }
-      })
       .toList();
   }
 
