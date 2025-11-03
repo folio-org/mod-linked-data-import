@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.folio.linked.data.imprt.domain.dto.ImportResult;
+import org.folio.linked.data.imprt.domain.dto.ImportOutput;
 import org.folio.spring.tools.kafka.FolioMessageProducer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -25,21 +25,21 @@ public class ProducerConfiguration {
   private final TopicProperties topicProperties;
 
   @Bean
-  public FolioMessageProducer<ImportResult> importResultMessageProducer(
-    KafkaTemplate<String, ImportResult> importResultMessageTemplate) {
-    var producer = new FolioMessageProducer<>(importResultMessageTemplate, topicProperties::getLinkedDataImportOutput);
-    producer.setKeyMapper(ImportResult::getTs);
+  public FolioMessageProducer<ImportOutput> importOutputMessageProducer(
+    KafkaTemplate<String, ImportOutput> importOutputMessageTemplate) {
+    var producer = new FolioMessageProducer<>(importOutputMessageTemplate, topicProperties::getLinkedDataImportOutput);
+    producer.setKeyMapper(ImportOutput::getTs);
     return producer;
   }
 
   @Bean
-  public KafkaTemplate<String, ImportResult> importResultMessageTemplate(
-    ProducerFactory<String, ImportResult> importResultMessageProducerFactory) {
-    return new KafkaTemplate<>(importResultMessageProducerFactory);
+  public KafkaTemplate<String, ImportOutput> importOutputMessageTemplate(
+    ProducerFactory<String, ImportOutput> importOutputMessageProducerFactory) {
+    return new KafkaTemplate<>(importOutputMessageProducerFactory);
   }
 
   @Bean
-  public ProducerFactory<String, ImportResult> importResultMessageProducerFactory() {
+  public ProducerFactory<String, ImportOutput> importOutputMessageProducerFactory() {
     return new DefaultKafkaProducerFactory<>(getProducerProperties());
   }
 
