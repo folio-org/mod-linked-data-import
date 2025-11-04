@@ -2,10 +2,10 @@ package org.folio.linked.data.imprt.test;
 
 import static java.util.Comparator.comparing;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.folio.linked.data.imprt.test.TestUtil.OBJECT_MAPPER;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.Getter;
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class KafkaOutputTopicTestListener {
-  private final ObjectMapper objectMapper;
   private final List<String> messages = new CopyOnWriteArrayList<>();
 
   @KafkaListener(topics = "folio.test_tenant.linked_data_import.output")
@@ -42,7 +41,7 @@ public class KafkaOutputTopicTestListener {
     return messages.stream()
       .map(s -> {
         try {
-          return objectMapper.readValue(s, ImportOutput.class);
+          return OBJECT_MAPPER.readValue(s, ImportOutput.class);
         } catch (JsonProcessingException e) {
           throw new RuntimeException(e);
         }

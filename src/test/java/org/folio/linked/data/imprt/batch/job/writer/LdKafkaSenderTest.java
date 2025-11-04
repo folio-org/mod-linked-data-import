@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +57,7 @@ class LdKafkaSenderTest {
   }
 
   @Test
-  void write_shouldSendSingleMessage_ifResourcesLessOrEqualChunkSize() throws JsonProcessingException {
+  void write_shouldSendSingleMessage_ifResourcesLessOrEqualChunkSize() {
     // given
     var chunk = new Chunk<Set<Resource>>();
     var set = range(0, 2)
@@ -79,7 +78,7 @@ class LdKafkaSenderTest {
   }
 
   @Test
-  void write_shouldSplitIntoMultipleMessages_ifResourcesExceedChunkSize() throws JsonProcessingException {
+  void write_shouldSplitIntoMultipleMessages_ifResourcesExceedChunkSize() {
     // given
     var total = 11; // => 3 messages (4,4,3)
     var chunk = new Chunk<Set<Resource>>();

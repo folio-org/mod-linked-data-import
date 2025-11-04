@@ -19,8 +19,11 @@ import static org.testcontainers.shaded.org.awaitility.Durations.FIVE_SECONDS;
 import static org.testcontainers.shaded.org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
 import static org.testcontainers.shaded.org.awaitility.Durations.TWO_MINUTES;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +34,6 @@ import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.PropertyDictionary;
 import org.folio.ld.dictionary.ResourceTypeDictionary;
 import org.folio.ld.dictionary.model.Resource;
-import org.folio.linked.data.imprt.config.ObjectMapperConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
@@ -40,8 +42,12 @@ import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
 public class TestUtil {
 
   public static final String TENANT_ID = "test_tenant";
+  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+    .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+    .configure(SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID, true)
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
   private static final String FOLIO_OKAPI_URL = "folio.okapi-url";
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
 
   @SneakyThrows
   public static String asJsonString(Object value) {
