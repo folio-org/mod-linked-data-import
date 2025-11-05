@@ -6,7 +6,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.ld.dictionary.model.Resource;
-import org.folio.linked.data.imprt.domain.dto.ImportResult;
+import org.folio.linked.data.imprt.domain.dto.ImportOutput;
 import org.folio.spring.tools.kafka.FolioMessageProducer;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
@@ -21,17 +21,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LdKafkaSender implements ItemWriter<Set<Resource>> {
 
-  @Qualifier("importResultMessageProducer")
-  private final FolioMessageProducer<ImportResult> importResultFolioMessageProducer;
+  @Qualifier("importOutputMessageProducer")
+  private final FolioMessageProducer<ImportOutput> importOutputFolioMessageProducer;
   @Value("${mod-linked-data-import.output-chunk-size}")
   private Integer chunkSize;
 
   @Override
   public void write(Chunk<? extends Set<Resource>> chunk) {
     var messages = chunked(chunk.getItems().stream().flatMap(Set::stream), chunkSize)
-      .map(ImportResult::new)
+      .map(ImportOutput::new)
       .toList();
-    importResultFolioMessageProducer.sendMessages(messages);
+    importOutputFolioMessageProducer.sendMessages(messages);
   }
 
 }

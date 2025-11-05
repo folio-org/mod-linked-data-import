@@ -11,8 +11,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.SneakyThrows;
 import org.folio.ld.dictionary.model.Resource;
-import org.folio.linked.data.imprt.domain.dto.ImportResult;
+import org.folio.linked.data.imprt.domain.dto.ImportOutput;
 import org.folio.spring.testing.type.UnitTest;
 import org.folio.spring.tools.kafka.FolioMessageProducer;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,10 +31,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 class LdKafkaSenderTest {
 
   @Mock
-  private FolioMessageProducer<ImportResult> importResultFolioMessageProducer;
+  private FolioMessageProducer<ImportOutput> importOutputFolioMessageProducer;
   @InjectMocks
   private LdKafkaSender sender;
 
+  @SneakyThrows
   @BeforeEach
   void init() {
     ReflectionTestUtils.setField(sender, "chunkSize", 4);
@@ -49,7 +51,7 @@ class LdKafkaSenderTest {
     sender.write(emptyChunk);
 
     // then
-    verify(importResultFolioMessageProducer, times(1)).sendMessages(captor.capture());
+    verify(importOutputFolioMessageProducer, times(1)).sendMessages(captor.capture());
     var sent = captor.getValue();
     assertThat(sent).isEmpty();
   }
@@ -68,10 +70,10 @@ class LdKafkaSenderTest {
     sender.write(chunk);
 
     // then
-    verify(importResultFolioMessageProducer, times(1)).sendMessages(captor.capture());
+    verify(importOutputFolioMessageProducer, times(1)).sendMessages(captor.capture());
     var messages = captor.getValue();
     assertThat(messages).hasSize(1);
-    var msg = (ImportResult) messages.get(0);
+    var msg = (ImportOutput) messages.get(0);
     assertThat(msg.getResources()).hasSize(2);
   }
 
@@ -93,11 +95,11 @@ class LdKafkaSenderTest {
     sender.write(chunk);
 
     // then
-    verify(importResultFolioMessageProducer, times(1)).sendMessages(captor.capture());
+    verify(importOutputFolioMessageProducer, times(1)).sendMessages(captor.capture());
     var messages = captor.getValue();
     assertThat(messages).hasSize(3);
-    assertThat(((ImportResult) messages.get(0)).getResources()).hasSize(4);
-    assertThat(((ImportResult) messages.get(1)).getResources()).hasSize(4);
-    assertThat(((ImportResult) messages.get(2)).getResources()).hasSize(3);
+    assertThat(((ImportOutput) messages.get(0)).getResources()).hasSize(4);
+    assertThat(((ImportOutput) messages.get(1)).getResources()).hasSize(4);
+    assertThat(((ImportOutput) messages.get(2)).getResources()).hasSize(3);
   }
 }
