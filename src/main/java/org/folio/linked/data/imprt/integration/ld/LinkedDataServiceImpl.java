@@ -2,10 +2,8 @@ package org.folio.linked.data.imprt.integration.ld;
 
 import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +27,7 @@ public class LinkedDataServiceImpl implements LinkedDataService {
       .getBody())
       .stream()
       .flatMap(Collection::stream)
-      .map(this::readJsonResource)
-      .flatMap(Optional::stream)
       .collect(Collectors.toSet());
-  }
-
-  private Optional<Resource> readJsonResource(String json) {
-    try {
-      return Optional.of(objectMapper.readValue(json, Resource.class));
-    } catch (JsonProcessingException e) {
-      log.error("Error reading Resource from JSON: {}", json, e);
-      return Optional.empty();
-    }
   }
 
 }
