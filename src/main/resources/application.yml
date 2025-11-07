@@ -73,6 +73,7 @@ folio:
     awsSdk: ${S3_IS_AWS:false}
 
 mod-linked-data-import:
+  job-pool-size: ${JOB_POOL_SIZE:1}
   chunk-size: ${CHUNK_SIZE:1000}
   output-chunk-size: ${OUTPUT_CHUNK_SIZE:100}
   process-file:

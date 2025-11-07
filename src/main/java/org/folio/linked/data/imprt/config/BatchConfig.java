@@ -66,9 +66,21 @@ public class BatchConfig {
   }
 
   @Bean
-  public JobLauncher jobLauncher(JobRepository jobRepository) throws Exception {
+  public TaskExecutor jobLauncherTaskExecutor(@Value("${mod-linked-data-import.job-pool-size}") int jobPoolSize) {
+    var exec = new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
+    exec.setMaxPoolSize(jobPoolSize);
+    exec.setQueueCapacity(jobPoolSize);
+    exec.setThreadNamePrefix("job-launcher-");
+    exec.initialize();
+    return exec;
+  }
+
+  @Bean
+  public JobLauncher jobLauncher(JobRepository jobRepository,
+                                 TaskExecutor jobLauncherTaskExecutor) throws Exception {
     var jobLauncher = new TaskExecutorJobLauncher();
     jobLauncher.setJobRepository(jobRepository);
+    jobLauncher.setTaskExecutor(jobLauncherTaskExecutor);
     jobLauncher.afterPropertiesSet();
     return jobLauncher;
   }
