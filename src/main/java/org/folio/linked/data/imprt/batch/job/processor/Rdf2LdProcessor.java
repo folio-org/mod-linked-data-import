@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 @StepScope
 public class Rdf2LdProcessor implements ItemProcessor<String, Set<Resource>> {
 
+  private static final String EMPTY_RESULT = "Empty result returned by rdf4ld library";
   private final Long jobInstanceId;
   private final String contentType;
   private final Rdf4LdService rdf4LdService;
@@ -42,15 +43,23 @@ public class Rdf2LdProcessor implements ItemProcessor<String, Set<Resource>> {
     log.trace("Processing RDF line of contentType[{}]: {}", contentType, rdfLine);
     try {
       var is = new ByteArrayInputStream(rdfLine.getBytes(UTF_8));
-      return rdf4LdService.mapBibframe2RdfToLd(is, contentType);
+      var result = rdf4LdService.mapBibframe2RdfToLd(is, contentType);
+      if (result.isEmpty()) {
+        saveFailedLine(rdfLine, EMPTY_RESULT);
+      }
+      return result;
     } catch (Exception e) {
-      var frl = new FailedRdfLine()
-        .setJobInstanceId(jobInstanceId)
-        .setException(e.getMessage())
-        .setFailedRdfLine(rdfLine);
-      log.warn("Exception during processing RDF line, saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
-      failedRdfLineRepo.save(frl);
+      saveFailedLine(rdfLine, e.getMessage());
       return Set.of();
     }
+  }
+
+  private void saveFailedLine(@NotNull String rdfLine, String message) {
+    log.warn("Exception during processing RDF line, saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
+    var frl = new FailedRdfLine()
+      .setJobInstanceId(jobInstanceId)
+      .setException(message)
+      .setFailedRdfLine(rdfLine);
+    failedRdfLineRepo.save(frl);
   }
 }

@@ -26,6 +26,7 @@ import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.ld.dictionary.model.ResourceEdge;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
+import org.folio.linked.data.imprt.model.FailedRdfLine;
 import org.folio.linked.data.imprt.model.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
@@ -168,9 +169,10 @@ class ImportIT {
     var succcesfulResource = outputTopicListener.getImportOutputMessagesResources(1).getFirst();
     validateInstanceWithTitles(succcesfulResource, 0);
     awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
-    var failedRdfLine = tenantScopedExecutionService.execute(TENANT_ID, () -> failedRdfLineRepo.findById(1L));
-    assertThat(failedRdfLine).isPresent();
-    assertThat(failedRdfLine.get().getFailedRdfLine()).isEqualTo("[{failing line}]");
+    var failedRdfLines = tenantScopedExecutionService.execute(TENANT_ID, () -> failedRdfLineRepo.findAll());
+    assertThat(failedRdfLines).hasSize(4);
+    assertThat(failedRdfLines.stream().map(FailedRdfLine::getFailedRdfLine).toList())
+      .contains("[{failing line 1}]", "[{failing line 2}]", "[{failing line 4}]", "[{failing line 5}]");
   }
 
   private void validateFetchedAuthority(Resource instance, int number) {

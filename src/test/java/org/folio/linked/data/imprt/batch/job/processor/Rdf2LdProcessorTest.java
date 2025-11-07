@@ -68,4 +68,23 @@ class Rdf2LdProcessorTest {
     assertThat(result).isEmpty();
     verify(failedRdfLineRepo).save(expectedFailedRdfLine);
   }
+
+  @Test
+  void process_shouldSaveFailedRdfLine_ifEmptyResultFromRdf4LdService() {
+    // given
+    var rdfLine = "rdfLine";
+    var expectedResult = Set.of();
+    doReturn(expectedResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
+    var expectedFailedRdfLine = new FailedRdfLine()
+      .setJobInstanceId(JOB_INSTANCE_ID)
+      .setFailedRdfLine(rdfLine)
+      .setException("Empty result returned by rdf4ld library");
+
+    // when
+    var result = rdf2LdProcessor.process(rdfLine);
+
+    // then
+    assertThat(result).isEmpty();
+    verify(failedRdfLineRepo).save(expectedFailedRdfLine);
+  }
 }

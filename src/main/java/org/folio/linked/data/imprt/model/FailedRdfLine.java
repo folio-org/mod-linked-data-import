@@ -15,10 +15,11 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(of = "id")
 @Accessors(chain = true)
 public class FailedRdfLine {
+  private static final String FAILED_RDF_LINE_SEQ_GEN = "failed_rdf_line_seq_gen";
 
   @Id
-  @GeneratedValue(strategy = SEQUENCE, generator = "failed_rdf_line_seq")
-  @SequenceGenerator(name = "failed_rdf_line_seq_gen", sequenceName = "failed_rdf_line_seq")
+  @GeneratedValue(strategy = SEQUENCE, generator = FAILED_RDF_LINE_SEQ_GEN)
+  @SequenceGenerator(name = FAILED_RDF_LINE_SEQ_GEN, sequenceName = "failed_rdf_line_seq", allocationSize = 100)
   private Long id;
   private Long jobInstanceId;
   private String failedRdfLine;

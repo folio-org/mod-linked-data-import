@@ -5,10 +5,10 @@
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
   <changeSet id="2_failed_rdf_line" author="Pavel Bobylev">
-    <createSequence sequenceName="failed_rdf_line_seq"/>
+    <createSequence sequenceName="failed_rdf_line_seq" startValue="1" incrementBy="1" minValue="1"/>
 
     <createTable tableName="failed_rdf_line">
-      <column name="id" type="BIGINT">
+      <column name="id" type="BIGINT" defaultValueSequenceNext="failed_rdf_line_seq">
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_failed_rdf_line"/>
       </column>
       <column name="job_instance_id" type="BIGINT"/>

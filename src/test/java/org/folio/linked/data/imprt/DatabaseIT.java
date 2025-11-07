@@ -21,7 +21,8 @@ class DatabaseIT {
     "batch_job_execution_params",
     "batch_step_execution",
     "batch_step_execution_context",
-    "batch_job_execution_context"
+    "batch_job_execution_context",
+    "failed_rdf_line"
   );
   private static final String LIST_TABLES_QUERY = """
           SELECT table_name
