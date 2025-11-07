@@ -1,12 +1,16 @@
 package org.folio.linked.data.imprt.batch.job.processor;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 import java.util.Set;
 import org.folio.ld.dictionary.model.Resource;
+import org.folio.linked.data.imprt.model.FailedRdfLine;
+import org.folio.linked.data.imprt.model.FailedRdfLineRepo;
 import org.folio.rdf4ld.service.Rdf4LdService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,20 +24,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class Rdf2LdProcessorTest {
 
   private static final String CONTENT_TYPE = "contentType";
+  private static final long JOB_INSTANCE_ID = 1L;
   private Rdf2LdProcessor rdf2LdProcessor;
   @Mock
   private Rdf4LdService rdf4LdService;
+  @Mock
+  private FailedRdfLineRepo failedRdfLineRepo;
 
   @BeforeEach
   void setUp() {
-    rdf2LdProcessor = new Rdf2LdProcessor(CONTENT_TYPE, rdf4LdService);
+    rdf2LdProcessor = new Rdf2LdProcessor(JOB_INSTANCE_ID, CONTENT_TYPE, rdf4LdService, failedRdfLineRepo);
   }
 
   @Test
-  void process_shouldReturnRdf4LdServiceResult() {
+  void process_shouldReturnSuccessfulRdf4LdServiceResult() {
     // given
     var rdfLine = "rdfLine";
-    var expectedResult = Set.of(new Resource().setId(1L));
+    var expectedResult = Set.of(new Resource().setId(JOB_INSTANCE_ID));
     doReturn(expectedResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
 
     // when
@@ -41,5 +48,24 @@ class Rdf2LdProcessorTest {
 
     // then
     assertThat(result).isEqualTo(expectedResult);
+  }
+
+  @Test
+  void process_shouldSaveFailedRdfLine_ifAnyExceptionInRdf4LdService() {
+    // given
+    var rdfLine = "rdfLine";
+    var rdf4LdException = "rdf4LdService exception";
+    doThrow(new RuntimeException(rdf4LdException)).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
+    var expectedFailedRdfLine = new FailedRdfLine()
+      .setJobInstanceId(JOB_INSTANCE_ID)
+      .setFailedRdfLine(rdfLine)
+      .setException(rdf4LdException);
+
+    // when
+    var result = rdf2LdProcessor.process(rdfLine);
+
+    // then
+    assertThat(result).isEmpty();
+    verify(failedRdfLineRepo).save(expectedFailedRdfLine);
   }
 }
