@@ -51,7 +51,7 @@ class Rdf2LdProcessorTest {
   }
 
   @Test
-  void process_shouldSaveFailedRdfLine_ifAnyExceptionInRdf4LdService() {
+  void process_shouldSaveFailedRdfLineAndReturnNull_ifAnyExceptionInRdf4LdService() {
     // given
     var rdfLine = "rdfLine";
     var rdf4LdException = "rdf4LdService exception";
@@ -65,12 +65,12 @@ class Rdf2LdProcessorTest {
     var result = rdf2LdProcessor.process(rdfLine);
 
     // then
-    assertThat(result).isEmpty();
+    assertThat(result).isNull();
     verify(failedRdfLineRepo).save(expectedFailedRdfLine);
   }
 
   @Test
-  void process_shouldSaveFailedRdfLine_ifEmptyResultFromRdf4LdService() {
+  void process_shouldSaveFailedRdfLineAndReturnNull_ifEmptyResultFromRdf4LdService() {
     // given
     var rdfLine = "rdfLine";
     var expectedResult = Set.of();
@@ -84,7 +84,7 @@ class Rdf2LdProcessorTest {
     var result = rdf2LdProcessor.process(rdfLine);
 
     // then
-    assertThat(result).isEmpty();
+    assertThat(result).isNull();
     verify(failedRdfLineRepo).save(expectedFailedRdfLine);
   }
 }

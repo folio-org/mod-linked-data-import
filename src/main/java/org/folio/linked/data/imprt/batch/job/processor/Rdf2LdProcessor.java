@@ -47,12 +47,13 @@ public class Rdf2LdProcessor implements ItemProcessor<String, Set<Resource>> {
       if (result.isEmpty()) {
         log.debug(EMPTY_RESULT + ", saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
         saveFailedLine(rdfLine, EMPTY_RESULT);
+        return null;
       }
       return result;
     } catch (Exception e) {
       log.warn("Exception during processing RDF line, saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
       saveFailedLine(rdfLine, e.getMessage());
-      return Set.of();
+      return null;
     }
   }
 
