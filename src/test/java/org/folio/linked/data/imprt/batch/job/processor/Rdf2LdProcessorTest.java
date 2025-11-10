@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import java.util.Set;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.model.FailedRdfLine;
-import org.folio.linked.data.imprt.model.FailedRdfLineRepo;
+import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.rdf4ld.service.Rdf4LdService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +59,7 @@ class Rdf2LdProcessorTest {
     var expectedFailedRdfLine = new FailedRdfLine()
       .setJobInstanceId(JOB_INSTANCE_ID)
       .setFailedRdfLine(rdfLine)
-      .setException(rdf4LdException);
+      .setDescription(rdf4LdException);
 
     // when
     var result = rdf2LdProcessor.process(rdfLine);
@@ -78,7 +78,7 @@ class Rdf2LdProcessorTest {
     var expectedFailedRdfLine = new FailedRdfLine()
       .setJobInstanceId(JOB_INSTANCE_ID)
       .setFailedRdfLine(rdfLine)
-      .setException("Empty result returned by rdf4ld library");
+      .setDescription("Empty result returned by rdf4ld library");
 
     // when
     var result = rdf2LdProcessor.process(rdfLine);

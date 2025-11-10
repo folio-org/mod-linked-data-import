@@ -8,7 +8,7 @@ import java.util.Set;
 import lombok.extern.log4j.Log4j2;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.model.FailedRdfLine;
-import org.folio.linked.data.imprt.model.FailedRdfLineRepo;
+import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.rdf4ld.service.Rdf4LdService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -45,20 +45,21 @@ public class Rdf2LdProcessor implements ItemProcessor<String, Set<Resource>> {
       var is = new ByteArrayInputStream(rdfLine.getBytes(UTF_8));
       var result = rdf4LdService.mapBibframe2RdfToLd(is, contentType);
       if (result.isEmpty()) {
+        log.debug(EMPTY_RESULT + ", saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
         saveFailedLine(rdfLine, EMPTY_RESULT);
       }
       return result;
     } catch (Exception e) {
+      log.warn("Exception during processing RDF line, saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
       saveFailedLine(rdfLine, e.getMessage());
       return Set.of();
     }
   }
 
-  private void saveFailedLine(@NotNull String rdfLine, String message) {
-    log.warn("Exception during processing RDF line, saving FailedRdfLine. JobInstanceId [{}]", jobInstanceId);
+  private void saveFailedLine(String rdfLine, String message) {
     var frl = new FailedRdfLine()
       .setJobInstanceId(jobInstanceId)
-      .setException(message)
+      .setDescription(message)
       .setFailedRdfLine(rdfLine);
     failedRdfLineRepo.save(frl);
   }

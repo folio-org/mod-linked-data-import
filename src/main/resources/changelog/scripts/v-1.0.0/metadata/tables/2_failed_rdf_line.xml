@@ -4,8 +4,27 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <changeSet id="2_failed_rdf_line" author="Pavel Bobylev">
-    <createSequence sequenceName="failed_rdf_line_seq" startValue="1" incrementBy="1" minValue="1"/>
+  <changeSet id="2_failed_rdf_line_sequence" author="Pavel Bobylev">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <sequenceExists sequenceName="failed_rdf_line_seq"/>
+      </not>
+    </preConditions>
+
+    <createSequence sequenceName="failed_rdf_line_seq" startValue="1" incrementBy="1"/>
+
+    <rollback>
+      <dropTable tableName="failed_rdf_line"/>
+      <dropSequence sequenceName="failed_rdf_line_seq"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="3_failed_rdf_line_table" author="Pavel Bobylev">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="failed_rdf_line"/>
+      </not>
+    </preConditions>
 
     <createTable tableName="failed_rdf_line">
       <column name="id" type="BIGINT" defaultValueSequenceNext="failed_rdf_line_seq">
@@ -13,12 +32,11 @@
       </column>
       <column name="job_instance_id" type="BIGINT"/>
       <column name="failed_rdf_line" type="TEXT"/>
-      <column name="exception" type="TEXT"/>
+      <column name="description" type="TEXT"/>
     </createTable>
 
     <rollback>
       <dropTable tableName="failed_rdf_line"/>
-      <dropSequence sequenceName="failed_rdf_line_seq"/>
     </rollback>
   </changeSet>
 

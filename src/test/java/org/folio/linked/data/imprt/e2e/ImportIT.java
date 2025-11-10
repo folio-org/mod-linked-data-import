@@ -27,7 +27,7 @@ import org.folio.ld.dictionary.model.Resource;
 import org.folio.ld.dictionary.model.ResourceEdge;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.model.FailedRdfLine;
-import org.folio.linked.data.imprt.model.FailedRdfLineRepo;
+import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
 import org.folio.linked.data.imprt.test.TenantScopedExecutionService;
