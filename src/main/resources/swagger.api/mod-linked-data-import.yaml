@@ -10,7 +10,7 @@ paths:
       operationId: startImport
       tags:
         - import, start
-      description: Start the process of Linked Data Import
+      description: Starts the process of Linked Data Import and returns ID of Import Job Instance
       parameters:
         - name: fileUrl
           in: query
