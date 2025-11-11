@@ -4,13 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <changeSet id="1_spring_batch_init" author="Pavel Bobylev">
-    <sqlFile path="org/springframework/batch/core/schema-postgresql.sql"
-             relativeToChangelogFile="false" splitStatements="true" stripComments="true"/>
-    <rollback>
-      <sqlFile path="org/springframework/batch/core/schema-drop-postgresql.sql"
-               relativeToChangelogFile="false" splitStatements="true" stripComments="true"/>
-    </rollback>
-  </changeSet>
+  <include file="tables/1_spring_batch_init.xml" relativeToChangelogFile="true"/>
+  <include file="tables/2_failed_rdf_line.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -20,25 +20,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.item.Chunk;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class LdKafkaSenderTest {
 
+  private static final Long JOB_INSTANCE_ID = 1L;
+  private static final Integer CHUNK_SIZE = 4;
   @Mock
   private FolioMessageProducer<ImportOutput> importOutputFolioMessageProducer;
-  @InjectMocks
   private LdKafkaSender sender;
 
   @SneakyThrows
   @BeforeEach
   void init() {
-    ReflectionTestUtils.setField(sender, "chunkSize", 4);
+    sender = new LdKafkaSender(JOB_INSTANCE_ID, importOutputFolioMessageProducer, CHUNK_SIZE);
   }
 
   @Test
@@ -75,6 +74,7 @@ class LdKafkaSenderTest {
     assertThat(messages).hasSize(1);
     var msg = (ImportOutput) messages.get(0);
     assertThat(msg.getResources()).hasSize(2);
+    assertThat(msg.getJobInstanceId()).isEqualTo(JOB_INSTANCE_ID);
   }
 
   @Test
