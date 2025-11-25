@@ -120,7 +120,7 @@ class ImportIT {
       .forEach(i -> allResources.stream()
         .filter(r -> r.getLabel().equals(getTitleLabel("Title", i)))
         .findAny()
-        .ifPresentOrElse(r -> validateFetchedAuthority(r, i),
+        .ifPresentOrElse(r -> validateMockAuthority(r, i),
           () -> fail("Resource not found: " + getTitleLabel("Title", i)))
       );
 
@@ -175,13 +175,13 @@ class ImportIT {
       .contains("[{failing line 1}]", "[{failing line 2}]", "[{failing line 4}]", "[{failing line 5}]");
   }
 
-  private void validateFetchedAuthority(Resource instance, int number) {
+  private void validateMockAuthority(Resource instance, int number) {
     var works = getEdgeResources(instance, INSTANTIATES);
     assertThat(works).hasSize(1);
     var subjects = getEdgeResources(works.getFirst(), SUBJECT);
     assertThat(subjects).hasSize(1);
     assertThat(subjects.getFirst().getLabel())
-      .isEqualTo(number == 0 ? "LCCN resource fetched from LD" : "Lccn resource fetched from SRS");
+      .isEqualTo("LCCN_RESOURCE_MOCK_n0000000" + number);
   }
 
   private List<Resource> getEdgeResources(Resource resource, PredicateDictionary predicate) {
