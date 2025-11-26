@@ -32,7 +32,7 @@ public class TenantInstallationExtension implements Extension, BeforeEachCallbac
       var mockMvc = context.getBean(MockMvc.class);
       mockMvc.perform(post(TENANT_ENDPOINT_URI, TENANT_ID)
           .content(asJsonString(new TenantAttributes().moduleTo(env.getProperty("spring.application.name"))))
-          .headers(defaultHeaders(env))
+          .headers(defaultHeaders())
           .contentType(APPLICATION_JSON))
         .andExpect(status().isNoContent());
       var s3Client = context.getBean(FolioS3Client.class);
