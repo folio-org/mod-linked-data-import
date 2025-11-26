@@ -23,7 +23,8 @@ x-okapi-token: {token}
 1. The file must be in **JSON Lines (jsonl)** format.
 2. Each line must contain a complete subgraph of a **Bibframe Instance** resource, as defined by the [Bibframe 2 ontology](https://id.loc.gov/ontologies/bibframe.html).
 
-For a detailed and up-to-date list of supported Bibframe types and properties, see [SUPPORTED_TYPES_PROPERTIES.md](./SUPPORTED_TYPES_PROPERTIES.md).
+For a detailed and up-to-date list of supported Bibframe types and properties, see [docs/SUPPORTED_TYPES_PROPERTIES.md](./docs/SUPPORTED_TYPES_PROPERTIES.md).
+For an example of a valid import file containing two RDF instances, see [docs/example-import.jsonl](./docs/example-import.jsonl).
 
 ## Limitations
 1. Only RDF data serialized as `application/ld+json` is supported.
