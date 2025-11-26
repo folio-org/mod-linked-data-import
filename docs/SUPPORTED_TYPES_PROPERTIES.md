@@ -79,3 +79,6 @@ This page will be updated as support for additional Bibframe types and propertie
 | http://id.loc.gov/ontologies/bflc/simpleAgent | literal                                         |
 | http://id.loc.gov/ontologies/bflc/simplePlace | literal                                         |
 | http://id.loc.gov/ontologies/bibframe/place   | URI from http://id.loc.gov/vocabulary/countries |
+
+## Example Import File
+For an example of a valid import file containing two RDF instances, see [example-import.jsonl](./example-import.jsonl).
