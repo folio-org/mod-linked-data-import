@@ -32,7 +32,6 @@ import org.folio.ld.dictionary.PropertyDictionary;
 import org.folio.ld.dictionary.ResourceTypeDictionary;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.config.ObjectMapperConfig;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
 
@@ -48,7 +47,7 @@ public class TestUtil {
     return OBJECT_MAPPER.writeValueAsString(value);
   }
 
-  public static HttpHeaders defaultHeaders(Environment env) {
+  public static HttpHeaders defaultHeaders() {
     var httpHeaders = new HttpHeaders();
     httpHeaders.add(TENANT, TENANT_ID);
     httpHeaders.add(URL, getProperty(FOLIO_OKAPI_URL));

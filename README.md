@@ -18,10 +18,12 @@ x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
 
-## File Format Requirements
+## File Format & Contents
 
 1. The file must be in **JSON Lines (jsonl)** format.
 2. Each line must contain a complete subgraph of a **Bibframe Instance** resource, as defined by the [Bibframe 2 ontology](https://id.loc.gov/ontologies/bibframe.html).
+
+For a detailed and up-to-date list of supported Bibframe types and properties, see [SUPPORTED_TYPES_PROPERTIES.md](./SUPPORTED_TYPES_PROPERTIES.md).
 
 ## Limitations
 1. Only RDF data serialized as `application/ld+json` is supported.
@@ -31,7 +33,10 @@ x-okapi-token: {token}
 
 ## Batch processing
 File contents are processed in batches.
-You can configure the batch size using the `CHUNK_SIZE` environment variable.
+You can configure batch processing using following environment variables:
+1. CHUNK_SIZE: Number of lines read from the input file per chunk
+2. OUTPUT_CHUNK_SIZE: Number of Graph resources sent to Kafka per chunk
+3. PROCESS_FILE_MAX_POOL_SIZE: Maximum threads used for parallel chunk processing
 
 ## Interaction with mod-linked-data
 
@@ -42,7 +47,6 @@ During import:
 1. This module transforms Bibframe 2 subgraphs into the equivalent Builde subgraph using the [`lib-linked-data-rdf4ld`](https://github.com/folio-org/lib-linked-data-rdf4ld) library.
 2. The transformed subgraphs are published to the Kafka topic specified by the `KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC` environment variable.
 3. `mod-linked-data` consumes messages from this topic, performs additional processing, and persists the graph to its database.
-
 
 ## Dependencies on libraries
 This module is dependent on the following libraries:
@@ -64,15 +68,16 @@ It is also necessary to specify variable S3_IS_AWS to determine if AWS S3 is use
 this variable is `false` and means that MinIO server is used as storage.
 This value should be `true` if AWS S3 is used.
 
-| Name                                  | Default value             | Description                                                                 |
-|:--------------------------------------|:--------------------------|:----------------------------------------------------------------------------|
-| S3_URL                                | http://127.0.0.1:9000/    | S3 url                                                                      |
-| S3_REGION                             | -                         | S3 region                                                                   |
-| S3_BUCKET                             | -                         | S3 bucket                                                                   |
-| S3_ACCESS_KEY_ID                      | -                         | S3 access key                                                               |
-| S3_SECRET_ACCESS_KEY                  | -                         | S3 secret key                                                               |
-| S3_IS_AWS                             | false                     | Specify if AWS S3 is used as files storage                                  |
-| CHUNK_SIZE                            | 1000                      | Chunk size (lines number) for processing file                               |
-| OUTPUT_CHUNK_SIZE                     | 1000                      | Output chunk size for Kafka publishing                                      |
-| PROCESS_FILE_MAX_POOL_SIZE            | 1000                      | Max threads for parallel processFile step                                   |
-| KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC | linked_data_import.output | Kafka topic where the transformed subgraph is published for mod-linked-data |
+| Name                                  | Default value              | Description                                                                 |
+|:--------------------------------------|:---------------------------|:----------------------------------------------------------------------------|
+| S3_URL                                | http://127.0.0.1:9000/     | S3 url                                                                      |
+| S3_REGION                             | -                          | S3 region                                                                   |
+| S3_BUCKET                             | -                          | S3 bucket                                                                   |
+| S3_ACCESS_KEY_ID                      | -                          | S3 access key                                                               |
+| S3_SECRET_ACCESS_KEY                  | -                          | S3 secret key                                                               |
+| S3_IS_AWS                             | false                      | Specify if AWS S3 is used as files storage                                  |
+| CHUNK_SIZE                            | 1000                       | Number of lines read from the input file per chunk                          |
+| OUTPUT_CHUNK_SIZE                     | 100                        | Number of Graph resources sent to Kafka per chunk                           |
+| JOB_POOL_SIZE                         | 1                          | Number of concurrent Import Jobs                                            |
+| PROCESS_FILE_MAX_POOL_SIZE            | 1000                       | Maximum threads used for parallel chunk processing                          |
+| KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC | linked_data_import.output  | Kafka topic where the transformed subgraph is published for mod-linked-data |
