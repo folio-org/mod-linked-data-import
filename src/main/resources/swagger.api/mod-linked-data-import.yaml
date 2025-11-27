@@ -44,9 +44,5 @@ paths:
 
 components:
   schemas:
-    searchResourcesRequestDto:
-      $ref: folio-modules/linked.data/searchResourcesRequestDto.json
-    authoritySearchResponse:
-      $ref: folio-modules/search/authoritySearchResponse.json
     importOutputDto:
       $ref: kafka/importOutput.json

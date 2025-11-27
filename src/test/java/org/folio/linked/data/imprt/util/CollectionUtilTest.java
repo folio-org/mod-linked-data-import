@@ -47,10 +47,10 @@ class CollectionUtilTest {
 
     // then
     assertThat(result).hasSize(4);
-    assertThat(result.get(0)).containsExactly(0, 1, 2);
-    assertThat(result.get(1)).containsExactly(3, 4, 5);
-    assertThat(result.get(2)).containsExactly(6, 7, 8);
-    assertThat(result.get(3)).containsExactly(9);
+    assertThat(result.get(0)).containsOnly(0, 1, 2);
+    assertThat(result.get(1)).containsOnly(3, 4, 5);
+    assertThat(result.get(2)).containsOnly(6, 7, 8);
+    assertThat(result.get(3)).containsOnly(9);
   }
 
   @Test
@@ -63,8 +63,8 @@ class CollectionUtilTest {
 
     // then
     assertThat(result).hasSize(2);
-    assertThat(result.get(0)).containsExactly("a");
-    assertThat(result.get(1)).containsExactly("b");
+    assertThat(result.get(0)).containsOnly("a");
+    assertThat(result.get(1)).containsOnly("b");
   }
 
   @Test

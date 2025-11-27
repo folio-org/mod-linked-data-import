@@ -7,6 +7,7 @@ import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class KafkaOutputTopicTestListener {
       })
       .sorted(comparing(ImportOutput::getTs))
       .map(ImportOutput::getResources)
-      .flatMap(List::stream)
+      .flatMap(Set::stream)
       .toList();
   }
 
