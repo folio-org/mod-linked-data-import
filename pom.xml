@@ -45,7 +45,6 @@
     <lib-linked-data-dictionary.version>2.0.0-SNAPSHOT</lib-linked-data-dictionary.version>
     <lib-linked-data-fingerprint.version>2.0.0-SNAPSHOT</lib-linked-data-fingerprint.version>
     <lib-linked-data-rdf4ld.version>1.0.0-SNAPSHOT</lib-linked-data-rdf4ld.version>
-    <lib-linked-data-marc4ld.version>2.0.0-SNAPSHOT</lib-linked-data-marc4ld.version>
 
     <!-- Dependencies versions -->
     <apache-commons-io.version>2.21.0</apache-commons-io.version>
@@ -113,11 +112,6 @@
       <groupId>org.folio</groupId>
       <artifactId>lib-linked-data-rdf4ld</artifactId>
       <version>${lib-linked-data-rdf4ld.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>lib-linked-data-marc4ld</artifactId>
-      <version>${lib-linked-data-marc4ld.version}</version>
     </dependency>
 
     <dependency>
