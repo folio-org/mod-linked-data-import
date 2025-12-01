@@ -42,7 +42,6 @@
     <folio-s3-client.version>2.4.0-SNAPSHOT </folio-s3-client.version>
 
     <!-- LD dependencies versions -->
-    <lib-linked-data-dictionary.version>2.0.0-SNAPSHOT</lib-linked-data-dictionary.version>
     <lib-linked-data-fingerprint.version>2.0.0-SNAPSHOT</lib-linked-data-fingerprint.version>
     <lib-linked-data-rdf4ld.version>1.0.0-SNAPSHOT</lib-linked-data-rdf4ld.version>
 
@@ -98,11 +97,6 @@
       <version>${folio-s3-client.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>lib-linked-data-dictionary</artifactId>
-      <version>${lib-linked-data-dictionary.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>lib-linked-data-fingerprint</artifactId>
