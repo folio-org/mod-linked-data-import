@@ -8,6 +8,14 @@ See the file "[LICENSE](LICENSE)" for more information.
 This module provides bulk import functionality for RDF data graphs into the [`mod-linked-data`](https://github.com/folio-org/mod-linked-data) application.
 It reads RDF subgraphs in Bibframe 2 format, transforms them into the Builde vocabulary, and delivers them to `mod-linked-data` via Kafka.
 
+## Third party libraries used in this software
+This software uses the following Weak Copyleft (Eclipse Public License 1.0 / 2.0) licensed software libraries:
+
+- [jakarta.annotation-api](https://projects.eclipse.org/projects/ee4j.ca)
+- [jakarta.json-api](https://github.com/jakartaee/jsonp-api)
+- [junit](https://junit.org/)
+- [aspectjweaver](https://eclipse.dev/aspectj/)
+
 ## How to Import Data
 1. Upload the RDF file to the S3 bucket specified by the `S3_BUCKET` environment variable.
 2. Inside that bucket, place the file within the subdirectory corresponding to the target tenant ID.
