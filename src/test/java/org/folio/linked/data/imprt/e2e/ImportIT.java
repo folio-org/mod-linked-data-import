@@ -35,7 +35,6 @@ import org.folio.s3.client.FolioS3Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,8 +44,6 @@ class ImportIT {
 
   @Autowired
   protected JdbcTemplate jdbcTemplate;
-  @Autowired
-  private Environment env;
   @Autowired
   private MockMvc mockMvc;
   @Autowired
@@ -74,7 +71,7 @@ class ImportIT {
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
       .param(FILE_URL, fileName)
-      .headers(defaultHeaders(env));
+      .headers(defaultHeaders());
 
     // when
     var resultActions = mockMvc.perform(requestBuilder);
@@ -104,7 +101,7 @@ class ImportIT {
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
       .param(FILE_URL, fileName)
-      .headers(defaultHeaders(env));
+      .headers(defaultHeaders());
 
     // when
     var resultActions = mockMvc.perform(requestBuilder);
@@ -136,7 +133,7 @@ class ImportIT {
     var requestBuilder = post(PATH_START_IMPORT)
       .param(FILE_URL, fileName)
       .param(DEFAULT_WORK_TYPE, DefaultWorkType.SERIAL.getValue())
-      .headers(defaultHeaders(env));
+      .headers(defaultHeaders());
 
     // when
     var resultActions = mockMvc.perform(requestBuilder);
@@ -157,7 +154,7 @@ class ImportIT {
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
       .param(FILE_URL, fileName)
-      .headers(defaultHeaders(env));
+      .headers(defaultHeaders());
 
     // when
     var resultActions = mockMvc.perform(requestBuilder);
