@@ -14,6 +14,7 @@ import java.util.Set;
 import lombok.SneakyThrows;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.domain.dto.ImportOutput;
+import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.folio.spring.testing.type.UnitTest;
 import org.folio.spring.tools.kafka.FolioMessageProducer;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +44,7 @@ class LdKafkaSenderTest {
   @Test
   void write_shouldSendEmptyList_ifChunkEmpty() {
     // given
-    var emptyChunk = new Chunk<Set<Resource>>();
+    var emptyChunk = new Chunk<Set<ResourceWithLineNumber>>();
     var captor = ArgumentCaptor.forClass(List.class);
 
     // when
@@ -58,9 +59,9 @@ class LdKafkaSenderTest {
   @Test
   void write_shouldSendSingleMessage_ifResourcesLessOrEqualChunkSize() {
     // given
-    var chunk = new Chunk<Set<Resource>>();
+    var chunk = new Chunk<Set<ResourceWithLineNumber>>();
     var set = range(0, 2)
-      .mapToObj(i -> mock(Resource.class))
+      .mapToObj(i -> new ResourceWithLineNumber(i + 1L, mock(Resource.class)))
       .collect(toCollection(HashSet::new));
     chunk.add(set);
     var captor = ArgumentCaptor.forClass(List.class);
@@ -73,17 +74,17 @@ class LdKafkaSenderTest {
     var messages = captor.getValue();
     assertThat(messages).hasSize(1);
     var msg = (ImportOutput) messages.get(0);
-    assertThat(msg.getResources()).hasSize(2);
+    assertThat(msg.getResourcesWithLineNumbers()).hasSize(2);
     assertThat(msg.getJobInstanceId()).isEqualTo(JOB_INSTANCE_ID);
   }
 
   @Test
   void write_shouldSplitIntoMultipleMessages_ifResourcesExceedChunkSize() {
     // given
-    var total = 11; // => 3 messages (4,4,3)
-    var chunk = new Chunk<Set<Resource>>();
+    var total = 11;
+    var chunk = new Chunk<Set<ResourceWithLineNumber>>();
     var resources = range(0, total)
-      .mapToObj(i -> mock(Resource.class))
+      .mapToObj(i -> new ResourceWithLineNumber(i + 1L, mock(Resource.class)))
       .collect(toCollection(ArrayList::new));
     var set1 = new HashSet<>(resources.subList(0, 6));
     var set2 = new HashSet<>(resources.subList(6, total));
@@ -98,8 +99,8 @@ class LdKafkaSenderTest {
     verify(importOutputFolioMessageProducer, times(1)).sendMessages(captor.capture());
     var messages = captor.getValue();
     assertThat(messages).hasSize(3);
-    assertThat(((ImportOutput) messages.get(0)).getResources()).hasSize(4);
-    assertThat(((ImportOutput) messages.get(1)).getResources()).hasSize(4);
-    assertThat(((ImportOutput) messages.get(2)).getResources()).hasSize(3);
+    assertThat(((ImportOutput) messages.get(0)).getResourcesWithLineNumbers()).hasSize(4);
+    assertThat(((ImportOutput) messages.get(1)).getResourcesWithLineNumbers()).hasSize(4);
+    assertThat(((ImportOutput) messages.get(2)).getResourcesWithLineNumbers()).hasSize(3);
   }
 }

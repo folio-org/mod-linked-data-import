@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import java.util.Set;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.model.FailedRdfLine;
+import org.folio.linked.data.imprt.model.RdfLineWithNumber;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.rdf4ld.service.Rdf4LdService;
 import org.folio.spring.testing.type.UnitTest;
@@ -39,26 +40,32 @@ class Rdf2LdProcessorTest {
   @Test
   void process_shouldReturnSuccessfulRdf4LdServiceResult() {
     // given
-    var rdfLine = "rdfLine";
-    var expectedResult = Set.of(new Resource().setId(JOB_INSTANCE_ID));
-    doReturn(expectedResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
+    var lineNumber = 1L;
+    var rdfLine = new RdfLineWithNumber(lineNumber, "rdfLine");
+    var resource = new Resource().setId(JOB_INSTANCE_ID);
+    var rdf4LdResult = Set.of(resource);
+    doReturn(rdf4LdResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
 
     // when
     var result = rdf2LdProcessor.process(rdfLine);
 
     // then
-    assertThat(result).isEqualTo(expectedResult);
+    assertThat(result).hasSize(1);
+    var resourceWithLineNumber = result.iterator().next();
+    assertThat(resourceWithLineNumber.getLineNumber()).isEqualTo(lineNumber);
+    assertThat(resourceWithLineNumber.getResource()).isEqualTo(resource);
   }
 
   @Test
   void process_shouldSaveFailedRdfLineAndReturnNull_ifAnyExceptionInRdf4LdService() {
     // given
-    var rdfLine = "rdfLine";
+    var rdfLine = new RdfLineWithNumber(2L, "rdfLine");
     var rdf4LdException = "rdf4LdService exception";
     doThrow(new RuntimeException(rdf4LdException)).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
     var expectedFailedRdfLine = new FailedRdfLine()
       .setJobInstanceId(JOB_INSTANCE_ID)
-      .setFailedRdfLine(rdfLine)
+      .setLineNumber(rdfLine.getLineNumber())
+      .setFailedRdfLine(rdfLine.getContent())
       .setDescription(rdf4LdException);
 
     // when
@@ -72,12 +79,13 @@ class Rdf2LdProcessorTest {
   @Test
   void process_shouldSaveFailedRdfLineAndReturnNull_ifEmptyResultFromRdf4LdService() {
     // given
-    var rdfLine = "rdfLine";
+    var rdfLine = new RdfLineWithNumber(3L, "rdfLine");
     var expectedResult = Set.of();
     doReturn(expectedResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
     var expectedFailedRdfLine = new FailedRdfLine()
       .setJobInstanceId(JOB_INSTANCE_ID)
-      .setFailedRdfLine(rdfLine)
+      .setLineNumber(rdfLine.getLineNumber())
+      .setFailedRdfLine(rdfLine.getContent())
       .setDescription("Empty result returned by rdf4ld library");
 
     // when

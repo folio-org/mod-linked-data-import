@@ -78,4 +78,19 @@ class CollectionUtilTest {
     // then
     assertThat(result.get(0)).isNotSameAs(result.get(1));
   }
+
+  @Test
+  void chunked_shouldPreserveOrder() {
+    // given
+    var stream = Stream.of(1, 2, 3, 4, 5, 6, 7);
+
+    // when
+    var result = CollectionUtil.chunked(stream, 3).toList();
+
+    // then
+    assertThat(result).hasSize(3);
+    assertThat(result.get(0)).containsExactly(1, 2, 3);
+    assertThat(result.get(1)).containsExactly(4, 5, 6);
+    assertThat(result.get(2)).containsExactly(7);
+  }
 }

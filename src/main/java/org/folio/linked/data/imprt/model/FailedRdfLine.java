@@ -24,6 +24,7 @@ public class FailedRdfLine {
   @GeneratedValue(strategy = SEQUENCE, generator = FAILED_RDF_LINE_SEQ_GEN)
   private Long id;
   private Long jobInstanceId;
+  private Long lineNumber;
   private String failedRdfLine;
   private String description;
 
