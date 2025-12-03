@@ -1,6 +1,5 @@
 package org.folio.linked.data.imprt.e2e;
 
-import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.folio.ld.dictionary.PredicateDictionary.INSTANTIATES;
 import static org.folio.ld.dictionary.PredicateDictionary.SUBJECT;
@@ -15,6 +14,7 @@ import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
 import static org.folio.linked.data.imprt.test.TestUtil.getTitleLabel;
 import static org.folio.linked.data.imprt.test.TestUtil.validateInstanceWithTitles;
+import static org.springframework.data.domain.Sort.by;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,7 +26,6 @@ import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.ld.dictionary.model.ResourceEdge;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
-import org.folio.linked.data.imprt.model.FailedRdfLine;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
@@ -80,15 +79,19 @@ class ImportIT {
     var result = resultActions.andExpect(status().isOk())
       .andReturn();
     assertThat(result.getResponse().getContentAsString()).isNotBlank();
-    var allResources = outputTopicListener.getImportOutputMessagesResources(10);
+    var allResourcesWithLineNumbers = outputTopicListener.getImportOutputMessagesResources(10);
+    assertThat(allResourcesWithLineNumbers).hasSize(10);
 
     IntStream.range(0, 10)
-      .forEach(i -> allResources.stream()
-        .filter(r -> r.getLabel().equals(getTitleLabel("Title", i)))
-        .findAny()
-        .ifPresentOrElse(r -> validateInstanceWithTitles(r, i),
-          () -> fail("Resource not found: " + getTitleLabel("Title", i)))
-      );
+      .forEach(i -> {
+        var resourceWithLineNumber = allResourcesWithLineNumbers.stream()
+          .filter(rwln -> rwln.getResource().getLabel().equals(getTitleLabel("Title", i)))
+          .findAny()
+          .orElseThrow(() -> new AssertionError("Resource not found: " + getTitleLabel("Title", i)));
+
+        assertThat(resourceWithLineNumber.getLineNumber()).isEqualTo(i + 1L);
+        validateInstanceWithTitles(resourceWithLineNumber.getResource(), i);
+      });
 
     awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
   }
@@ -111,15 +114,19 @@ class ImportIT {
       .andReturn();
 
     assertThat(result.getResponse().getContentAsString()).isNotBlank();
-    var allResources = outputTopicListener.getImportOutputMessagesResources(2);
+    var allResourcesWithLineNumbers = outputTopicListener.getImportOutputMessagesResources(2);
+    assertThat(allResourcesWithLineNumbers).hasSize(2);
 
     IntStream.range(0, 1)
-      .forEach(i -> allResources.stream()
-        .filter(r -> r.getLabel().equals(getTitleLabel("Title", i)))
-        .findAny()
-        .ifPresentOrElse(r -> validateMockAuthority(r, i),
-          () -> fail("Resource not found: " + getTitleLabel("Title", i)))
-      );
+      .forEach(i -> {
+        var resourceWithLineNumber = allResourcesWithLineNumbers.stream()
+          .filter(rwln -> rwln.getResource().getLabel().equals(getTitleLabel("Title", i)))
+          .findAny()
+          .orElseThrow(() -> new AssertionError("Resource not found: " + getTitleLabel("Title", i)));
+
+        assertThat(resourceWithLineNumber.getLineNumber()).isEqualTo(i + 1L);
+        validateMockAuthority(resourceWithLineNumber.getResource(), i);
+      });
 
     awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
   }
@@ -140,8 +147,13 @@ class ImportIT {
 
     // then
     resultActions.andExpect(status().isOk());
-    var allResources = outputTopicListener.getImportOutputMessagesResources(1);
-    var works = getEdgeResources(allResources.getFirst(), INSTANTIATES);
+    var allResourcesWithLineNumbers = outputTopicListener.getImportOutputMessagesResources(1);
+    assertThat(allResourcesWithLineNumbers).hasSize(1);
+
+    var firstResourceWithLineNumber = allResourcesWithLineNumbers.getFirst();
+    assertThat(firstResourceWithLineNumber.getLineNumber()).isEqualTo(1L);
+
+    var works = getEdgeResources(firstResourceWithLineNumber.getResource(), INSTANTIATES);
     assertThat(works).hasSize(1);
     assertThat(works.getFirst().getTypes()).containsAll(Set.of(WORK, CONTINUING_RESOURCES));
   }
@@ -163,13 +175,32 @@ class ImportIT {
     var result = resultActions.andExpect(status().isOk())
       .andReturn();
     assertThat(result.getResponse().getContentAsString()).isNotBlank();
-    var succcesfulResource = outputTopicListener.getImportOutputMessagesResources(1).getFirst();
-    validateInstanceWithTitles(succcesfulResource, 0);
+
+    var successfulResourcesWithLineNumbers = outputTopicListener.getImportOutputMessagesResources(1);
+    assertThat(successfulResourcesWithLineNumbers).hasSize(1);
+
+    var successfulResourceWithLineNumber = successfulResourcesWithLineNumbers.getFirst();
+    assertThat(successfulResourceWithLineNumber.getLineNumber()).isEqualTo(3L);
+    validateInstanceWithTitles(successfulResourceWithLineNumber.getResource(), 0);
+
     awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
-    var failedRdfLines = tenantScopedExecutionService.execute(TENANT_ID, () -> failedRdfLineRepo.findAll());
+    var failedRdfLines = tenantScopedExecutionService.execute(TENANT_ID,
+      () -> failedRdfLineRepo.findAll(by("lineNumber")));
     assertThat(failedRdfLines).hasSize(4);
-    assertThat(failedRdfLines.stream().map(FailedRdfLine::getFailedRdfLine).toList())
-      .contains("[{failing line 1}]", "[{failing line 2}]", "[{failing line 4}]", "[{failing line 5}]");
+
+    var jobInstanceId = failedRdfLines.getFirst().getJobInstanceId();
+    assertThat(jobInstanceId).isNotNull();
+
+    for (int i = 1; i <= failedRdfLines.size(); i++) {
+      if (i == 3) {
+        continue;
+      }
+      var failedLine = failedRdfLines.get(i - (i < 3 ? 1 : 2));
+      assertThat(failedLine.getLineNumber()).isEqualTo(i);
+      assertThat(failedLine.getJobInstanceId()).isEqualTo(jobInstanceId);
+      assertThat(failedLine.getFailedRdfLine()).isEqualTo("[{failing line " + i + "}]");
+      assertThat(failedLine.getDescription()).isEqualTo("RDF parsing error");
+    }
   }
 
   private void validateMockAuthority(Resource instance, int number) {

@@ -1,6 +1,6 @@
 package org.folio.linked.data.imprt.util;
 
-import static java.util.HashSet.newHashSet;
+import static java.util.LinkedHashSet.newLinkedHashSet;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -21,7 +21,7 @@ public class CollectionUtil {
 
       @Override
       public Set<T> next() {
-        Set<T> chunk = newHashSet(chunkSize);
+        Set<T> chunk = newLinkedHashSet(chunkSize);
         int count = 0;
         while (count < chunkSize && sourceIterator.hasNext()) {
           chunk.add(sourceIterator.next());

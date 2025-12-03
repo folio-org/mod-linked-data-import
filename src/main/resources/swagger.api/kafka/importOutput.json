@@ -3,13 +3,13 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Linked Data Import result DTO",
   "properties": {
-    "resources": {
-      "description": "Array of imported resources",
+    "resourcesWithLineNumbers": {
+      "description": "Array of imported resources with their line numbers",
       "type": "array",
       "uniqueItems": true,
       "items": {
         "type": "object",
-        "$ref": "resourcePlaceholder.json"
+        "$ref": "resourceWithLineNumber.json"
       }
     },
     "jobInstanceId": {
@@ -27,5 +27,5 @@
     }
   },
   "x-implements": "org.folio.spring.tools.kafka.BaseKafkaMessage",
-  "required": ["resources"]
+  "required": ["resourcesWithLineNumbers"]
 }

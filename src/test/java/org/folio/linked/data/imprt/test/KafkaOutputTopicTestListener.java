@@ -7,14 +7,13 @@ import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.domain.dto.ImportOutput;
+import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -31,14 +30,14 @@ public class KafkaOutputTopicTestListener {
     messages.add(consumerRecord.value().toString());
   }
 
-  public List<Resource> getImportOutputMessagesResources(int expectedSize) {
+  public List<ResourceWithLineNumber> getImportOutputMessagesResources(int expectedSize) {
     awaitAndAssert(() ->
-      assertThat(getResourcesFromMessages()).hasSize(expectedSize)
+      assertThat(getResourcesWithLineNumbers()).hasSize(expectedSize)
     );
-    return getResourcesFromMessages();
+    return getResourcesWithLineNumbers();
   }
 
-  private List<Resource> getResourcesFromMessages() {
+  private List<ResourceWithLineNumber> getResourcesWithLineNumbers() {
     return messages.stream()
       .map(s -> {
         try {
@@ -47,9 +46,8 @@ public class KafkaOutputTopicTestListener {
           throw new RuntimeException(e);
         }
       })
-      .sorted(comparing(ImportOutput::getTs))
-      .map(ImportOutput::getResources)
-      .flatMap(Set::stream)
+      .flatMap(importOutput -> importOutput.getResourcesWithLineNumbers().stream())
+      .sorted(comparing(ResourceWithLineNumber::getLineNumber))
       .toList();
   }
 
