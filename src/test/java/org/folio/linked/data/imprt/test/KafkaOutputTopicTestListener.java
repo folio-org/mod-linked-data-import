@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.folio.linked.data.imprt.domain.dto.ImportOutput;
+import org.folio.linked.data.imprt.domain.dto.ImportOutputEvent;
 import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -41,7 +41,7 @@ public class KafkaOutputTopicTestListener {
     return messages.stream()
       .map(s -> {
         try {
-          return OBJECT_MAPPER.readValue(s, ImportOutput.class);
+          return OBJECT_MAPPER.readValue(s, ImportOutputEvent.class);
         } catch (JsonProcessingException e) {
           throw new RuntimeException(e);
         }

@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Set;
 import org.folio.ld.dictionary.model.Resource;
-import org.folio.linked.data.imprt.model.FailedRdfLine;
 import org.folio.linked.data.imprt.model.RdfLineWithNumber;
+import org.folio.linked.data.imprt.model.entity.FailedRdfLine;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.rdf4ld.service.Rdf4LdService;
 import org.folio.spring.testing.type.UnitTest;

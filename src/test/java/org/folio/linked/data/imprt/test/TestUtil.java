@@ -27,12 +27,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.PropertyDictionary;
 import org.folio.ld.dictionary.ResourceTypeDictionary;
 import org.folio.ld.dictionary.model.Resource;
 import org.folio.linked.data.imprt.config.ObjectMapperConfig;
+import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.springframework.http.HttpHeaders;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
 
 @UtilityClass
@@ -52,6 +57,17 @@ public class TestUtil {
     httpHeaders.add(TENANT, TENANT_ID);
     httpHeaders.add(URL, getProperty(FOLIO_OKAPI_URL));
     return httpHeaders;
+  }
+
+  public static void cleanTables(JdbcTemplate jdbcTemplate) {
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "batch_step_execution_context",
+      "batch_step_execution",
+      "batch_job_execution_params",
+      "batch_job_execution_context",
+      "batch_job_execution",
+      "batch_job_instance",
+      "failed_rdf_line",
+      "import_result_event");
   }
 
   public static void awaitAndAssert(ThrowingRunnable throwingRunnable) {
@@ -127,6 +143,43 @@ public class TestUtil {
   public static String getTitleLabel(String titleType, int number) {
     return titleType + " mainTitle 1" + number + ", " + titleType + " mainTitle 2" + number + ", "
       + titleType + " subTitle 1" + number + ", " + titleType + " subTitle 2" + number;
+  }
+
+  public static ImportResultEvent createImportResultEventDto(Long jobInstanceId) {
+    var event = new ImportResultEvent(
+      "original-ts",
+      jobInstanceId,
+      java.time.OffsetDateTime.now(),
+      java.time.OffsetDateTime.now(),
+      10,
+      8,
+      2
+    );
+    event.setTs("event-ts");
+    event.setTenant(TENANT_ID);
+    return event;
+  }
+
+  public static org.folio.linked.data.imprt.model.entity.ImportResultEvent createImportResultEvent(Long jobInstanceId) {
+    return new org.folio.linked.data.imprt.model.entity.ImportResultEvent()
+      .setJobInstanceId(jobInstanceId)
+      .setResourcesCount(10)
+      .setCreatedCount(8)
+      .setUpdatedCount(2)
+      .setStartDate(java.time.OffsetDateTime.now())
+      .setEndDate(java.time.OffsetDateTime.now())
+      .setOriginalEventTs("original-ts")
+      .setEventTs("event-ts");
+  }
+
+  public static ConsumerRecord<String, ImportResultEvent> createConsumerRecord(ImportResultEvent event) {
+    return createConsumerRecord(event, TENANT_ID);
+  }
+
+  public static ConsumerRecord<String, ImportResultEvent> createConsumerRecord(ImportResultEvent event, String tenant) {
+    var consumerRecord = new ConsumerRecord<>("test-topic", 0, 0L, "key", event);
+    consumerRecord.headers().add(new RecordHeader(TENANT, tenant.getBytes()));
+    return consumerRecord;
   }
 
 }

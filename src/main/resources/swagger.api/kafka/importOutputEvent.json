@@ -1,10 +1,10 @@
 {
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "Linked Data Import result DTO",
+  "description": "Linked Data Import output result DTO",
   "properties": {
     "resourcesWithLineNumbers": {
-      "description": "Array of imported resources with their line numbers",
+      "description": "Array of mapped resources with their line numbers",
       "type": "array",
       "uniqueItems": true,
       "items": {

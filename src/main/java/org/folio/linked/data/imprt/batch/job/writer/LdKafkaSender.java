@@ -4,7 +4,7 @@ import static org.folio.linked.data.imprt.util.CollectionUtil.chunked;
 
 import java.util.Set;
 import lombok.extern.log4j.Log4j2;
-import org.folio.linked.data.imprt.domain.dto.ImportOutput;
+import org.folio.linked.data.imprt.domain.dto.ImportOutputEvent;
 import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.folio.spring.tools.kafka.FolioMessageProducer;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -20,11 +20,11 @@ import org.springframework.stereotype.Component;
 public class LdKafkaSender implements ItemWriter<Set<ResourceWithLineNumber>> {
 
   private final Long jobInstanceId;
-  private final FolioMessageProducer<ImportOutput> importOutputFolioMessageProducer;
+  private final FolioMessageProducer<ImportOutputEvent> importOutputFolioMessageProducer;
   private final Integer chunkSize;
 
   public LdKafkaSender(@Value("#{jobInstanceId}") Long jobInstanceId,
-                       @Qualifier("importOutputMessageProducer") FolioMessageProducer<ImportOutput> producer,
+                       @Qualifier("importOutputMessageProducer") FolioMessageProducer<ImportOutputEvent> producer,
                        @Value("${mod-linked-data-import.output-chunk-size}") Integer chunkSize) {
     this.jobInstanceId = jobInstanceId;
     this.importOutputFolioMessageProducer = producer;
@@ -36,7 +36,7 @@ public class LdKafkaSender implements ItemWriter<Set<ResourceWithLineNumber>> {
   public void write(Chunk<? extends Set<ResourceWithLineNumber>> chunk) {
     var messages = chunked(chunk.getItems().stream().flatMap(Set::stream), chunkSize)
       .map(resourcesWithLineNumbers ->
-        new ImportOutput(resourcesWithLineNumbers).jobInstanceId(jobInstanceId))
+        new ImportOutputEvent(resourcesWithLineNumbers).jobInstanceId(jobInstanceId))
       .toList();
     importOutputFolioMessageProducer.sendMessages(messages);
   }

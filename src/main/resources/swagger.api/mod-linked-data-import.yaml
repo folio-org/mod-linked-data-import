@@ -44,5 +44,7 @@ paths:
 
 components:
   schemas:
-    importOutputDto:
-      $ref: kafka/importOutput.json
+    importOutputEventDto:
+      $ref: kafka/importOutputEvent.json
+    importResultEventDto:
+      $ref: kafka/result/importResultEvent.json

@@ -6,6 +6,7 @@ import org.folio.spring.liquibase.FolioSpringLiquibase;
 import org.folio.spring.service.TenantService;
 import org.folio.spring.tools.kafka.KafkaAdminService;
 import org.folio.tenant.domain.dto.TenantAttributes;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class LinkedDataImportTenantService extends TenantService {
 
+  private static final String MODULE_STATE = "module-state";
   private final KafkaAdminService kafkaAdminService;
+  private final TenantScopedExecutionService tenantScopedExecutionService;
 
   public LinkedDataImportTenantService(JdbcTemplate jdbcTemplate,
                                        FolioExecutionContext context,
                                        FolioSpringLiquibase folioSpringLiquibase,
-                                       KafkaAdminService kafkaAdminService) {
+                                       KafkaAdminService kafkaAdminService,
+                                       TenantScopedExecutionService tenantScopedExecutionService) {
     super(jdbcTemplate, context, folioSpringLiquibase);
     this.kafkaAdminService = kafkaAdminService;
+    this.tenantScopedExecutionService = tenantScopedExecutionService;
   }
 
   @Override
@@ -37,4 +42,8 @@ public class LinkedDataImportTenantService extends TenantService {
     kafkaAdminService.deleteTopics(context.getTenantId());
   }
 
+  @Cacheable(cacheNames = MODULE_STATE)
+  public boolean isTenantExists(String tenantId) {
+    return tenantScopedExecutionService.execute(tenantId, super::tenantExists);
+  }
 }

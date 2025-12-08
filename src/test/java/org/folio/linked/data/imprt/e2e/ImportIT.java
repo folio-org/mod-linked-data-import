@@ -11,6 +11,7 @@ import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
+import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
 import static org.folio.linked.data.imprt.test.TestUtil.getTitleLabel;
 import static org.folio.linked.data.imprt.test.TestUtil.validateInstanceWithTitles;
@@ -27,15 +28,14 @@ import org.folio.ld.dictionary.model.Resource;
 import org.folio.ld.dictionary.model.ResourceEdge;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
+import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.linked.data.imprt.test.KafkaOutputTopicTestListener;
-import org.folio.linked.data.imprt.test.TenantScopedExecutionService;
 import org.folio.s3.client.FolioS3Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 @IntegrationTest
@@ -57,9 +57,7 @@ class ImportIT {
   @BeforeEach
   void clean() {
     outputTopicListener.getMessages().clear();
-    tenantScopedExecutionService.execute(TENANT_ID, () ->
-      JdbcTestUtils.deleteFromTables(jdbcTemplate, "failed_rdf_line")
-    );
+    tenantScopedExecutionService.execute(TENANT_ID, () -> cleanTables(jdbcTemplate));
   }
 
   @Test

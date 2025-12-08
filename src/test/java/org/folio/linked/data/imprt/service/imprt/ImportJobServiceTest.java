@@ -1,4 +1,4 @@
-package org.folio.linked.data.imprt.service;
+package org.folio.linked.data.imprt.service.imprt;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.stream.Stream;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
-import org.folio.linked.data.imprt.service.imprt.ImportJobServiceImpl;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.folio.spring.exception.NotFoundException;
 import org.folio.spring.testing.type.UnitTest;
