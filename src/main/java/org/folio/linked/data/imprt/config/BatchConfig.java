@@ -8,9 +8,11 @@ import jakarta.persistence.EntityManagerFactory;
 import java.io.File;
 import java.util.Set;
 import javax.sql.DataSource;
-import org.folio.ld.dictionary.model.Resource;
+import org.folio.linked.data.imprt.batch.job.mapper.LineNumberCapturingMapper;
 import org.folio.linked.data.imprt.batch.job.processor.Rdf2LdProcessor;
 import org.folio.linked.data.imprt.batch.job.writer.LdKafkaSender;
+import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
+import org.folio.linked.data.imprt.model.RdfLineWithNumber;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -21,9 +23,8 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.file.mapping.PassThroughLineMapper;
+import org.springframework.batch.item.support.SynchronizedItemStreamReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -121,13 +122,13 @@ public class BatchConfig {
   @Bean
   public Step processFileStep(JobRepository jobRepository,
                               PlatformTransactionManager transactionManager,
-                              FlatFileItemReader<String> rdfLineItemReader,
+                              SynchronizedItemStreamReader<RdfLineWithNumber> rdfLineItemReader,
                               Rdf2LdProcessor rdf2LdProcessor,
                               LdKafkaSender ldKafkaSender,
                               @Value("${mod-linked-data-import.chunk-size}") int chunkSize,
                               TaskExecutor processFileTaskExecutor) {
     return new StepBuilder("processFileStep", jobRepository)
-      .<String, Set<Resource>>chunk(chunkSize, transactionManager)
+      .<RdfLineWithNumber, Set<ResourceWithLineNumber>>chunk(chunkSize, transactionManager)
       .reader(rdfLineItemReader)
       .processor(rdf2LdProcessor)
       .writer(ldKafkaSender)
@@ -137,13 +138,18 @@ public class BatchConfig {
 
   @Bean
   @StepScope
-  public FlatFileItemReader<String> rdfLineItemReader(@Value("#{jobParameters['" + FILE_URL + "']}") String fileUrl) {
+  public SynchronizedItemStreamReader<RdfLineWithNumber> rdfLineItemReader(
+    @Value("#{jobParameters['" + FILE_URL + "']}") String fileUrl
+  ) {
     var file = new File(TMP_DIR, extractFileName(fileUrl));
-    return new FlatFileItemReaderBuilder<String>()
+    var flatFileReader = new FlatFileItemReaderBuilder<RdfLineWithNumber>()
       .name("lineItemReader")
       .resource(new org.springframework.core.io.FileSystemResource(file))
-      .lineMapper(new PassThroughLineMapper())
+      .lineMapper(new LineNumberCapturingMapper())
       .build();
+    var synchronizedReader = new SynchronizedItemStreamReader<RdfLineWithNumber>();
+    synchronizedReader.setDelegate(flatFileReader);
+    return synchronizedReader;
   }
 
   @Bean
