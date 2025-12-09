@@ -30,9 +30,9 @@ public class ImportResultEvent {
   @GeneratedValue(strategy = SEQUENCE, generator = IMPORT_RESULT_EVENT_SEQ_GEN)
   private Long id;
   private Long jobInstanceId;
-  private Integer resourcesCount;
-  private Integer createdCount;
-  private Integer updatedCount;
+  private int resourcesCount;
+  private int createdCount;
+  private int updatedCount;
   private OffsetDateTime startDate;
   private OffsetDateTime endDate;
   private String originalEventTs;

@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 public class Parameters {
   public static final String FILE_URL = "fileUrl";
   public static final String CONTENT_TYPE = "contentType";
-  public static final String DATE_START = "dateStart";
   public static final String DEFAULT_WORK_TYPE = "defaultWorkType";
+  public static final String STARTED_BY = "startedBy";
   public static final String TMP_DIR = System.getProperty("java.io.tmpdir");
 }

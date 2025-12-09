@@ -89,12 +89,12 @@ public class BatchConfig {
   @Bean
   public Job rdfImportJob(JobRepository jobRepository,
                           Step downloadFileStep,
-                          Step processFileStep,
+                          Step mappingStep,
                           Step waitForSavingStep,
                           Step cleaningStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
       .start(downloadFileStep)
-      .next(processFileStep)
+      .next(mappingStep)
       .next(waitForSavingStep)
       .next(cleaningStep)
       .build();
@@ -122,14 +122,14 @@ public class BatchConfig {
   }
 
   @Bean
-  public Step processFileStep(JobRepository jobRepository,
+  public Step mappingStep(JobRepository jobRepository,
                               PlatformTransactionManager transactionManager,
                               SynchronizedItemStreamReader<RdfLineWithNumber> rdfLineItemReader,
                               Rdf2LdProcessor rdf2LdProcessor,
                               LdKafkaSender ldKafkaSender,
                               @Value("${mod-linked-data-import.chunk-size}") int chunkSize,
                               TaskExecutor processFileTaskExecutor) {
-    return new StepBuilder("processFileStep", jobRepository)
+    return new StepBuilder("mappingStep", jobRepository)
       .<RdfLineWithNumber, Set<ResourceWithLineNumber>>chunk(chunkSize, transactionManager)
       .reader(rdfLineItemReader)
       .processor(rdf2LdProcessor)

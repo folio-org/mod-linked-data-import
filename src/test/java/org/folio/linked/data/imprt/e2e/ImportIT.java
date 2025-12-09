@@ -5,7 +5,7 @@ import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
-import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
+import static org.folio.linked.data.imprt.test.TestUtil.awaitJobCompletion;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
 import static org.springframework.data.domain.Sort.by;
@@ -21,7 +21,6 @@ import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.folio.s3.client.FolioS3Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.BatchStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -65,8 +64,8 @@ class ImportIT {
       .andReturn();
     var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId);
-    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
       () -> importResultEventRepo.findAll());
@@ -100,8 +99,8 @@ class ImportIT {
       .andReturn();
     var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId);
-    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
       () -> importResultEventRepo.findAll());
@@ -130,8 +129,8 @@ class ImportIT {
       .andReturn();
     var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId);
-    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
       () -> importResultEventRepo.findAll());
@@ -175,8 +174,8 @@ class ImportIT {
       .andReturn();
     var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId);
-    awaitAndAssert(() -> assertThat(new File(TMP_DIR, fileName)).doesNotExist());
+    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
       () -> importResultEventRepo.findAll());
@@ -209,24 +208,6 @@ class ImportIT {
       "@type":["http://id.loc.gov/ontologies/bibframe/Title"],\
       "http://id.loc.gov/ontologies/bibframe/mainTitle":[{"@value":"FAIL_SAVING_LINE"}]}]""");
     assertThat(failedRdfLine.getFailedMappedResource()).isNotNull();
-  }
-
-  private void awaitJobCompletion(Long jobInstanceId) {
-    awaitAndAssert(() -> {
-      var status = tenantScopedExecutionService.execute(TENANT_ID, () ->
-        jdbcTemplate.queryForObject(
-          """
-            SELECT e.status FROM batch_job_execution e
-            WHERE e.job_instance_id = ?
-            ORDER BY e.create_time DESC
-            LIMIT 1
-            """,
-          String.class,
-          jobInstanceId
-        )
-      );
-      assertThat(status).isIn(BatchStatus.COMPLETED.name(), BatchStatus.FAILED.name());
-    });
   }
 
 }

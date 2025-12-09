@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.Set;
-import org.folio.linked.data.imprt.model.entity.BatchJobExecutionParams;
 import org.folio.linked.data.imprt.model.entity.FailedRdfLine;
 import org.folio.linked.data.imprt.model.mapper.ImportResultEventMapper;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionParamsRepo;
@@ -62,19 +61,14 @@ class ImportResultEventHandlerTest {
     // given
     var jobInstanceId = 123L;
     var dto = createImportResultEventDto(jobInstanceId);
-
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine1 = new FailedRdfLine().setId(1L).setLineNumber(5L);
     var failedLine2 = new FailedRdfLine().setId(2L).setLineNumber(10L);
     entity.setFailedRdfLines(Set.of(failedLine1, failedLine2));
-
     var fileUrl = "s3://bucket/test-file.txt";
-    var params = new BatchJobExecutionParams();
-    params.setParameterValue(fileUrl);
-
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
-      .thenReturn(Optional.of(params));
+      .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("RDF line content");
 
     // when
@@ -90,11 +84,9 @@ class ImportResultEventHandlerTest {
     // given
     var jobInstanceId = 123L;
     var dto = createImportResultEventDto(jobInstanceId);
-
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(5L);
     entity.setFailedRdfLines(Set.of(failedLine));
-
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.empty());
@@ -111,18 +103,13 @@ class ImportResultEventHandlerTest {
     // given
     var jobInstanceId = 123L;
     var dto = createImportResultEventDto(jobInstanceId);
-
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(999L);
     entity.setFailedRdfLines(Set.of(failedLine));
-
     var fileUrl = "s3://bucket/test-file.txt";
-    var params = new BatchJobExecutionParams();
-    params.setParameterValue(fileUrl);
-
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
-      .thenReturn(Optional.of(params));
+      .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(fileUrl, 999L)).thenReturn(null);
 
     // when
@@ -138,18 +125,13 @@ class ImportResultEventHandlerTest {
     // given
     var jobInstanceId = 123L;
     var fileUrl = "s3://bucket/test-file.txt";
-    var params = new BatchJobExecutionParams();
-    params.setParameterValue(fileUrl);
-
     var dto = createImportResultEventDto(jobInstanceId);
-
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(1L);
     entity.setFailedRdfLines(Set.of(failedLine));
-
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
-      .thenReturn(Optional.of(params));
+      .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("test content");
 
     // when
@@ -165,11 +147,9 @@ class ImportResultEventHandlerTest {
     // given
     var jobInstanceId = 123L;
     var dto = createImportResultEventDto(jobInstanceId);
-
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(1L);
     entity.setFailedRdfLines(Set.of(failedLine));
-
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.empty());

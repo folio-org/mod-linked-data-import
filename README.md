@@ -25,6 +25,25 @@ POST /linked-data-import/start?fileUrl={fileNameInS3}&contentType=application/ld
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
+Response is a job id, which could be later used for getting job status or failed lines.
+## To check the import job status, use:
+```
+GET /linked-data-import/jobs/{jobId}
+x-okapi-tenant: {tenantId}
+x-okapi-token: {token}
+```
+The response includes job information such as:
+- `startDate`: Job start date and time
+- `startedBy`: User ID who started the job
+- `status`: Current job status (COMPLETED, STARTED, FAILED, etc.)
+- `fileName`: Name of the imported file
+- `currentStep`: Current processing step
+- `linesRead`: Total lines read from the file
+- `linesMapped`: Lines successfully mapped
+- `linesFailedMapping`: Lines failed during mapping
+- `linesCreated`: Resources created
+- `linesUpdated`: Resources updated
+- `linesFailedSaving`: Lines failed during saving
 
 ## File Format & Contents
 

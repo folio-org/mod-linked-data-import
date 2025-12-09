@@ -18,6 +18,7 @@ public interface ImportResultEventMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "jobInstanceId", source = "jobInstanceId")
   @Mapping(target = "failedRdfLine", ignore = true)
+  @Mapping(target = "importResultEvent", ignore = true)
   @Mapping(target = "failedMappedResource", source = "failedResource.resource")
   FailedRdfLine toFailedRdfLine(FailedResource failedResource, Long jobInstanceId);
 

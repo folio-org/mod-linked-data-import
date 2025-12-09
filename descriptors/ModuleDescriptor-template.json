@@ -27,6 +27,12 @@
           "pathPattern": "/linked-data-import/start",
           "permissionsRequired": [ "linked-data-import.start" ],
           "modulePermissions": []
+        },
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/linked-data-import/jobs/{jobId}",
+          "permissionsRequired": [ "linked-data-import.job.get" ],
+          "modulePermissions": []
         }
       ]
     }
@@ -42,6 +48,11 @@
       "permissionName": "linked-data-import.start",
       "displayName": "Linked Data Import: Start Linked Data Import process",
       "description": "Start Linked Data Import process"
+    },
+    {
+      "permissionName": "linked-data-import.job.get",
+      "displayName": "Linked Data Import: Get import job information",
+      "description": "Get import job information by job ID"
     }
   ],
   "launchDescriptor": {

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "description": "Import Job Information",
+  "required": [
+    "startDate",
+    "startedBy",
+    "status",
+    "fileName",
+    "currentStep"
+  ],
+  "properties": {
+    "startDate": {
+      "type": "string",
+      "description": "Job start date and time"
+    },
+    "endDate": {
+      "type": "string",
+      "description": "Job end date and time"
+    },
+    "startedBy": {
+      "type": "string",
+      "description": "User who started the job"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current job status from Spring Batch BatchStatus"
+    },
+    "fileName": {
+      "type": "string",
+      "description": "Name of the file being imported"
+    },
+    "currentStep": {
+      "type": "string",
+      "description": "Current step being executed"
+    },
+    "linesRead": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Number of lines read from the file"
+    },
+    "linesMapped": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Number of lines successfully mapped"
+    },
+    "linesFailedMapping": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Number of lines failed during mapping"
+    },
+    "linesCreated": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Number of resources created"
+    },
+    "linesUpdated": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Number of resources updated"
+    },
+    "linesFailedSaving": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Number of lines failed during saving"
+    }
+  }
+}
+

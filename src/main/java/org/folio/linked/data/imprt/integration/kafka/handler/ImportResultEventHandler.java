@@ -2,11 +2,9 @@ package org.folio.linked.data.imprt.integration.kafka.handler;
 
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
-import org.folio.linked.data.imprt.model.entity.BatchJobExecutionParams;
 import org.folio.linked.data.imprt.model.mapper.ImportResultEventMapper;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionParamsRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
@@ -29,19 +27,15 @@ public class ImportResultEventHandler implements KafkaMessageHandler<ImportResul
   public void handle(ImportResultEvent importResultEvent) {
     var entity = importResultEventMapper.toEntity(importResultEvent);
     if (!entity.getFailedRdfLines().isEmpty()) {
-      var fileUrl = getFileUrl(importResultEvent.getJobInstanceId());
+      var jobInstanceId = importResultEvent.getJobInstanceId();
+      var fileUrl = batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
       entity.getFailedRdfLines().forEach(failedLine ->
         failedLine.setFailedRdfLine(fileUrl.map(url -> fileService.readLineFromFile(url, failedLine.getLineNumber()))
-          .orElse(FILE_URL_NOT_FOUND_MESSAGE.formatted(importResultEvent.getJobInstanceId()))
+          .orElse(FILE_URL_NOT_FOUND_MESSAGE.formatted(jobInstanceId))
         )
       );
     }
     importResultEventRepo.save(entity);
-  }
-
-  private Optional<String> getFileUrl(Long jobInstanceId) {
-    return batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL)
-      .map(BatchJobExecutionParams::getParameterValue);
   }
 
 }

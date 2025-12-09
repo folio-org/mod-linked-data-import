@@ -42,9 +42,38 @@ paths:
         '500':
           description: Internal Server Error
 
+  /linked-data-import/jobs/{jobId}:
+    get:
+      operationId: getJobInfo
+      tags:
+        - import, job
+      description: Returns information about Import Job by ID
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: The ID of the Import Job Instance
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Import Job information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/jobInfo'
+        '404':
+          description: Job not found
+        '500':
+          description: Internal Server Error
+
 components:
   schemas:
     importOutputEventDto:
       $ref: kafka/importOutputEvent.json
     importResultEventDto:
       $ref: kafka/result/importResultEvent.json
+    jobInfo:
+      $ref: jobInfo.json
+
