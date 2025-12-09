@@ -7,15 +7,13 @@ import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.createImportResultEventDto;
-import static org.folio.spring.integration.XOkapiHeaders.TENANT;
+import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
 import org.folio.linked.data.imprt.domain.dto.FailedResource;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
@@ -32,7 +30,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 class ImportResultEventHandlerIT {
 
   private static final String TEST_FILE_NAME = "test-rdf-file.txt";
-  private static final String TOPIC_NAME = "folio.test_tenant.linked_data_import.result";
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -88,7 +85,7 @@ class ImportResultEventHandlerIT {
     createBatchJobExecutionParams(jobInstanceId);
 
     // when
-    sendEvent(event);
+    sendImportResultEvent(event, importResultEventProducer);
 
     // then
     awaitAndAssert(() -> {
@@ -113,12 +110,6 @@ class ImportResultEventHandlerIT {
       assertThat(failedLines.get(1).getDescription()).isEqualTo("Error 2");
       assertThat(failedLines.get(1).getFailedMappedResource()).isEqualTo("{\"resource\": \"data2\"}");
     });
-  }
-
-  private void sendEvent(ImportResultEvent event) {
-    var producerRecord = new ProducerRecord<String, ImportResultEvent>(TOPIC_NAME, event);
-    producerRecord.headers().add(new RecordHeader(TENANT, TENANT_ID.getBytes()));
-    importResultEventProducer.send(producerRecord);
   }
 
   private void createBatchJobExecutionParams(Long jobInstanceId) {

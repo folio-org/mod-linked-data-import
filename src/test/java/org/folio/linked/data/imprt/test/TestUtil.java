@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.folio.ld.dictionary.PredicateDictionary;
 import org.folio.ld.dictionary.PropertyDictionary;
@@ -37,6 +38,7 @@ import org.folio.linked.data.imprt.config.ObjectMapperConfig;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
 
@@ -46,6 +48,7 @@ public class TestUtil {
   public static final String TENANT_ID = "test_tenant";
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
   private static final String FOLIO_OKAPI_URL = "folio.okapi-url";
+  private static final String IMPORT_RESULT_TOPIC = "folio.test_tenant.linked_data_import.result";
 
   @SneakyThrows
   public static String asJsonString(Object value) {
@@ -180,6 +183,13 @@ public class TestUtil {
     var consumerRecord = new ConsumerRecord<>("test-topic", 0, 0L, "key", event);
     consumerRecord.headers().add(new RecordHeader(TENANT, tenant.getBytes()));
     return consumerRecord;
+  }
+
+  public static void sendImportResultEvent(ImportResultEvent event,
+                                           KafkaTemplate<String, ImportResultEvent> importResultEventProducer) {
+    var producerRecord = new ProducerRecord<String, ImportResultEvent>(IMPORT_RESULT_TOPIC, event);
+    producerRecord.headers().add(new RecordHeader(TENANT, TENANT_ID.getBytes()));
+    importResultEventProducer.send(producerRecord);
   }
 
 }
