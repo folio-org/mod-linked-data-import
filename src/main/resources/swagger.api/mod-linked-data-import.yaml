@@ -68,6 +68,39 @@ paths:
         '500':
           description: Internal Server Error
 
+  /linked-data-import/jobs/{jobId}/failed-lines:
+    get:
+      operationId: getFailedLines
+      tags:
+        - import, job
+      description: Downloads CSV file with failed RDF lines for the specified job
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: The ID of the Import Job Instance
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: CSV file with failed RDF lines
+          headers:
+            Content-Disposition:
+              description: Attachment header for file download
+              schema:
+                type: string
+                example: 'attachment; filename="failed-lines.csv"'
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Job not found
+        '500':
+          description: Internal Server Error
+
 components:
   schemas:
     importOutputEventDto:

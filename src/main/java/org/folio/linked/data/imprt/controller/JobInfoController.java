@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.folio.linked.data.imprt.domain.dto.JobInfo;
 import org.folio.linked.data.imprt.rest.resource.ImportJobApi;
 import org.folio.linked.data.imprt.service.job.JobInfoService;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,11 @@ public class JobInfoController implements ImportJobApi {
   public ResponseEntity<JobInfo> getJobInfo(Long jobId) {
     var jobInfo = jobInfoService.getJobInfo(jobId);
     return ResponseEntity.ok(jobInfo);
+  }
+
+  @Override
+  public ResponseEntity<Resource> getFailedLines(Long jobId) {
+    return ResponseEntity.ok(jobInfoService.generateFailedLinesCsv(jobId));
   }
 }
 

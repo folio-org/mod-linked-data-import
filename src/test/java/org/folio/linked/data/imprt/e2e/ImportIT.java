@@ -49,7 +49,7 @@ class ImportIT {
   @Test
   void checkSuccessfullyMappedLines_local() throws Exception {
     // given
-    var fileName = "10_records_json.rdf";
+    var fileName = "rdf/10_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
@@ -84,7 +84,7 @@ class ImportIT {
   @Test
   void checkSuccessfullyMappedLines_usingSearchAndLinkedDataAndSrs() throws Exception {
     // given
-    var fileName = "2_records_lccn_json.rdf";
+    var fileName = "rdf/2_records_lccn_json.rdf";
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
@@ -114,7 +114,7 @@ class ImportIT {
   @Test
   void checkPartiallyFailingMappingLines() throws Exception {
     // given
-    var fileName = "failing_mapping_records_json.rdf";
+    var fileName = "rdf/failing_mapping_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
@@ -159,7 +159,7 @@ class ImportIT {
   @Test
   void checkPartiallyFailingSavingLines() throws Exception {
     // given
-    var fileName = "failing_saving_records_json.rdf";
+    var fileName = "rdf/failing_saving_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)

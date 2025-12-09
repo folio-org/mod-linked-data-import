@@ -81,12 +81,12 @@ class JobInfoServiceImplTest {
     assertThat(result.getStatus()).isEqualTo("FAILED");
     assertThat(result.getFileName()).isNull();
     assertThat(result.getCurrentStep()).isNull();
-    assertThat(result.getLinesRead()).isEqualTo(0L);
-    assertThat(result.getLinesMapped()).isEqualTo(0L);
-    assertThat(result.getLinesFailedMapping()).isEqualTo(0L);
-    assertThat(result.getLinesCreated()).isEqualTo(0L);
-    assertThat(result.getLinesUpdated()).isEqualTo(0L);
-    assertThat(result.getLinesFailedSaving()).isEqualTo(0L);
+    assertThat(result.getLinesRead()).isZero();
+    assertThat(result.getLinesMapped()).isZero();
+    assertThat(result.getLinesFailedMapping()).isZero();
+    assertThat(result.getLinesCreated()).isZero();
+    assertThat(result.getLinesUpdated()).isZero();
+    assertThat(result.getLinesFailedSaving()).isZero();
   }
 
   @Test
@@ -136,7 +136,7 @@ class JobInfoServiceImplTest {
     var result = jobInfoService.getJobInfo(jobId);
 
     // then
-    assertThat(result.getLinesFailedSaving()).isEqualTo(0L);
+    assertThat(result.getLinesFailedSaving()).isZero();
     assertThat(result.getLinesFailedMapping()).isEqualTo(5L);
     assertThat(result.getStatus()).isEqualTo("FAILED");
   }
@@ -182,11 +182,95 @@ class JobInfoServiceImplTest {
     assertThat(result.getFileName()).isEqualTo(fileUrl);
     assertThat(result.getCurrentStep()).isEqualTo("cleaningStep");
     assertThat(result.getLinesRead()).isEqualTo(2500L);
-    assertThat(result.getLinesFailedMapping()).isEqualTo(0L);
+    assertThat(result.getLinesFailedMapping()).isZero();
     assertThat(result.getLinesMapped()).isEqualTo(2500L); // 1000 + 1000 + 500
     assertThat(result.getLinesCreated()).isEqualTo(2050L); // 800 + 850 + 400
     assertThat(result.getLinesUpdated()).isEqualTo(450L); // 200 + 150 + 100
     assertThat(result.getLinesFailedSaving()).isEqualTo(18L); // 10 + 5 + 3
+  }
+
+  @Test
+  void generateFailedLinesCsv_shouldReturnCsvWithHeader_givenNoFailedLines() throws Exception {
+    // given
+    var jobId = 123L;
+    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId)).thenReturn(List.of());
+
+    // when
+    var result = jobInfoService.generateFailedLinesCsv(jobId);
+
+    // then
+    var content = new String(result.getInputStream().readAllBytes());
+    assertThat(content).isEqualTo("lineNumber,description,failedRdfLine\n");
+  }
+
+  @Test
+  void generateFailedLinesCsv_shouldReturnCsvWithData_givenFailedLines() throws Exception {
+    // given
+    var jobId = 123L;
+    var line1 = new FailedRdfLine()
+      .setLineNumber(5L)
+      .setDescription("RDF parsing error")
+      .setFailedRdfLine("{\"@id\": \"invalid\"}");
+
+    var line2 = new FailedRdfLine()
+      .setLineNumber(10L)
+      .setDescription("Mapping failed")
+      .setFailedRdfLine("{\"test\": \"data\"}");
+
+    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
+      .thenReturn(List.of(line1, line2));
+
+    // when
+    var result = jobInfoService.generateFailedLinesCsv(jobId);
+
+    // then
+    var content = new String(result.getInputStream().readAllBytes());
+    assertThat(content).isEqualTo("""
+      lineNumber,description,failedRdfLine
+      5,RDF parsing error,"{""@id"": ""invalid""}"
+      10,Mapping failed,"{""test"": ""data""}"
+      """);
+  }
+
+  @Test
+  void generateFailedLinesCsv_shouldEscapeSpecialCharacters_givenCsvSpecialChars() throws Exception {
+    // given
+    var jobId = 123L;
+    var line = new FailedRdfLine()
+      .setLineNumber(1L)
+      .setDescription("Error with, comma and \"quotes\"")
+      .setFailedRdfLine("Line with\nnewline");
+
+    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
+      .thenReturn(List.of(line));
+
+    // when
+    var result = jobInfoService.generateFailedLinesCsv(jobId);
+
+    // then
+    var content = new String(result.getInputStream().readAllBytes());
+    assertThat(content).contains("\"Error with, comma and \"\"quotes\"\"\"")
+      .contains("\"Line with\nnewline\"");
+  }
+
+  @Test
+  void generateFailedLinesCsv_shouldHandleNullValues_givenNullFields() throws Exception {
+    // given
+    var jobId = 123L;
+    var line = new FailedRdfLine()
+      .setLineNumber(1L)
+      .setDescription(null)
+      .setFailedRdfLine(null);
+
+    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
+      .thenReturn(List.of(line));
+
+    // when
+    var result = jobInfoService.generateFailedLinesCsv(jobId);
+
+    // then
+    var content = new String(result.getInputStream().readAllBytes());
+    assertThat(content).isEqualTo("lineNumber,description,failedRdfLine\n1,,\n");
   }
 
   private ImportResultEvent createImportResultEvent(Long jobId, int resources, int created, int updated, int failed) {
@@ -201,4 +285,5 @@ class JobInfoServiceImplTest {
       .setFailedRdfLines(failedLines);
   }
 }
+
 

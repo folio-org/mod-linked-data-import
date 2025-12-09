@@ -1,19 +1,27 @@
 package org.folio.linked.data.imprt.service.job;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.function.ToLongFunction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.folio.linked.data.imprt.domain.dto.JobInfo;
+import org.folio.linked.data.imprt.exception.CsvGenerationException;
 import org.folio.linked.data.imprt.model.entity.ImportResultEvent;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionParamsRepo;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionRepo;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -21,6 +29,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JobInfoServiceImpl implements JobInfoService {
 
+  private static final CSVFormat FORMAT = CSVFormat.EXCEL.builder()
+    .setHeader("lineNumber", "description", "failedRdfLine")
+    .setRecordSeparator("\n")
+    .get();
   private final BatchJobExecutionRepo batchJobExecutionRepo;
   private final BatchJobExecutionParamsRepo batchJobExecutionParamsRepo;
   private final BatchStepExecutionRepo batchStepExecutionRepo;
@@ -60,5 +72,21 @@ public class JobInfoServiceImpl implements JobInfoService {
       .mapToLong(valueSupplier)
       .sum();
   }
+
+  @Override
+  public Resource generateFailedLinesCsv(Long jobId) {
+    var failedLines = failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId);
+    try (var writer = new StringWriter(); var csvPrinter = new CSVPrinter(writer, FORMAT)) {
+      for (var line : failedLines) {
+        csvPrinter.printRecord(line.getLineNumber(), line.getDescription(), line.getFailedRdfLine());
+      }
+      csvPrinter.flush();
+      return new ByteArrayResource(writer.toString().getBytes(UTF_8));
+    } catch (IOException e) {
+      log.error("Error generating CSV for jobId={}", jobId, e);
+      throw new CsvGenerationException("Failed to generate CSV for jobId: " + jobId, e);
+    }
+  }
+
 }
 

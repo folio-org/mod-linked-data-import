@@ -33,6 +33,12 @@
           "pathPattern": "/linked-data-import/jobs/{jobId}",
           "permissionsRequired": [ "linked-data-import.job.get" ],
           "modulePermissions": []
+        },
+        {
+          "methods": [ "GET" ],
+          "pathPattern": "/linked-data-import/jobs/{jobId}/failed-lines",
+          "permissionsRequired": [ "linked-data-import.job.failed-lines.get" ],
+          "modulePermissions": []
         }
       ]
     }
@@ -53,6 +59,11 @@
       "permissionName": "linked-data-import.job.get",
       "displayName": "Linked Data Import: Get import job information",
       "description": "Get import job information by job ID"
+    },
+    {
+      "permissionName": "linked-data-import.job.failed-lines.get",
+      "displayName": "Linked Data Import: Download failed RDF lines",
+      "description": "Download CSV file with failed RDF lines for a job"
     }
   ],
   "launchDescriptor": {

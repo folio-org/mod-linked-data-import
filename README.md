@@ -45,6 +45,17 @@ The response includes job information such as:
 - `linesUpdated`: Resources updated
 - `linesFailedSaving`: Lines failed during saving
 
+## To download failed RDF lines as CSV file:
+```
+GET /linked-data-import/jobs/{jobId}/failed-lines
+x-okapi-tenant: {tenantId}
+x-okapi-token: {token}
+```
+The CSV file contains:
+- `lineNumber`: Line number in the original file
+- `description`: Error description
+- `failedRdfLine`: The RDF line content that failed
+
 ## File Format & Contents
 
 1. The file must be in **JSON Lines (jsonl)** format.

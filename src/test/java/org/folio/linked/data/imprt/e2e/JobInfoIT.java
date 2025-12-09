@@ -45,7 +45,7 @@ class JobInfoIT {
   @Test
   void getJobInfo_shouldReturnJobInformation_givenCompletedJob() throws Exception {
     // given
-    var fileName = "failing_saving_records_json.rdf";
+    var fileName = "rdf/failing_mapping_and_saving_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/" + fileName);
     s3Client.write(fileName, input);
     var startRequestBuilder = post(PATH_START_IMPORT)
@@ -74,15 +74,46 @@ class JobInfoIT {
     assertThat(jobInfo.getStartDate()).isNotNull();
     assertThat(jobInfo.getEndDate()).isNotNull();
     assertThat(jobInfo.getStartedBy()).isNotNull();
-    assertThat(jobInfo.getStatus()).isIn("COMPLETED");
+    assertThat(jobInfo.getStatus()).isEqualTo("COMPLETED");
     assertThat(jobInfo.getFileName()).isEqualTo(fileName);
     assertThat(jobInfo.getCurrentStep()).isNull();
     assertThat(jobInfo.getLinesRead()).isEqualTo(3L);
-    assertThat(jobInfo.getLinesMapped()).isEqualTo(3L);
-    assertThat(jobInfo.getLinesFailedMapping()).isEqualTo(0L);
-    assertThat(jobInfo.getLinesCreated()).isEqualTo(2L);
-    assertThat(jobInfo.getLinesUpdated()).isEqualTo(0L);
+    assertThat(jobInfo.getLinesMapped()).isEqualTo(2L);
+    assertThat(jobInfo.getLinesFailedMapping()).isEqualTo(1L);
+    assertThat(jobInfo.getLinesCreated()).isEqualTo(1L);
+    assertThat(jobInfo.getLinesUpdated()).isZero();
     assertThat(jobInfo.getLinesFailedSaving()).isEqualTo(1L);
+  }
+
+  @Test
+  void getFailedLines_shouldReturnCsvFile_givenJobWithFailedLines() throws Exception {
+    // given
+    var fileName = "rdf/failing_mapping_and_saving_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/" + fileName);
+    s3Client.write(fileName, input);
+    var startRequestBuilder = post(PATH_START_IMPORT)
+      .param(FILE_URL, fileName)
+      .headers(defaultHeaders());
+    var startResult = mockMvc.perform(startRequestBuilder)
+      .andExpect(status().isOk())
+      .andReturn();
+    var jobId = Long.parseLong(startResult.getResponse().getContentAsString());
+    awaitJobCompletion(jobId, jdbcTemplate, tenantScopedExecutionService);
+    var getFailedLinesRequest = get(JOBS_API_PATH + jobId + "/failed-lines")
+      .headers(defaultHeaders());
+    var expectedCsvFileName = "/failing_mapping_and_saving_records_report.csv";
+    byte[] expectedCsvBytes = this.getClass().getResourceAsStream(expectedCsvFileName).readAllBytes();
+
+    // when
+    var csvResult = mockMvc.perform(getFailedLinesRequest)
+      .andExpect(status().isOk())
+      .andReturn();
+
+    // then
+    var contentType = csvResult.getResponse().getContentType();
+    assertThat(contentType).isEqualTo("text/csv");
+    var csvContentBytes = csvResult.getResponse().getContentAsByteArray();
+    assertThat(csvContentBytes).isEqualTo(expectedCsvBytes);
   }
 }
 
