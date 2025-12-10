@@ -11,8 +11,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class JobCompletionService {
 
-  private final Map<Long, CountDownLatch> jobLatches = new ConcurrentHashMap<>();
-  private final Map<Long, Long> expectedCounts = new ConcurrentHashMap<>();
+  private final Map<Long, CountDownLatch> jobLatches;
+  private final Map<Long, Long> expectedCounts;
+
+  public JobCompletionService() {
+    this.jobLatches = new ConcurrentHashMap<>();
+    this.expectedCounts = new ConcurrentHashMap<>();
+  }
 
   public boolean awaitCompletion(Long jobExecutionId, Long expectedLineCount, long timeout, TimeUnit timeUnit)
     throws InterruptedException {

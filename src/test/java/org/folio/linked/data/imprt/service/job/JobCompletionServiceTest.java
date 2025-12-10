@@ -1,7 +1,10 @@
 package org.folio.linked.data.imprt.service.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -20,46 +23,54 @@ class JobCompletionServiceTest {
     "3, 10, 5, false"     // count less than expected
   })
   void checkAndCompleteJob_shouldHandleDifferentCounts(
-    long jobExecutionId, long expectedCount, long processedCount, boolean shouldComplete) throws InterruptedException {
+    long jobExecutionId, long expectedCount, long processedCount, boolean shouldComplete) throws Exception {
     // given
     var timeoutMs = shouldComplete ? 1000 : 100;
 
-    // when
-    if (shouldComplete) {
-      new Thread(() -> {
-        try {
-          Thread.sleep(100);
-          service.checkAndCompleteJob(jobExecutionId, processedCount);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }).start();
-    } else {
-      service.checkAndCompleteJob(jobExecutionId, processedCount);
-    }
+    // when - start awaitCompletion in separate thread
+    var awaitFuture = CompletableFuture.supplyAsync(() -> {
+      try {
+        return service.awaitCompletion(jobExecutionId, expectedCount, timeoutMs, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    });
 
-    var completed = service.awaitCompletion(jobExecutionId, expectedCount, timeoutMs, TimeUnit.MILLISECONDS);
+    // Give time for latch registration
+    await().pollDelay(Duration.ofMillis(10))
+      .atMost(Duration.ofMillis(100))
+      .until(() -> true);
+
+    service.checkAndCompleteJob(jobExecutionId, processedCount);
+    var completed = awaitFuture.get();
 
     // then
     assertThat(completed).isEqualTo(shouldComplete);
   }
 
   @Test
-  void completeJob_shouldCompleteAndCleanupJobImmediately() throws InterruptedException {
+  void completeJob_shouldCompleteAndCleanupJobImmediately() throws Exception {
     // given
     var jobExecutionId = 4L;
 
-    // when
-    new Thread(() -> {
+    // when - start awaitCompletion in separate thread
+    var awaitFuture = CompletableFuture.supplyAsync(() -> {
       try {
-        Thread.sleep(100);
-        service.completeJob(jobExecutionId);
+        return service.awaitCompletion(jobExecutionId, 100L, 1, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
+        return false;
       }
-    }).start();
+    });
 
-    var completed = service.awaitCompletion(jobExecutionId, 100L, 1, TimeUnit.SECONDS);
+    // Give time for latch registration
+    await().pollDelay(Duration.ofMillis(10))
+      .atMost(Duration.ofMillis(100))
+      .until(() -> true);
+
+    service.completeJob(jobExecutionId);
+    var completed = awaitFuture.get();
 
     // then
     assertThat(completed).isTrue();

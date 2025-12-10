@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.folio.linked.data.imprt.model.entity.BatchJobExecution;
 import org.folio.linked.data.imprt.model.entity.FailedRdfLine;
 import org.folio.linked.data.imprt.model.entity.ImportResultEvent;
@@ -199,7 +200,7 @@ class JobInfoServiceImplTest {
   void generateFailedLinesCsv_shouldReturnCsvWithHeader_givenNoFailedLines() throws Exception {
     // given
     var jobId = 123L;
-    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId)).thenReturn(List.of());
+    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId)).thenReturn(Stream.empty());
 
     // when
     var result = jobInfoService.generateFailedLinesCsv(jobId);
@@ -224,7 +225,7 @@ class JobInfoServiceImplTest {
       .setFailedRdfLine("{\"test\": \"data\"}");
 
     when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
-      .thenReturn(List.of(line1, line2));
+      .thenReturn(Stream.of(line1, line2));
 
     // when
     var result = jobInfoService.generateFailedLinesCsv(jobId);
@@ -248,7 +249,7 @@ class JobInfoServiceImplTest {
       .setFailedRdfLine("Line with\nnewline");
 
     when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
-      .thenReturn(List.of(line));
+      .thenReturn(Stream.of(line));
 
     // when
     var result = jobInfoService.generateFailedLinesCsv(jobId);
@@ -269,7 +270,7 @@ class JobInfoServiceImplTest {
       .setFailedRdfLine(null);
 
     when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
-      .thenReturn(List.of(line));
+      .thenReturn(Stream.of(line));
 
     // when
     var result = jobInfoService.generateFailedLinesCsv(jobId);
