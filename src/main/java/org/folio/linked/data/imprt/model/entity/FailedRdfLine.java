@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 @Data
@@ -26,6 +27,7 @@ public class FailedRdfLine {
   @GeneratedValue(strategy = SEQUENCE, generator = FAILED_RDF_LINE_SEQ_GEN)
   private Long id;
   @ManyToOne
+  @ToString.Exclude
   @JoinColumn(name = "import_result_event_id")
   private ImportResultEvent importResultEvent;
   private Long jobInstanceId;

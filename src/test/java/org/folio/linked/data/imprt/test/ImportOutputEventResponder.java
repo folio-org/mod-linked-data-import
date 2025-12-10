@@ -28,7 +28,7 @@ public class ImportOutputEventResponder {
   @Autowired
   private KafkaTemplate<String, ImportResultEvent> importResultEventProducer;
 
-  @KafkaListener(topics = "folio.test_tenant.linked_data_import.output")
+  @KafkaListener(topics = "folio.test_tenant.linked_data_import.output", groupId = "test-import-output-responder")
   public void receive(ConsumerRecord<?, ?> consumerRecord) {
     log.info("received consumerRecord = [{}]", consumerRecord.toString());
     var messageValue = consumerRecord.value().toString();

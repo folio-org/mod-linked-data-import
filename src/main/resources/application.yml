@@ -84,7 +84,7 @@ mod-linked-data-import:
   job-pool-size: ${JOB_POOL_SIZE:1}
   chunk-size: ${CHUNK_SIZE:1000}
   output-chunk-size: ${OUTPUT_CHUNK_SIZE:100}
-  wait-for-processing-interval-ms: ${WAIT_FOR_PROCESSING_INTERVAL_MS:5000}
+  wait-for-processing-lines-per-minute: ${WAIT_FOR_PROCESSING_LINES_PER_MINUTE:500}
   process-file:
     max-pool-size: ${PROCESS_FILE_MAX_POOL_SIZE:1000}
   kafka:

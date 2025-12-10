@@ -1,18 +1,23 @@
 package org.folio.linked.data.imprt.batch.job.tasklet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.TimeUnit;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
-import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
-import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
+import org.folio.linked.data.imprt.service.job.JobCompletionService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,44 +38,75 @@ class WaitForSavingTaskletTest {
   @Mock
   private BatchStepExecutionRepo batchStepExecutionRepo;
   @Mock
-  private ImportResultEventRepo importResultEventRepo;
-  @Mock
-  private FailedRdfLineRepo failedRdfLineRepo;
+  private JobCompletionService jobCompletionService;
   @InjectMocks
   private WaitForSavingTasklet tasklet;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(tasklet, "waitIntervalMs", 100);
+    ReflectionTestUtils.setField(tasklet, "linesPerMinute", 500);
   }
 
   @ParameterizedTest
   @CsvSource({
-    "100, 90, 10, FINISHED",    // processing complete: 90 + 10 = 100
-    "100, 40, 5, CONTINUABLE",   // processing incomplete: 40 + 5 < 100
-    "100, 150, 10, FINISHED",    // processed count exceeds read count
-    "0, 0, 0, FINISHED",         // no lines read
-    "100, 0, 100, FINISHED"      // only failed lines
+    "100, true, 1",         // 100 lines -> 0.2 min calculated, rounded to 1
+    "500, true, 1",         // 500 lines -> 1 min calculated
+    "2500, true, 5",        // 2500 lines -> 5 min calculated
+    "10000, true, 20",      // 10000 lines -> 20 min calculated
+    "100, false, 1",        // timeout case
+    "0, true, 1"            // no lines to process
   })
-  void execute_shouldReturnCorrectStatus_givenDifferentCounts(
-    long readCount, long processedCount, long failedCount, RepeatStatus expectedStatus) throws InterruptedException {
+  void execute_shouldCalculateTimeoutDynamically_givenDifferentLineCounts(
+    long readCount, boolean completedSuccessfully, long expectedTimeoutMinutes) throws InterruptedException {
     // given
     var jobInstanceId = 123L;
     var chunkContext = mockChunkContext(jobInstanceId);
     var stepContribution = mock(StepContribution.class);
     when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(readCount);
+
     if (readCount > 0) {
-      when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(processedCount);
-      when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(failedCount);
+      when(jobCompletionService.awaitCompletion(eq(jobInstanceId), eq(readCount), anyLong(), any(TimeUnit.class)))
+        .thenReturn(completedSuccessfully);
     }
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
 
     // then
-    assertThat(result).isEqualTo(expectedStatus);
+    assertThat(result).isEqualTo(RepeatStatus.FINISHED);
+
+    if (readCount > 0) {
+      var timeoutCaptor = ArgumentCaptor.forClass(Long.class);
+      verify(jobCompletionService).awaitCompletion(eq(jobInstanceId), eq(readCount), timeoutCaptor.capture(),
+        eq(TimeUnit.MINUTES));
+      assertThat(timeoutCaptor.getValue()).isEqualTo(expectedTimeoutMinutes);
+    }
   }
 
+  @ParameterizedTest
+  @CsvSource({
+    "0, 1",           // edge case: 0 lines
+    "1, 1",           // 1 line -> 1 min (rounded up from 0.002)
+    "100, 1",         // 100 lines -> 1 min (rounded up from 0.2)
+    "499, 1",         // 499 lines -> 1 min (rounded up from 0.998)
+    "500, 1",         // 500 lines -> 1 min
+    "501, 2",         // 501 lines -> 2 min (rounded up from 1.002)
+    "2500, 5",        // 2500 lines -> 5 min
+    "3000, 6",        // 3000 lines -> 6 min
+    "10000, 20",      // 10000 lines -> 20 min
+    "25000, 50",      // 25000 lines -> 50 min
+    "100000, 200"     // 100000 lines -> 200 min
+  })
+  void calculateTimeout_shouldReturnCorrectValue(long lineCount, long expectedTimeout) {
+    // given
+    ReflectionTestUtils.setField(tasklet, "linesPerMinute", 500);
+
+    // when
+    var timeout = (long) ReflectionTestUtils.invokeMethod(tasklet, "calculateTimeout", lineCount);
+
+    // then
+    assertThat(timeout).isEqualTo(expectedTimeout);
+  }
 
   private ChunkContext mockChunkContext(Long jobInstanceId) {
     var chunkContext = mock(ChunkContext.class);

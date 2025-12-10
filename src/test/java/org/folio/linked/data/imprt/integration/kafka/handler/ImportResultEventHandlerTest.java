@@ -14,8 +14,10 @@ import java.util.Set;
 import org.folio.linked.data.imprt.model.entity.FailedRdfLine;
 import org.folio.linked.data.imprt.model.mapper.ImportResultEventMapper;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionParamsRepo;
+import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
 import org.folio.linked.data.imprt.service.file.FileService;
+import org.folio.linked.data.imprt.service.job.JobCompletionService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,23 +39,33 @@ class ImportResultEventHandlerTest {
   private ImportResultEventRepo importResultEventRepo;
 
   @Mock
+  private FailedRdfLineRepo failedRdfLineRepo;
+
+  @Mock
   private ImportResultEventMapper importResultEventMapper;
 
   @Mock
   private BatchJobExecutionParamsRepo batchJobExecutionParamsRepo;
 
+  @Mock
+  private JobCompletionService jobCompletionService;
+
   @Test
   void handle_shouldSaveEntityWithoutFailedLines() {
     // given
-    var dto = createImportResultEventDto(123L);
-    var entity = createImportResultEvent(123L);
+    var jobInstanceId = 123L;
+    var dto = createImportResultEventDto(jobInstanceId);
+    var entity = createImportResultEvent(jobInstanceId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(10L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(0L);
 
     // when
     handler.handle(dto);
 
     // then
     verify(importResultEventRepo).save(entity);
+    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 10L);
   }
 
   @Test
@@ -70,6 +82,8 @@ class ImportResultEventHandlerTest {
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("RDF line content");
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(20L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(5L);
 
     // when
     handler.handle(dto);
@@ -77,6 +91,7 @@ class ImportResultEventHandlerTest {
     // then
     verify(fileService, times(2)).readLineFromFile(eq(fileUrl), anyLong());
     verify(importResultEventRepo).save(entity);
+    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 25L);
   }
 
   @Test
@@ -90,12 +105,15 @@ class ImportResultEventHandlerTest {
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.empty());
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(0L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(0L);
 
     // when
     handler.handle(dto);
 
     // then
     verify(importResultEventRepo).save(entity);
+    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 0L);
   }
 
   @Test
@@ -111,6 +129,8 @@ class ImportResultEventHandlerTest {
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(fileUrl, 999L)).thenReturn(null);
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(5L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(2L);
 
     // when
     handler.handle(dto);
@@ -118,6 +138,7 @@ class ImportResultEventHandlerTest {
     // then
     verify(fileService).readLineFromFile(fileUrl, 999L);
     verify(importResultEventRepo).save(entity);
+    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 7L);
   }
 
   @Test
@@ -133,6 +154,8 @@ class ImportResultEventHandlerTest {
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("test content");
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(100L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(10L);
 
     // when
     handler.handle(dto);
@@ -140,6 +163,7 @@ class ImportResultEventHandlerTest {
     // then
     verify(batchJobExecutionParamsRepo).findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
     verify(fileService).readLineFromFile(eq(fileUrl), anyLong());
+    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 110L);
   }
 
   @Test
@@ -153,12 +177,15 @@ class ImportResultEventHandlerTest {
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.empty());
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(50L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(5L);
 
     // when
     handler.handle(dto);
 
     // then
     verify(batchJobExecutionParamsRepo).findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
+    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 55L);
   }
 }
 
