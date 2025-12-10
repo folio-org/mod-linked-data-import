@@ -28,28 +28,27 @@ public class WaitForSavingTasklet implements Tasklet {
   @Override
   public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
     throws InterruptedException {
-    var jobInstanceId = chunkContext.getStepContext()
+    var jobExecutionId = chunkContext.getStepContext()
       .getStepExecution()
       .getJobExecution()
-      .getJobInstance()
-      .getInstanceId();
+      .getId();
 
-    var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId);
+    var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId);
     if (totalReadCount == 0) {
-      log.info("No lines read for job instance {}", jobInstanceId);
+      log.info("No lines read for job execution {}", jobExecutionId);
       return RepeatStatus.FINISHED;
     }
 
     var timeout = calculateTimeout(totalReadCount);
-    log.info("Waiting for job {} completion. Total lines to process: {}, calculated timeout: {} minutes",
-      jobInstanceId, totalReadCount, timeout);
+    log.info("Waiting for job execution {} completion. Total lines to process: {}, calculated timeout: {} minutes",
+      jobExecutionId, totalReadCount, timeout);
 
-    var completed = jobCompletionService.awaitCompletion(jobInstanceId, totalReadCount, timeout, MINUTES);
+    var completed = jobCompletionService.awaitCompletion(jobExecutionId, totalReadCount, timeout, MINUTES);
 
     if (completed) {
-      log.info("Processing completed for job instance {}", jobInstanceId);
+      log.info("Processing completed for job execution {}", jobExecutionId);
     } else {
-      log.error("Timeout waiting for job instance {} to complete after {} minutes", jobInstanceId, timeout);
+      log.error("Timeout waiting for job execution {} to complete after {} minutes", jobExecutionId, timeout);
     }
 
     return RepeatStatus.FINISHED;

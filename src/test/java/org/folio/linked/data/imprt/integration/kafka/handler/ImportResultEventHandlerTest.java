@@ -11,9 +11,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.Set;
+import org.folio.linked.data.imprt.model.entity.BatchJobExecution;
 import org.folio.linked.data.imprt.model.entity.FailedRdfLine;
 import org.folio.linked.data.imprt.model.mapper.ImportResultEventMapper;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionParamsRepo;
+import org.folio.linked.data.imprt.repo.BatchJobExecutionRepo;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
 import org.folio.linked.data.imprt.service.file.FileService;
@@ -48,42 +50,55 @@ class ImportResultEventHandlerTest {
   private BatchJobExecutionParamsRepo batchJobExecutionParamsRepo;
 
   @Mock
+  private BatchJobExecutionRepo batchJobExecutionRepo;
+
+  @Mock
   private JobCompletionService jobCompletionService;
 
   @Test
   void handle_shouldSaveEntityWithoutFailedLines() {
     // given
     var jobInstanceId = 123L;
+    var jobExecutionId = 456L;
     var dto = createImportResultEventDto(jobInstanceId);
     var entity = createImportResultEvent(jobInstanceId);
+    var jobExecution = new BatchJobExecution();
+    jobExecution.setJobExecutionId(jobExecutionId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(10L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(0L);
+    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId))
+      .thenReturn(Optional.of(jobExecution));
 
     // when
     handler.handle(dto);
 
     // then
     verify(importResultEventRepo).save(entity);
-    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 10L);
+    verify(jobCompletionService).checkAndCompleteJob(jobExecutionId, 10L);
   }
 
   @Test
   void handle_shouldReadFailedLinesFromFileAndSaveEntity() {
     // given
     var jobInstanceId = 123L;
+    var jobExecutionId = 456L;
     var dto = createImportResultEventDto(jobInstanceId);
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine1 = new FailedRdfLine().setId(1L).setLineNumber(5L);
     var failedLine2 = new FailedRdfLine().setId(2L).setLineNumber(10L);
     entity.setFailedRdfLines(Set.of(failedLine1, failedLine2));
     var fileUrl = "s3://bucket/test-file.txt";
+    var jobExecution = new BatchJobExecution();
+    jobExecution.setJobExecutionId(jobExecutionId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("RDF line content");
     when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(20L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(5L);
+    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId))
+      .thenReturn(Optional.of(jobExecution));
 
     // when
     handler.handle(dto);
@@ -91,46 +106,56 @@ class ImportResultEventHandlerTest {
     // then
     verify(fileService, times(2)).readLineFromFile(eq(fileUrl), anyLong());
     verify(importResultEventRepo).save(entity);
-    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 25L);
+    verify(jobCompletionService).checkAndCompleteJob(jobExecutionId, 25L);
   }
 
   @Test
   void handle_shouldSetErrorMessageWhenFileUrlNotFound() {
     // given
     var jobInstanceId = 123L;
+    var jobExecutionId = 456L;
     var dto = createImportResultEventDto(jobInstanceId);
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(5L);
     entity.setFailedRdfLines(Set.of(failedLine));
+    var jobExecution = new BatchJobExecution();
+    jobExecution.setJobExecutionId(jobExecutionId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.empty());
     when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(0L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(0L);
+    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId))
+      .thenReturn(Optional.of(jobExecution));
 
     // when
     handler.handle(dto);
 
     // then
     verify(importResultEventRepo).save(entity);
-    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 0L);
+    verify(jobCompletionService).checkAndCompleteJob(jobExecutionId, 0L);
   }
 
   @Test
   void handle_shouldHandleNullLineContentFromFile() {
     // given
     var jobInstanceId = 123L;
+    var jobExecutionId = 456L;
     var dto = createImportResultEventDto(jobInstanceId);
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(999L);
     entity.setFailedRdfLines(Set.of(failedLine));
     var fileUrl = "s3://bucket/test-file.txt";
+    var jobExecution = new BatchJobExecution();
+    jobExecution.setJobExecutionId(jobExecutionId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(fileUrl, 999L)).thenReturn(null);
     when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(5L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(2L);
+    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId))
+      .thenReturn(Optional.of(jobExecution));
 
     // when
     handler.handle(dto);
@@ -138,24 +163,29 @@ class ImportResultEventHandlerTest {
     // then
     verify(fileService).readLineFromFile(fileUrl, 999L);
     verify(importResultEventRepo).save(entity);
-    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 7L);
+    verify(jobCompletionService).checkAndCompleteJob(jobExecutionId, 7L);
   }
 
   @Test
   void getFileUrl_shouldReturnFileUrlWhenParameterExists() {
     // given
     var jobInstanceId = 123L;
-    var fileUrl = "s3://bucket/test-file.txt";
+    var jobExecutionId = 456L;
     var dto = createImportResultEventDto(jobInstanceId);
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(1L);
     entity.setFailedRdfLines(Set.of(failedLine));
+    var jobExecution = new BatchJobExecution();
+    jobExecution.setJobExecutionId(jobExecutionId);
+    var fileUrl = "s3://bucket/test-file.txt";
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("test content");
     when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(100L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(10L);
+    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId))
+      .thenReturn(Optional.of(jobExecution));
 
     // when
     handler.handle(dto);
@@ -163,29 +193,34 @@ class ImportResultEventHandlerTest {
     // then
     verify(batchJobExecutionParamsRepo).findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
     verify(fileService).readLineFromFile(eq(fileUrl), anyLong());
-    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 110L);
+    verify(jobCompletionService).checkAndCompleteJob(jobExecutionId, 110L);
   }
 
   @Test
   void getFileUrl_shouldReturnEmptyWhenParameterDoesNotExist() {
     // given
     var jobInstanceId = 123L;
+    var jobExecutionId = 456L;
     var dto = createImportResultEventDto(jobInstanceId);
     var entity = createImportResultEvent(jobInstanceId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(1L);
     entity.setFailedRdfLines(Set.of(failedLine));
+    var jobExecution = new BatchJobExecution();
+    jobExecution.setJobExecutionId(jobExecutionId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
       .thenReturn(Optional.empty());
     when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(50L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(5L);
+    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId))
+      .thenReturn(Optional.of(jobExecution));
 
     // when
     handler.handle(dto);
 
     // then
     verify(batchJobExecutionParamsRepo).findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
-    verify(jobCompletionService).checkAndCompleteJob(jobInstanceId, 55L);
+    verify(jobCompletionService).checkAndCompleteJob(jobExecutionId, 55L);
   }
 }
 

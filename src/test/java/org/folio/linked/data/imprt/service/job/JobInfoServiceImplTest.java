@@ -51,8 +51,10 @@ class JobInfoServiceImplTest {
   void getJobInfo_shouldReturnJobInfoWithNullValues_givenNoParameters() {
     // given
     var jobId = 123L;
+    var jobExecutionId = 456L;
     var jobExecution = new BatchJobExecution();
     jobExecution.setJobInstanceId(jobId);
+    jobExecution.setJobExecutionId(jobExecutionId);
     jobExecution.setStartTime(LocalDateTime.of(2025, 12, 9, 8, 0, 0));
     jobExecution.setEndTime(LocalDateTime.of(2025, 12, 9, 9, 30, 0));
     jobExecution.setStatus(BatchStatus.FAILED);
@@ -63,7 +65,7 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.empty());
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.empty());
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
       .thenReturn(0L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);
@@ -106,8 +108,10 @@ class JobInfoServiceImplTest {
   void getJobInfo_shouldCalculateCorrectly_givenEmptyFailedRdfLines() {
     // given
     var jobId = 123L;
+    var jobExecutionId = 456L;
     var jobExecution = new BatchJobExecution();
     jobExecution.setJobInstanceId(jobId);
+    jobExecution.setJobExecutionId(jobExecutionId);
     jobExecution.setStartTime(LocalDateTime.of(2025, 12, 9, 15, 45, 30));
     jobExecution.setEndTime(LocalDateTime.of(2025, 12, 9, 15, 50, 0));
     jobExecution.setStatus(BatchStatus.FAILED);
@@ -125,7 +129,7 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.of("file.rdf"));
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.of("user-123"));
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
       .thenReturn(15L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(5L);
@@ -145,8 +149,10 @@ class JobInfoServiceImplTest {
   void getJobInfo_shouldHandleMultipleImportResults() {
     // given
     var jobId = 456L;
+    var jobExecutionId = 789L;
     var jobExecution = new BatchJobExecution();
     jobExecution.setJobInstanceId(jobId);
+    jobExecution.setJobExecutionId(jobExecutionId);
     jobExecution.setStartTime(LocalDateTime.of(2025, 12, 9, 8, 0, 0));
     jobExecution.setStatus(BatchStatus.STARTED);
 
@@ -163,7 +169,7 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.of(fileUrl));
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.of(startedBy));
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
       .thenReturn(2500L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);

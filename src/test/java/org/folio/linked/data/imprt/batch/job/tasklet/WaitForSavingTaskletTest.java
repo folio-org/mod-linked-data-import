@@ -22,7 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -59,13 +58,13 @@ class WaitForSavingTaskletTest {
   void execute_shouldCalculateTimeoutDynamically_givenDifferentLineCounts(
     long readCount, boolean completedSuccessfully, long expectedTimeoutMinutes) throws InterruptedException {
     // given
-    var jobInstanceId = 123L;
-    var chunkContext = mockChunkContext(jobInstanceId);
+    var jobExecutionId = 456L;
+    var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(readCount);
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(readCount);
 
     if (readCount > 0) {
-      when(jobCompletionService.awaitCompletion(eq(jobInstanceId), eq(readCount), anyLong(), any(TimeUnit.class)))
+      when(jobCompletionService.awaitCompletion(eq(jobExecutionId), eq(readCount), anyLong(), any(TimeUnit.class)))
         .thenReturn(completedSuccessfully);
     }
 
@@ -77,7 +76,7 @@ class WaitForSavingTaskletTest {
 
     if (readCount > 0) {
       var timeoutCaptor = ArgumentCaptor.forClass(Long.class);
-      verify(jobCompletionService).awaitCompletion(eq(jobInstanceId), eq(readCount), timeoutCaptor.capture(),
+      verify(jobCompletionService).awaitCompletion(eq(jobExecutionId), eq(readCount), timeoutCaptor.capture(),
         eq(TimeUnit.MINUTES));
       assertThat(timeoutCaptor.getValue()).isEqualTo(expectedTimeoutMinutes);
     }
@@ -108,20 +107,18 @@ class WaitForSavingTaskletTest {
     assertThat(timeout).isEqualTo(expectedTimeout);
   }
 
-  private ChunkContext mockChunkContext(Long jobInstanceId) {
+  private ChunkContext mockChunkContext(Long jobExecutionId) {
     var chunkContext = mock(ChunkContext.class);
     var stepContext = mock(StepContext.class);
     var stepExecution = mock(StepExecution.class);
     var jobExecution = mock(JobExecution.class);
-    var jobInstance = mock(JobInstance.class);
     var executionContext = new ExecutionContext();
 
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobExecution()).thenReturn(jobExecution);
     lenient().when(stepExecution.getExecutionContext()).thenReturn(executionContext);
-    when(jobExecution.getJobInstance()).thenReturn(jobInstance);
-    when(jobInstance.getInstanceId()).thenReturn(jobInstanceId);
+    when(jobExecution.getId()).thenReturn(jobExecutionId);
     return chunkContext;
   }
 }

@@ -5,8 +5,10 @@ import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
+import org.folio.linked.data.imprt.model.entity.BatchJobExecution;
 import org.folio.linked.data.imprt.model.mapper.ImportResultEventMapper;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionParamsRepo;
+import org.folio.linked.data.imprt.repo.BatchJobExecutionRepo;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
 import org.folio.linked.data.imprt.service.file.FileService;
@@ -25,6 +27,7 @@ public class ImportResultEventHandler implements KafkaMessageHandler<ImportResul
   private final FailedRdfLineRepo failedRdfLineRepo;
   private final ImportResultEventMapper importResultEventMapper;
   private final BatchJobExecutionParamsRepo batchJobExecutionParamsRepo;
+  private final BatchJobExecutionRepo batchJobExecutionRepo;
   private final JobCompletionService jobCompletionService;
 
   @Override
@@ -48,7 +51,14 @@ public class ImportResultEventHandler implements KafkaMessageHandler<ImportResul
     var processedCount = importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId);
     var failedDuringMappingCount = failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId);
     var totalProcessedCount = processedCount + failedDuringMappingCount;
-    jobCompletionService.checkAndCompleteJob(jobInstanceId, totalProcessedCount);
+    var jobExecutionIdOpt = batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobInstanceId)
+      .map(BatchJobExecution::getJobExecutionId);
+
+    if (jobExecutionIdOpt.isPresent()) {
+      jobCompletionService.checkAndCompleteJob(jobExecutionIdOpt.get(), totalProcessedCount);
+    } else {
+      log.warn("No active job execution found for job instance {}", jobInstanceId);
+    }
   }
 
 }

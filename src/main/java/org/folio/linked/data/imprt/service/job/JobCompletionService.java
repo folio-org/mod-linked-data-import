@@ -14,41 +14,41 @@ public class JobCompletionService {
   private final Map<Long, CountDownLatch> jobLatches = new ConcurrentHashMap<>();
   private final Map<Long, Long> expectedCounts = new ConcurrentHashMap<>();
 
-  public boolean awaitCompletion(Long jobInstanceId, Long expectedLineCount, long timeout, TimeUnit timeUnit)
+  public boolean awaitCompletion(Long jobExecutionId, Long expectedLineCount, long timeout, TimeUnit timeUnit)
     throws InterruptedException {
-    var latch = jobLatches.computeIfAbsent(jobInstanceId, id -> {
-      log.info("Registering job {} with expected line count: {}", id, expectedLineCount);
+    var latch = jobLatches.computeIfAbsent(jobExecutionId, id -> {
+      log.info("Registering job execution {} with expected line count: {}", id, expectedLineCount);
       expectedCounts.put(id, expectedLineCount);
       return new CountDownLatch(1);
     });
 
-    log.info("Waiting for job {} completion with timeout {} {}", jobInstanceId, timeout, timeUnit);
+    log.info("Waiting for job execution {} completion with timeout {} {}", jobExecutionId, timeout, timeUnit);
     return latch.await(timeout, timeUnit);
   }
 
-  public void checkAndCompleteJob(Long jobInstanceId, Long totalProcessedCount) {
-    var expectedCount = expectedCounts.get(jobInstanceId);
+  public void checkAndCompleteJob(Long jobExecutionId, Long totalProcessedCount) {
+    var expectedCount = expectedCounts.get(jobExecutionId);
     if (expectedCount == null) {
-      log.debug("Job instance {} is not yet registered for completion", jobInstanceId);
+      log.debug("Job execution {} is not yet registered for completion", jobExecutionId);
       return;
     }
 
-    log.debug("Checking completion for job {}: processed={}, expected={}",
-      jobInstanceId, totalProcessedCount, expectedCount);
+    log.debug("Checking completion for job execution {}: processed={}, expected={}",
+      jobExecutionId, totalProcessedCount, expectedCount);
 
     if (totalProcessedCount >= expectedCount) {
-      completeJob(jobInstanceId);
+      completeJob(jobExecutionId);
     }
   }
 
-  public void completeJob(Long jobInstanceId) {
-    var latch = jobLatches.remove(jobInstanceId);
+  public void completeJob(Long jobExecutionId) {
+    var latch = jobLatches.remove(jobExecutionId);
     if (latch != null) {
-      log.info("Completing job {}", jobInstanceId);
+      log.info("Completing job execution {}", jobExecutionId);
       latch.countDown();
-      expectedCounts.remove(jobInstanceId);
+      expectedCounts.remove(jobExecutionId);
     } else {
-      log.debug("Job {} already completed in parallel thread", jobInstanceId);
+      log.debug("Job execution {} already completed in parallel thread", jobExecutionId);
     }
   }
 }

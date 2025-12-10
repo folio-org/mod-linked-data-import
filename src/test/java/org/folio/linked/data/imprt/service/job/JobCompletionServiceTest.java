@@ -20,7 +20,7 @@ class JobCompletionServiceTest {
     "3, 10, 5, false"     // count less than expected
   })
   void checkAndCompleteJob_shouldHandleDifferentCounts(
-    long jobInstanceId, long expectedCount, long processedCount, boolean shouldComplete) throws InterruptedException {
+    long jobExecutionId, long expectedCount, long processedCount, boolean shouldComplete) throws InterruptedException {
     // given
     var timeoutMs = shouldComplete ? 1000 : 100;
 
@@ -29,16 +29,16 @@ class JobCompletionServiceTest {
       new Thread(() -> {
         try {
           Thread.sleep(100);
-          service.checkAndCompleteJob(jobInstanceId, processedCount);
+          service.checkAndCompleteJob(jobExecutionId, processedCount);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
       }).start();
     } else {
-      service.checkAndCompleteJob(jobInstanceId, processedCount);
+      service.checkAndCompleteJob(jobExecutionId, processedCount);
     }
 
-    var completed = service.awaitCompletion(jobInstanceId, expectedCount, timeoutMs, TimeUnit.MILLISECONDS);
+    var completed = service.awaitCompletion(jobExecutionId, expectedCount, timeoutMs, TimeUnit.MILLISECONDS);
 
     // then
     assertThat(completed).isEqualTo(shouldComplete);
@@ -47,19 +47,19 @@ class JobCompletionServiceTest {
   @Test
   void completeJob_shouldCompleteAndCleanupJobImmediately() throws InterruptedException {
     // given
-    var jobInstanceId = 4L;
+    var jobExecutionId = 4L;
 
     // when
     new Thread(() -> {
       try {
         Thread.sleep(100);
-        service.completeJob(jobInstanceId);
+        service.completeJob(jobExecutionId);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
     }).start();
 
-    var completed = service.awaitCompletion(jobInstanceId, 100L, 1, TimeUnit.SECONDS);
+    var completed = service.awaitCompletion(jobExecutionId, 100L, 1, TimeUnit.SECONDS);
 
     // then
     assertThat(completed).isTrue();
