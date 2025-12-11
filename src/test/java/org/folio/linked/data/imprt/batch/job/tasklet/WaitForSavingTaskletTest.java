@@ -1,27 +1,24 @@
 package org.folio.linked.data.imprt.batch.job.tasklet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.TimeUnit;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
-import org.folio.linked.data.imprt.service.job.JobCompletionService;
+import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
+import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -37,88 +34,106 @@ class WaitForSavingTaskletTest {
   @Mock
   private BatchStepExecutionRepo batchStepExecutionRepo;
   @Mock
-  private JobCompletionService jobCompletionService;
+  private ImportResultEventRepo importResultEventRepo;
+  @Mock
+  private FailedRdfLineRepo failedRdfLineRepo;
   @InjectMocks
   private WaitForSavingTasklet tasklet;
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(tasklet, "linesPerMinute", 500);
+    ReflectionTestUtils.setField(tasklet, "waitIntervalMs", 100);
   }
 
-  @ParameterizedTest
-  @CsvSource({
-    "100, true, 1",         // 100 lines -> 0.2 min calculated, rounded to 1
-    "500, true, 1",         // 500 lines -> 1 min calculated
-    "2500, true, 5",        // 2500 lines -> 5 min calculated
-    "10000, true, 20",      // 10000 lines -> 20 min calculated
-    "100, false, 1",        // timeout case
-    "0, true, 1"            // no lines to process
-  })
-  void execute_shouldCalculateTimeoutDynamically_givenDifferentLineCounts(
-    long readCount, boolean completedSuccessfully, long expectedTimeoutMinutes) throws InterruptedException {
+  @Test
+  void execute_shouldReturnFinished_givenNoLinesRead() throws InterruptedException {
     // given
-    var jobExecutionId = 456L;
-    var chunkContext = mockChunkContext(jobExecutionId);
+    var jobInstanceId = 123L;
+    var chunkContext = mockChunkContext(jobInstanceId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(readCount);
-
-    if (readCount > 0) {
-      when(jobCompletionService.awaitCompletion(eq(jobExecutionId), eq(readCount), anyLong(), any(TimeUnit.class)))
-        .thenReturn(completedSuccessfully);
-    }
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(0L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
 
     // then
     assertThat(result).isEqualTo(RepeatStatus.FINISHED);
+  }
 
-    if (readCount > 0) {
-      var timeoutCaptor = ArgumentCaptor.forClass(Long.class);
-      verify(jobCompletionService).awaitCompletion(eq(jobExecutionId), eq(readCount), timeoutCaptor.capture(),
-        eq(TimeUnit.MINUTES));
-      assertThat(timeoutCaptor.getValue()).isEqualTo(expectedTimeoutMinutes);
-    }
+  @Test
+  void execute_shouldReturnFinished_givenAllLinesProcessed() throws InterruptedException {
+    // given
+    var jobInstanceId = 123L;
+    var chunkContext = mockChunkContext(jobInstanceId);
+    var stepContribution = mock(StepContribution.class);
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(100L);
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(90L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(10L);
+
+    // when
+    var result = tasklet.execute(stepContribution, chunkContext);
+
+    // then
+    assertThat(result).isEqualTo(RepeatStatus.FINISHED);
+  }
+
+  @Test
+  void execute_shouldReturnContinuable_givenLinesStillProcessing() throws InterruptedException {
+    // given
+    var jobInstanceId = 123L;
+    var chunkContext = mockChunkContext(jobInstanceId);
+    var stepContribution = mock(StepContribution.class);
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(100L);
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(50L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(5L);
+
+    // when
+    var result = tasklet.execute(stepContribution, chunkContext);
+
+    // then
+    assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
   }
 
   @ParameterizedTest
   @CsvSource({
-    "0, 1",           // edge case: 0 lines
-    "1, 1",           // 1 line -> 1 min (rounded up from 0.002)
-    "100, 1",         // 100 lines -> 1 min (rounded up from 0.2)
-    "499, 1",         // 499 lines -> 1 min (rounded up from 0.998)
-    "500, 1",         // 500 lines -> 1 min
-    "501, 2",         // 501 lines -> 2 min (rounded up from 1.002)
-    "2500, 5",        // 2500 lines -> 5 min
-    "3000, 6",        // 3000 lines -> 6 min
-    "10000, 20",      // 10000 lines -> 20 min
-    "25000, 50",      // 25000 lines -> 50 min
-    "100000, 200"     // 100000 lines -> 200 min
+    "100, 95, 5, true",      // 95 + 5 = 100, all processed
+    "100, 100, 0, true",     // 100 + 0 = 100, all processed
+    "100, 0, 100, true",     // 0 + 100 = 100, all failed
+    "100, 50, 49, false",    // 50 + 49 = 99 < 100, still processing
+    "100, 0, 0, false"       // 0 + 0 = 0 < 100, still processing
   })
-  void calculateTimeout_shouldReturnCorrectValue(long lineCount, long expectedTimeout) {
+  void execute_shouldCheckProcessingCompletion(
+    long totalRead, long processedCount, long failedCount, boolean shouldFinish) throws InterruptedException {
     // given
-    ReflectionTestUtils.setField(tasklet, "linesPerMinute", 500);
+    var jobInstanceId = 123L;
+    var chunkContext = mockChunkContext(jobInstanceId);
+    var stepContribution = mock(StepContribution.class);
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(totalRead);
+    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(processedCount);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(failedCount);
 
     // when
-    var timeout = (long) ReflectionTestUtils.invokeMethod(tasklet, "calculateTimeout", lineCount);
+    var result = tasklet.execute(stepContribution, chunkContext);
 
     // then
-    assertThat(timeout).isEqualTo(expectedTimeout);
+    var expectedStatus = shouldFinish ? RepeatStatus.FINISHED : RepeatStatus.CONTINUABLE;
+    assertThat(result).isEqualTo(expectedStatus);
   }
 
-  private ChunkContext mockChunkContext(Long jobExecutionId) {
+  private ChunkContext mockChunkContext(Long jobInstanceId) {
     var chunkContext = mock(ChunkContext.class);
     var stepContext = mock(StepContext.class);
     var stepExecution = mock(StepExecution.class);
     var jobExecution = mock(JobExecution.class);
+    var jobInstance = mock(JobInstance.class);
     var executionContext = new ExecutionContext();
 
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobExecution()).thenReturn(jobExecution);
     lenient().when(stepExecution.getExecutionContext()).thenReturn(executionContext);
-    when(jobExecution.getId()).thenReturn(jobExecutionId);
+    when(jobExecution.getJobInstance()).thenReturn(jobInstance);
+    when(jobInstance.getInstanceId()).thenReturn(jobInstanceId);
     return chunkContext;
   }
 }

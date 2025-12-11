@@ -66,7 +66,7 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.empty());
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.empty());
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
       .thenReturn(0L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);
@@ -130,7 +130,7 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.of("file.rdf"));
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.of("user-123"));
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
       .thenReturn(15L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(5L);
@@ -170,7 +170,7 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.of(fileUrl));
     when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.of(startedBy));
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
       .thenReturn(2500L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);

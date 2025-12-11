@@ -102,7 +102,7 @@ class JobInfoIT {
     var getFailedLinesRequest = get(JOBS_API_PATH + jobId + "/failed-lines")
       .headers(defaultHeaders());
     var expectedCsvFileName = "/failing_mapping_and_saving_records_report.csv";
-    byte[] expectedCsvBytes = this.getClass().getResourceAsStream(expectedCsvFileName).readAllBytes();
+    var expectedCsv = new String(this.getClass().getResourceAsStream(expectedCsvFileName).readAllBytes());
 
     // when
     var csvResult = mockMvc.perform(getFailedLinesRequest)
@@ -112,8 +112,8 @@ class JobInfoIT {
     // then
     var contentType = csvResult.getResponse().getContentType();
     assertThat(contentType).isEqualTo("text/csv");
-    var csvContentBytes = csvResult.getResponse().getContentAsByteArray();
-    assertThat(csvContentBytes).isEqualTo(expectedCsvBytes);
+    var csvContent = csvResult.getResponse().getContentAsString();
+    assertThat(csvContent).isEqualTo(expectedCsv);
   }
 }
 

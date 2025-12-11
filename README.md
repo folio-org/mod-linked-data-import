@@ -76,12 +76,6 @@ You can configure batch processing using following environment variables:
 2. OUTPUT_CHUNK_SIZE: Number of Graph resources sent to Kafka per chunk
 3. PROCESS_FILE_MAX_POOL_SIZE: Maximum threads used for parallel chunk processing
 
-The import job waits for all data to be processed by `mod-linked-data` via Kafka.
-The timeout is calculated dynamically based on the file size:
-- **Timeout (minutes) = max(ceil(totalLines / WAIT_FOR_PROCESSING_LINES_PER_MINUTE), 1)**
-- For example, with default settings (500 lines/min), a file with 50,000 lines will have a timeout of 100 minutes
-- Files with less than configured lines per minute will use a 1-minute timeout
-
 ## Interaction with mod-linked-data
 
 `mod-linked-data` uses the [Builde vocabulary](https://bibfra.me/) for representing graph data.
@@ -149,4 +143,4 @@ This value should be `true` if AWS S3 is used.
 | OUTPUT_CHUNK_SIZE                                        | 100                       | Number of Graph resources sent to Kafka per chunk                           |
 | JOB_POOL_SIZE                                            | 1                         | Number of concurrent Import Jobs                                            |
 | PROCESS_FILE_MAX_POOL_SIZE                               | 1000                      | Maximum threads used for parallel chunk processing                          |
-| WAIT_FOR_PROCESSING_LINES_PER_MINUTE                     | 500                       | Expected processing speed (lines per minute) for timeout calculation        |
+| WAIT_FOR_PROCESSING_INTERVAL_MS                          | 5000                      | Interval in milliseconds to wait between checks for processing completion   |

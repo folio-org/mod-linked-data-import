@@ -1,7 +1,6 @@
 mod-linked-data-import:
   chunk-size: 3
   output-chunk-size: 3
-  wait-for-processing-lines-per-minute: 100
 
 spring:
   kafka:

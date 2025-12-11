@@ -1,11 +1,10 @@
 package org.folio.linked.data.imprt.batch.job.tasklet;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
-import org.folio.linked.data.imprt.service.job.JobCompletionService;
+import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
+import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -20,43 +19,44 @@ import org.springframework.stereotype.Component;
 public class WaitForSavingTasklet implements Tasklet {
 
   private final BatchStepExecutionRepo batchStepExecutionRepo;
-  private final JobCompletionService jobCompletionService;
+  private final ImportResultEventRepo importResultEventRepo;
+  private final FailedRdfLineRepo failedRdfLineRepo;
 
-  @Value("${mod-linked-data-import.wait-for-processing-lines-per-minute:500}")
-  private int linesPerMinute;
+  @Value("${mod-linked-data-import.wait-for-processing-interval-ms}")
+  private int waitIntervalMs;
 
   @Override
   public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
     throws InterruptedException {
-    var jobExecutionId = chunkContext.getStepContext()
+    var jobInstanceId = chunkContext.getStepContext()
       .getStepExecution()
       .getJobExecution()
-      .getId();
+      .getJobInstance()
+      .getInstanceId();
 
-    var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId);
+    var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId);
     if (totalReadCount == 0) {
-      log.info("No lines read for job execution {}", jobExecutionId);
+      log.warn("No lines read for job instance {}", jobInstanceId);
       return RepeatStatus.FINISHED;
     }
 
-    var timeout = calculateTimeout(totalReadCount);
-    log.info("Waiting for job execution {} completion. Total lines to process: {}, calculated timeout: {} minutes",
-      jobExecutionId, totalReadCount, timeout);
+    var processedCount = importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId);
+    var failedDuringMappingCount = failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId);
+    var totalProcessedCount = processedCount + failedDuringMappingCount;
 
-    var completed = jobCompletionService.awaitCompletion(jobExecutionId, totalReadCount, timeout, MINUTES);
-
-    if (completed) {
-      log.info("Processing completed for job execution {}", jobExecutionId);
-    } else {
-      log.error("Timeout waiting for job execution {} to complete after {} minutes", jobExecutionId, timeout);
+    if (totalProcessedCount >= totalReadCount) {
+      log.info("Processing completed for job instance {}. Read: {}, Processed: {} (Successful: {}, "
+          + "Failed during mapping: {})", jobInstanceId, totalReadCount, totalProcessedCount, processedCount,
+        failedDuringMappingCount);
+      return RepeatStatus.FINISHED;
     }
 
-    return RepeatStatus.FINISHED;
-  }
+    log.debug("Processing not yet completed for job instance {}. Read: {}, Processed: {} (Successful: {}, "
+        + "Failed during mapping: {}). Waiting...", jobInstanceId, totalReadCount, totalProcessedCount, processedCount,
+      failedDuringMappingCount);
 
-  private long calculateTimeout(Long totalReadCount) {
-    var calculatedMinutes = (long) Math.ceil((double) totalReadCount / linesPerMinute);
-    return Math.max(calculatedMinutes, 1);
+    Thread.sleep(waitIntervalMs);
+    return RepeatStatus.CONTINUABLE;
   }
 
 

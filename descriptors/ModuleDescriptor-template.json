@@ -109,7 +109,7 @@
       { "name": "OUTPUT_CHUNK_SIZE", "value": "100" },
       { "name": "JOB_POOL_SIZE", "value": "1" },
       { "name": "PROCESS_FILE_MAX_POOL_SIZE", "value": "1000" },
-      { "name": "WAIT_FOR_PROCESSING_LINES_PER_MINUTE", "value": "500" }
+      { "name": "WAIT_FOR_PROCESSING_INTERVAL_MS", "value": "5000" }
     ]
   }
 }

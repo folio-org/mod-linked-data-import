@@ -44,7 +44,6 @@ public class JobInfoServiceImpl implements JobInfoService {
   public JobInfo getJobInfo(Long jobId) {
     var jobExecution = batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobId)
       .orElseThrow(() -> new IllegalArgumentException("Job execution not found for jobId: " + jobId));
-    var jobExecutionId = jobExecution.getJobExecutionId();
     var startDate = jobExecution.getStartTime().toString();
     var endDate = jobExecution.getEndTime() != null ? jobExecution.getEndTime().toString() : null;
     var startedBy = getJobParameter(jobId, STARTED_BY);
@@ -56,7 +55,7 @@ public class JobInfoServiceImpl implements JobInfoService {
     var importResults = importResultEventRepo.findAllByJobInstanceId(jobId);
     return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
-      .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
+      .linesRead(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
       .linesMapped(getSum(importResults, ImportResultEvent::getResourcesCount))
       .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .linesCreated(getSum(importResults, ImportResultEvent::getCreatedCount))

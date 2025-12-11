@@ -11,9 +11,10 @@ public interface BatchStepExecutionRepo extends JpaRepository<BatchStepExecution
 
   @Query(value = """
     SELECT SUM(s.read_count) FROM batch_step_execution s
-    WHERE s.job_execution_id = :jobExecutionId
+    JOIN batch_job_execution e ON s.job_execution_id = e.job_execution_id
+    WHERE e.job_instance_id = :jobInstanceId
     """, nativeQuery = true)
-  Long getTotalReadCountByJobExecutionId(Long jobExecutionId);
+  Long getTotalReadCountByJobInstanceId(Long jobInstanceId);
 
   @Query(value = """
     SELECT s.step_name FROM batch_step_execution s
