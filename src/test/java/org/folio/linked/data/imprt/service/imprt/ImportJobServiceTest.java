@@ -1,10 +1,10 @@
-package org.folio.linked.data.imprt.service;
+package org.folio.linked.data.imprt.service.imprt;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
-import static org.folio.linked.data.imprt.batch.job.Parameters.DATE_START;
 import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,8 +16,8 @@ import static org.mockito.Mockito.verify;
 
 import java.util.stream.Stream;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
-import org.folio.linked.data.imprt.service.imprt.ImportJobServiceImpl;
 import org.folio.linked.data.imprt.service.s3.S3Service;
+import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.exception.NotFoundException;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -51,6 +51,8 @@ class ImportJobServiceTest {
   private JobLauncher jobLauncher;
   @Mock
   private S3Service s3Service;
+  @Mock
+  private FolioExecutionContext folioExecutionContext;
 
   public static Stream<Arguments> jobLaunchExceptions() {
     return Stream.of(
@@ -67,6 +69,8 @@ class ImportJobServiceTest {
     // given
     var fileUrl = "http://example.com/file";
     doReturn(true).when(s3Service).exists(fileUrl);
+    var userId = java.util.UUID.randomUUID();
+    doReturn(userId).when(folioExecutionContext).getUserId();
     var jobExecutionMock = mock(JobExecution.class);
     doReturn(jobExecutionMock).when(jobLauncher).run(any(), any());
     var jobInstanceMock = mock(JobInstance.class);
@@ -83,7 +87,7 @@ class ImportJobServiceTest {
     verify(jobLauncher).run(eq(rdfImportJob), jobParametersCaptor.capture());
     assertThat(jobParametersCaptor.getValue().getParameter(FILE_URL).getValue()).isEqualTo(fileUrl);
     assertThat(jobParametersCaptor.getValue().getParameter(CONTENT_TYPE).getValue()).isEqualTo(contentType);
-    assertThat(jobParametersCaptor.getValue().getParameter(DATE_START)).isNotNull();
+    assertThat(jobParametersCaptor.getValue().getParameter(STARTED_BY).getValue()).isEqualTo(userId.toString());
     assertThat(jobParametersCaptor.getValue().getParameter(DEFAULT_WORK_TYPE).getValue()).isEqualTo(defaultWorkType);
   }
 
@@ -94,6 +98,8 @@ class ImportJobServiceTest {
     // given
     var fileUrl = "http://example.com/file";
     doReturn(true).when(s3Service).exists(fileUrl);
+    var userId = java.util.UUID.randomUUID();
+    doReturn(userId).when(folioExecutionContext).getUserId();
     var jobExecutionMock = mock(JobExecution.class);
     doReturn(jobExecutionMock).when(jobLauncher).run(any(), any());
     var jobInstanceMock = mock(JobInstance.class);
@@ -109,7 +115,7 @@ class ImportJobServiceTest {
     verify(jobLauncher).run(eq(rdfImportJob), jobParametersCaptor.capture());
     assertThat(jobParametersCaptor.getValue().getParameter(FILE_URL).getValue()).isEqualTo(fileUrl);
     assertThat(jobParametersCaptor.getValue().getParameter(CONTENT_TYPE).getValue()).isEqualTo("application/ld+json");
-    assertThat(jobParametersCaptor.getValue().getParameter(DATE_START)).isNotNull();
+    assertThat(jobParametersCaptor.getValue().getParameter(STARTED_BY).getValue()).isEqualTo(userId.toString());
     assertThat(jobParametersCaptor.getValue().getParameter(DEFAULT_WORK_TYPE).getValue()).isEqualTo(defaultWorkType);
   }
 

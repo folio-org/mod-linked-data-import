@@ -1,0 +1,3 @@
+lineNumber,description,failedRdfLine
+2,RDF parsing error,[{failing line 2}]
+3,Failed because title = FAIL_SAVING_LINE,"[{""@id"":""http://test-tobe-changed.folio.com/resources/INSTANCE_ID"",""@type"":[""http://id.loc.gov/ontologies/bibframe/Instance""],""http://id.loc.gov/ontologies/bibframe/title"":[{""@id"":""http://test-tobe-changed.folio.com/resources/PRIMARY_TITLE_ID""}]},{""@id"":""http://test-tobe-changed.folio.com/resources/PRIMARY_TITLE_ID"",""@type"":[""http://id.loc.gov/ontologies/bibframe/Title""],""http://id.loc.gov/ontologies/bibframe/mainTitle"":[{""@value"":""FAIL_SAVING_LINE""}]}]"

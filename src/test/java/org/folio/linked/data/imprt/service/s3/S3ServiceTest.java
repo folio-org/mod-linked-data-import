@@ -1,4 +1,4 @@
-package org.folio.linked.data.imprt.service;
+package org.folio.linked.data.imprt.service.s3;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.EMPTY_LIST;
@@ -8,7 +8,6 @@ import static org.mockito.Mockito.doReturn;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.util.List;
-import org.folio.linked.data.imprt.service.s3.S3ServiceImpl;
 import org.folio.s3.client.FolioS3Client;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;

@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Resource record failed during saving",
+  "properties": {
+    "lineNumber": {
+      "description": "Line number from the RDF file",
+      "type": "integer",
+      "format": "int64"
+    },
+    "resource": {
+      "description": "Mapped resource",
+      "type": "string"
+    },
+    "description": {
+      "description": "Failure description",
+      "type": "string"
+    }
+  },
+  "required": ["lineNumber", "resource", "description"]
+}
+

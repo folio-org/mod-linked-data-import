@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.SneakyThrows;
 import org.folio.ld.dictionary.model.Resource;
-import org.folio.linked.data.imprt.domain.dto.ImportOutput;
+import org.folio.linked.data.imprt.domain.dto.ImportOutputEvent;
 import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.folio.spring.testing.type.UnitTest;
 import org.folio.spring.tools.kafka.FolioMessageProducer;
@@ -32,7 +32,7 @@ class LdKafkaSenderTest {
   private static final Long JOB_INSTANCE_ID = 1L;
   private static final Integer CHUNK_SIZE = 4;
   @Mock
-  private FolioMessageProducer<ImportOutput> importOutputFolioMessageProducer;
+  private FolioMessageProducer<ImportOutputEvent> importOutputFolioMessageProducer;
   private LdKafkaSender sender;
 
   @SneakyThrows
@@ -73,7 +73,7 @@ class LdKafkaSenderTest {
     verify(importOutputFolioMessageProducer, times(1)).sendMessages(captor.capture());
     var messages = captor.getValue();
     assertThat(messages).hasSize(1);
-    var msg = (ImportOutput) messages.get(0);
+    var msg = (ImportOutputEvent) messages.get(0);
     assertThat(msg.getResourcesWithLineNumbers()).hasSize(2);
     assertThat(msg.getJobInstanceId()).isEqualTo(JOB_INSTANCE_ID);
   }
@@ -99,8 +99,8 @@ class LdKafkaSenderTest {
     verify(importOutputFolioMessageProducer, times(1)).sendMessages(captor.capture());
     var messages = captor.getValue();
     assertThat(messages).hasSize(3);
-    assertThat(((ImportOutput) messages.get(0)).getResourcesWithLineNumbers()).hasSize(4);
-    assertThat(((ImportOutput) messages.get(1)).getResourcesWithLineNumbers()).hasSize(4);
-    assertThat(((ImportOutput) messages.get(2)).getResourcesWithLineNumbers()).hasSize(3);
+    assertThat(((ImportOutputEvent) messages.get(0)).getResourcesWithLineNumbers()).hasSize(4);
+    assertThat(((ImportOutputEvent) messages.get(1)).getResourcesWithLineNumbers()).hasSize(4);
+    assertThat(((ImportOutputEvent) messages.get(2)).getResourcesWithLineNumbers()).hasSize(3);
   }
 }

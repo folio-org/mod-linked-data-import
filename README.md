@@ -25,6 +25,36 @@ POST /linked-data-import/start?fileUrl={fileNameInS3}&contentType=application/ld
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
+Response is a job id, which could be later used for getting job status or failed lines.
+## To check the import job status, use:
+```
+GET /linked-data-import/jobs/{jobId}
+x-okapi-tenant: {tenantId}
+x-okapi-token: {token}
+```
+The response includes job information such as:
+- `startDate`: Job start date and time
+- `startedBy`: User ID who started the job
+- `status`: Current job status (COMPLETED, STARTED, FAILED, etc.)
+- `fileName`: Name of the imported file
+- `currentStep`: Current processing step
+- `linesRead`: Total lines read from the file
+- `linesMapped`: Lines successfully mapped
+- `linesFailedMapping`: Lines failed during mapping
+- `linesCreated`: Resources created
+- `linesUpdated`: Resources updated
+- `linesFailedSaving`: Lines failed during saving
+
+## To download failed RDF lines as CSV file:
+```
+GET /linked-data-import/jobs/{jobId}/failed-lines
+x-okapi-tenant: {tenantId}
+x-okapi-token: {token}
+```
+The CSV file contains:
+- `lineNumber`: Line number in the original file
+- `description`: Error description
+- `failedRdfLine`: The RDF line content that failed
 
 ## File Format & Contents
 
@@ -76,16 +106,41 @@ It is also necessary to specify variable S3_IS_AWS to determine if AWS S3 is use
 this variable is `false` and means that MinIO server is used as storage.
 This value should be `true` if AWS S3 is used.
 
-| Name                                  | Default value              | Description                                                                 |
-|:--------------------------------------|:---------------------------|:----------------------------------------------------------------------------|
-| S3_URL                                | http://127.0.0.1:9000/     | S3 url                                                                      |
-| S3_REGION                             | -                          | S3 region                                                                   |
-| S3_BUCKET                             | -                          | S3 bucket                                                                   |
-| S3_ACCESS_KEY_ID                      | -                          | S3 access key                                                               |
-| S3_SECRET_ACCESS_KEY                  | -                          | S3 secret key                                                               |
-| S3_IS_AWS                             | false                      | Specify if AWS S3 is used as files storage                                  |
-| CHUNK_SIZE                            | 1000                       | Number of lines read from the input file per chunk                          |
-| OUTPUT_CHUNK_SIZE                     | 100                        | Number of Graph resources sent to Kafka per chunk                           |
-| JOB_POOL_SIZE                         | 1                          | Number of concurrent Import Jobs                                            |
-| PROCESS_FILE_MAX_POOL_SIZE            | 1000                       | Maximum threads used for parallel chunk processing                          |
-| KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC | linked_data_import.output  | Kafka topic where the transformed subgraph is published for mod-linked-data |
+| Name                                                     | Default value             | Description                                                                 |
+|:---------------------------------------------------------|:--------------------------|:----------------------------------------------------------------------------|
+| SERVER_PORT                                              | 8081                      | Server port                                                                 |
+| DB_USERNAME                                              | postgres                  | Database username                                                           |
+| DB_PASSWORD                                              | postgres                  | Database password                                                           |
+| DB_HOST                                                  | postgres                  | Database host                                                               |
+| DB_PORT                                                  | 5432                      | Database port                                                               |
+| DB_DATABASE                                              | okapi_modules             | Database name                                                               |
+| KAFKA_HOST                                               | kafka                     | Kafka broker host                                                           |
+| KAFKA_PORT                                               | 9092                      | Kafka broker port                                                           |
+| KAFKA_CONSUMER_MAX_POLL_RECORDS                          | 200                       | Maximum number of records returned in a single poll                         |
+| KAFKA_SECURITY_PROTOCOL                                  | PLAINTEXT                 | Kafka security protocol                                                     |
+| KAFKA_SSL_KEYSTORE_PASSWORD                              | -                         | Kafka SSL keystore password                                                 |
+| KAFKA_SSL_KEYSTORE_LOCATION                              | -                         | Kafka SSL keystore location                                                 |
+| KAFKA_SSL_TRUSTSTORE_PASSWORD                            | -                         | Kafka SSL truststore password                                               |
+| KAFKA_SSL_TRUSTSTORE_LOCATION                            | -                         | Kafka SSL truststore location                                               |
+| ENV                                                      | folio                     | Environment name used in Kafka topic names                                  |
+| KAFKA_RETRY_INTERVAL_MS                                  | 2000                      | Kafka retry interval in milliseconds                                        |
+| KAFKA_RETRY_DELIVERY_ATTEMPTS                            | 6                         | Number of Kafka delivery retry attempts                                     |
+| KAFKA_IMPORT_RESULT_EVENT_CONCURRENCY                    | 10                        | Number of concurrent consumers for import result events                     |
+| KAFKA_IMPORT_RESULT_EVENT_TOPIC_PATTERN                  | (${ENV}\.)(.*\.)result    | Kafka topic pattern for import result events                                |
+| KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC                    | linked_data_import.output | Kafka topic where the transformed subgraph is published for mod-linked-data |
+| KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_PARTITIONS         | 3                         | Number of partitions for the output topic                                   |
+| KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_REPLICATION_FACTOR | -                         | Replication factor for the output topic                                     |
+| KAFKA_LINKED_DATA_IMPORT_RESULT_TOPIC                    | linked_data_import.result | Kafka topic for import processing results                                   |
+| KAFKA_LINKED_DATA_IMPORT_RESULT_TOPIC_PARTITIONS         | 3                         | Number of partitions for the result topic                                   |
+| KAFKA_LINKED_DATA_IMPORT_RESULT_TOPIC_REPLICATION_FACTOR | -                         | Replication factor for the result topic                                     |
+| S3_URL                                                   | http://127.0.0.1:9000/    | S3 url                                                                      |
+| S3_REGION                                                | -                         | S3 region                                                                   |
+| S3_BUCKET                                                | -                         | S3 bucket                                                                   |
+| S3_ACCESS_KEY_ID                                         | -                         | S3 access key                                                               |
+| S3_SECRET_ACCESS_KEY                                     | -                         | S3 secret key                                                               |
+| S3_IS_AWS                                                | false                     | Specify if AWS S3 is used as files storage                                  |
+| CHUNK_SIZE                                               | 1000                      | Number of lines read from the input file per chunk                          |
+| OUTPUT_CHUNK_SIZE                                        | 100                       | Number of Graph resources sent to Kafka per chunk                           |
+| JOB_POOL_SIZE                                            | 1                         | Number of concurrent Import Jobs                                            |
+| PROCESS_FILE_MAX_POOL_SIZE                               | 1000                      | Maximum threads used for parallel chunk processing                          |
+| WAIT_FOR_PROCESSING_INTERVAL_MS                          | 5000                      | Interval in milliseconds to wait between checks for processing completion   |

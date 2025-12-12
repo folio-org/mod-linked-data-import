@@ -16,13 +16,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 class DatabaseIT {
 
   private static final List<String> EXPECTED_TABLES = List.of(
+    "databasechangelog",
+    "databasechangeloglock",
     "batch_job_instance",
     "batch_job_execution",
     "batch_job_execution_params",
     "batch_step_execution",
     "batch_step_execution_context",
     "batch_job_execution_context",
-    "failed_rdf_line"
+    "failed_rdf_line",
+    "import_result_event"
   );
   private static final String LIST_TABLES_QUERY = """
           SELECT table_name
@@ -46,7 +49,7 @@ class DatabaseIT {
     var tables = jdbcTemplate.queryForList(LIST_TABLES_QUERY, String.class, schema);
 
     // then
-    assertThat(tables).containsAll(EXPECTED_TABLES);
+    assertThat(tables).containsOnly(EXPECTED_TABLES.toArray(new String[]{}));
   }
 
   @Test

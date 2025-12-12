@@ -1,4 +1,4 @@
-package org.folio.linked.data.imprt.test;
+package org.folio.linked.data.imprt.service.tenant;
 
 import static java.util.stream.Collectors.toMap;
 import static org.folio.spring.tools.config.RetryTemplateConfiguration.DEFAULT_KAFKA_RETRY_TEMPLATE_NAME;
