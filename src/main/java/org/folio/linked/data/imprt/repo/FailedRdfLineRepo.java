@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FailedRdfLineRepo extends JpaRepository<FailedRdfLine, Long> {
 
-  @Query("SELECT COUNT(f) FROM FailedRdfLine f WHERE f.jobInstanceId = :jobInstanceId AND f.importResultEvent IS NULL")
-  Long countFailedLinesWithoutImportResultEvent(Long jobInstanceId);
+  @Query("SELECT COUNT(f) FROM FailedRdfLine f WHERE f.jobExecutionId = :executionId AND f.importResultEvent IS NULL")
+  Long countFailedLinesWithoutImportResultEvent(Long executionId);
 
-  Stream<FailedRdfLine> findAllByJobInstanceIdOrderByLineNumber(Long jobInstanceId);
+  Stream<FailedRdfLine> findAllByJobExecutionIdOrderByLineNumber(Long jobExecutionId);
 }

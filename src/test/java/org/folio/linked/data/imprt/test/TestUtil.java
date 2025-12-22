@@ -63,10 +63,10 @@ public class TestUtil {
       .untilAsserted(throwingRunnable);
   }
 
-  public static ImportResultEvent createImportResultEventDto(Long jobInstanceId) {
+  public static ImportResultEvent createImportResultEventDto(Long jobExecutionId) {
     var event = new ImportResultEvent(
       "original-ts",
-      jobInstanceId,
+      jobExecutionId,
       java.time.OffsetDateTime.now(),
       java.time.OffsetDateTime.now(),
       10,
@@ -78,9 +78,9 @@ public class TestUtil {
     return event;
   }
 
-  public static org.folio.linked.data.imprt.model.entity.ImportResultEvent createImportResultEvent(Long jobInstanceId) {
+  public static org.folio.linked.data.imprt.model.entity.ImportResultEvent createImportResultEvent(Long executionId) {
     return new org.folio.linked.data.imprt.model.entity.ImportResultEvent()
-      .setJobInstanceId(jobInstanceId)
+      .setJobExecutionId(executionId)
       .setResourcesCount(10)
       .setCreatedCount(8)
       .setUpdatedCount(2)
@@ -107,19 +107,17 @@ public class TestUtil {
     importResultEventProducer.send(producerRecord);
   }
 
-  public static void awaitJobCompletion(Long jobInstanceId, JdbcTemplate jdbcTemplate,
+  public static void awaitJobCompletion(Long jobExecutionId, JdbcTemplate jdbcTemplate,
                                         TenantScopedExecutionService tenantScopedExecutionService) {
     awaitAndAssert(() -> {
       var status = tenantScopedExecutionService.execute(TENANT_ID, () ->
         jdbcTemplate.queryForObject(
           """
             SELECT e.status FROM batch_job_execution e
-            WHERE e.job_instance_id = ?
-            ORDER BY e.create_time DESC
-            LIMIT 1
+            WHERE e.job_execution_id = ?
             """,
           String.class,
-          jobInstanceId
+          jobExecutionId
         )
       );
       assertThat(status).isIn(BatchStatus.COMPLETED.name(),

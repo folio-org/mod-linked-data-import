@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ImportResultEventHandler implements KafkaMessageHandler<ImportResultEvent> {
   private static final String FILE_URL_NOT_FOUND_MESSAGE =
-    "Job parameter [fileUrl] for jobInstanceId [%s] is not found. RDF line reading failed.";
+    "Job parameter [fileUrl] for jobExecutionId [%s] is not found. RDF line reading failed.";
 
   private final FileService fileService;
   private final ImportResultEventRepo importResultEventRepo;
@@ -27,11 +27,11 @@ public class ImportResultEventHandler implements KafkaMessageHandler<ImportResul
   public void handle(ImportResultEvent importResultEvent) {
     var entity = importResultEventMapper.toEntity(importResultEvent);
     if (!entity.getFailedRdfLines().isEmpty()) {
-      var jobInstanceId = importResultEvent.getJobInstanceId();
-      var fileUrl = batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
+      var jobExecutionId = importResultEvent.getJobExecutionId();
+      var fileUrl = batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL);
       entity.getFailedRdfLines().forEach(failedLine ->
         failedLine.setFailedRdfLine(fileUrl.map(url -> fileService.readLineFromFile(url, failedLine.getLineNumber()))
-          .orElse(FILE_URL_NOT_FOUND_MESSAGE.formatted(jobInstanceId))
+          .orElse(FILE_URL_NOT_FOUND_MESSAGE.formatted(jobExecutionId))
         )
       );
     }

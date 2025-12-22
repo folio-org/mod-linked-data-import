@@ -48,7 +48,7 @@ public class ImportJobServiceImpl implements ImportJobService {
 
     try {
       var jobExecution = jobLauncher.run(rdfImportJob, jobParameters);
-      return jobExecution.getJobInstance().getInstanceId();
+      return jobExecution.getId();
     } catch (JobExecutionAlreadyRunningException
              | JobRestartException
              | JobInstanceAlreadyCompleteException

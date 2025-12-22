@@ -56,7 +56,7 @@ public class ImportOutputEventResponder {
 
     var resultEvent = new ImportResultEvent(
       outputEvent.getTs(),
-      outputEvent.getJobInstanceId(),
+      outputEvent.getJobExecutionId(),
       OffsetDateTime.now(),
       OffsetDateTime.now(),
       resourcesCount,
@@ -69,8 +69,8 @@ public class ImportOutputEventResponder {
 
     sendImportResultEvent(resultEvent, importResultEventProducer);
 
-    log.info("Sent ImportResultEvent for jobInstanceId={} with resourcesCount={}",
-      outputEvent.getJobInstanceId(), resourcesCount);
+    log.info("Sent ImportResultEvent for jobExecutionId={} with resourcesCount={}",
+      outputEvent.getJobExecutionId(), resourcesCount);
   }
 
 }

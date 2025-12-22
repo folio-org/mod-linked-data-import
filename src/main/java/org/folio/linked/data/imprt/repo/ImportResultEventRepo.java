@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ImportResultEventRepo extends JpaRepository<ImportResultEvent, Long> {
 
-  @Query("SELECT COALESCE(SUM(e.resourcesCount), 0) FROM ImportResultEvent e WHERE e.jobInstanceId = :jobInstanceId")
-  Long getTotalResourcesCountByJobInstanceId(Long jobInstanceId);
+  @Query("SELECT COALESCE(SUM(e.resourcesCount), 0) FROM ImportResultEvent e WHERE e.jobExecutionId = :jobExecutionId")
+  Long getTotalResourcesCountByJobExecutionId(Long jobExecutionId);
 
-  List<ImportResultEvent> findAllByJobInstanceId(Long jobInstanceId);
+  List<ImportResultEvent> findAllByJobExecutionId(Long jobExecutionId);
 }
 

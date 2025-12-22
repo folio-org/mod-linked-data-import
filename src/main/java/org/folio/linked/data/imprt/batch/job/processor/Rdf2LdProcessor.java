@@ -26,16 +26,16 @@ import org.springframework.stereotype.Component;
 public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<ResourceWithLineNumber>> {
 
   private static final String EMPTY_RESULT = "Empty result returned by rdf4ld library";
-  private final Long jobInstanceId;
+  private final Long jobExecutionId;
   private final String contentType;
   private final Rdf4LdService rdf4LdService;
   private final FailedRdfLineRepo failedRdfLineRepo;
 
-  public Rdf2LdProcessor(@Value("#{jobInstanceId}") Long jobInstanceId,
+  public Rdf2LdProcessor(@Value("#{stepExecution.jobExecution.id}") Long jobExecutionId,
                          @Value("#{jobParameters['" + CONTENT_TYPE + "']}") String contentType,
                          Rdf4LdService rdf4LdService,
                          FailedRdfLineRepo failedRdfLineRepo) {
-    this.jobInstanceId = jobInstanceId;
+    this.jobExecutionId = jobExecutionId;
     this.contentType = contentType;
     this.rdf4LdService = rdf4LdService;
     this.failedRdfLineRepo = failedRdfLineRepo;
@@ -52,7 +52,7 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
       var is = new ByteArrayInputStream(rdfLine.getBytes(UTF_8));
       var result = rdf4LdService.mapBibframe2RdfToLd(is, contentType);
       if (result.isEmpty()) {
-        log.debug(EMPTY_RESULT + ", saving FailedRdfLine. JobInstanceId [{}], line #{}", jobInstanceId, lineNumber);
+        log.debug(EMPTY_RESULT + ", saving FailedRdfLine. JobExecutionId [{}], line #{}", jobExecutionId, lineNumber);
         saveFailedLine(lineNumber, rdfLine, EMPTY_RESULT);
         return null;
       }
@@ -60,8 +60,8 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
         .map(resource -> new ResourceWithLineNumber(lineNumber, resource))
         .collect(toCollection(LinkedHashSet::new));
     } catch (Exception e) {
-      log.warn("Exception during processing RDF line #{}, saving FailedRdfLine. JobInstanceId [{}]", lineNumber,
-        jobInstanceId);
+      log.warn("Exception during processing RDF line #{}, saving FailedRdfLine. JobExecutionId [{}]", lineNumber,
+        jobExecutionId);
       saveFailedLine(lineNumber, rdfLine, e.getMessage());
       return null;
     }
@@ -69,7 +69,7 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
 
   private void saveFailedLine(long lineNumber, String rdfLine, String message) {
     var frl = new FailedRdfLine()
-      .setJobInstanceId(jobInstanceId)
+      .setJobExecutionId(jobExecutionId)
       .setLineNumber(lineNumber)
       .setDescription(message)
       .setFailedRdfLine(rdfLine);

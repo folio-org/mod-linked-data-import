@@ -30,7 +30,7 @@
       <column name="id" type="BIGINT" defaultValueSequenceNext="import_result_event_seq">
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_import_result_event"/>
       </column>
-      <column name="job_instance_id" type="BIGINT"/>
+      <column name="job_execution_id" type="BIGINT"/>
       <column name="resources_count" type="INTEGER"/>
       <column name="created_count" type="INTEGER"/>
       <column name="updated_count" type="INTEGER"/>
