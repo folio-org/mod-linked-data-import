@@ -42,20 +42,20 @@ public class JobInfoServiceImpl implements JobInfoService {
 
   @Override
   public JobInfo getJobInfo(Long jobId) {
-    var jobExecution = batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobId)
-      .orElseThrow(() -> new IllegalArgumentException("Job execution not found for jobId: " + jobId));
+    var jobExecution = batchJobExecutionRepo.findByJobExecutionId(jobId)
+      .orElseThrow(() -> new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobId));
     var startDate = jobExecution.getStartTime().toString();
     var endDate = jobExecution.getEndTime() != null ? jobExecution.getEndTime().toString() : null;
     var startedBy = getJobParameter(jobId, STARTED_BY);
     var fileName = getJobParameter(jobId, FILE_URL);
     var status = jobExecution.getStatus();
     var currentStep = status.isRunning()
-      ? batchStepExecutionRepo.findLastStepNameByJobInstanceId(jobId).orElse(null)
+      ? batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobId).orElse(null)
       : null;
-    var importResults = importResultEventRepo.findAllByJobInstanceId(jobId);
+    var importResults = importResultEventRepo.findAllByJobExecutionId(jobId);
     return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
-      .linesRead(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+      .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
       .linesMapped(getSum(importResults, ImportResultEvent::getResourcesCount))
       .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .linesCreated(getSum(importResults, ImportResultEvent::getCreatedCount))
@@ -64,7 +64,7 @@ public class JobInfoServiceImpl implements JobInfoService {
   }
 
   private String getJobParameter(Long jobId, String parameter) {
-    return batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, parameter)
+    return batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, parameter)
       .orElse(null);
   }
 
@@ -79,7 +79,7 @@ public class JobInfoServiceImpl implements JobInfoService {
   public Resource generateFailedLinesCsv(Long jobId) {
     try (var writer = new StringWriter();
          var csvPrinter = new CSVPrinter(writer, FORMAT);
-         var failedLines = failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId)) {
+         var failedLines = failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobId)) {
       failedLines.forEach(line -> {
         try {
           csvPrinter.printRecord(line.getLineNumber(), line.getDescription(), line.getFailedRdfLine());

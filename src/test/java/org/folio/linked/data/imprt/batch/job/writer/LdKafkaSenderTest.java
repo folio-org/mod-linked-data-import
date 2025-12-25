@@ -29,7 +29,7 @@ import org.springframework.batch.item.Chunk;
 @ExtendWith(MockitoExtension.class)
 class LdKafkaSenderTest {
 
-  private static final Long JOB_INSTANCE_ID = 1L;
+  private static final Long JOB_EXECUTION_ID = 1L;
   private static final Integer CHUNK_SIZE = 4;
   @Mock
   private FolioMessageProducer<ImportOutputEvent> importOutputFolioMessageProducer;
@@ -38,7 +38,8 @@ class LdKafkaSenderTest {
   @SneakyThrows
   @BeforeEach
   void init() {
-    sender = new LdKafkaSender(JOB_INSTANCE_ID, importOutputFolioMessageProducer, CHUNK_SIZE);
+    // jobExecutionId передается напрямую в конструктор для тестов
+    sender = new LdKafkaSender(JOB_EXECUTION_ID, importOutputFolioMessageProducer, CHUNK_SIZE);
   }
 
   @Test
@@ -75,7 +76,7 @@ class LdKafkaSenderTest {
     assertThat(messages).hasSize(1);
     var msg = (ImportOutputEvent) messages.get(0);
     assertThat(msg.getResourcesWithLineNumbers()).hasSize(2);
-    assertThat(msg.getJobInstanceId()).isEqualTo(JOB_INSTANCE_ID);
+    assertThat(msg.getJobExecutionId()).isEqualTo(JOB_EXECUTION_ID);
   }
 
   @Test

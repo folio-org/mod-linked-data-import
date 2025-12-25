@@ -30,7 +30,7 @@ public class FailedRdfLine {
   @ToString.Exclude
   @JoinColumn(name = "import_result_event_id")
   private ImportResultEvent importResultEvent;
-  private Long jobInstanceId;
+  private Long jobExecutionId;
   private Long lineNumber;
   private String description;
   private String failedRdfLine;

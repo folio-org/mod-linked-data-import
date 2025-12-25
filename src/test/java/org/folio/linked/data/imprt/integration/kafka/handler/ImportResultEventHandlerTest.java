@@ -47,9 +47,9 @@ class ImportResultEventHandlerTest {
   @Test
   void handle_shouldSaveEntityWithoutFailedLines() {
     // given
-    var jobInstanceId = 123L;
-    var dto = createImportResultEventDto(jobInstanceId);
-    var entity = createImportResultEvent(jobInstanceId);
+    var jobExecutionId = 123L;
+    var dto = createImportResultEventDto(jobExecutionId);
+    var entity = createImportResultEvent(jobExecutionId);
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
 
     // when
@@ -63,15 +63,15 @@ class ImportResultEventHandlerTest {
   @Test
   void handle_shouldReadFailedLinesFromFileAndSaveEntity() {
     // given
-    var jobInstanceId = 123L;
-    var dto = createImportResultEventDto(jobInstanceId);
-    var entity = createImportResultEvent(jobInstanceId);
+    var jobExecutionId = 123L;
+    var dto = createImportResultEventDto(jobExecutionId);
+    var entity = createImportResultEvent(jobExecutionId);
     var failedLine1 = new FailedRdfLine().setId(1L).setLineNumber(5L);
     var failedLine2 = new FailedRdfLine().setId(2L).setLineNumber(10L);
     entity.setFailedRdfLines(Set.of(failedLine1, failedLine2));
     var fileUrl = "s3://bucket/test-file.txt";
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("RDF line content");
 
@@ -86,13 +86,13 @@ class ImportResultEventHandlerTest {
   @Test
   void handle_shouldSetErrorMessageWhenFileUrlNotFound() {
     // given
-    var jobInstanceId = 123L;
-    var dto = createImportResultEventDto(jobInstanceId);
-    var entity = createImportResultEvent(jobInstanceId);
+    var jobExecutionId = 123L;
+    var dto = createImportResultEventDto(jobExecutionId);
+    var entity = createImportResultEvent(jobExecutionId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(5L);
     entity.setFailedRdfLines(Set.of(failedLine));
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
       .thenReturn(Optional.empty());
 
     // when
@@ -106,14 +106,14 @@ class ImportResultEventHandlerTest {
   @Test
   void handle_shouldHandleFileServiceReturningNull() {
     // given
-    var jobInstanceId = 123L;
-    var dto = createImportResultEventDto(jobInstanceId);
-    var entity = createImportResultEvent(jobInstanceId);
+    var jobExecutionId = 123L;
+    var dto = createImportResultEventDto(jobExecutionId);
+    var entity = createImportResultEvent(jobExecutionId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(999L);
     entity.setFailedRdfLines(Set.of(failedLine));
     var fileUrl = "s3://bucket/test-file.txt";
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(fileUrl, 999L)).thenReturn(null);
 
@@ -128,14 +128,14 @@ class ImportResultEventHandlerTest {
   @Test
   void handle_shouldReadFailedLinesWhenFileUrlExists() {
     // given
-    var jobInstanceId = 123L;
-    var dto = createImportResultEventDto(jobInstanceId);
-    var entity = createImportResultEvent(jobInstanceId);
+    var jobExecutionId = 123L;
+    var dto = createImportResultEventDto(jobExecutionId);
+    var entity = createImportResultEvent(jobExecutionId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(1L);
     entity.setFailedRdfLines(Set.of(failedLine));
     var fileUrl = "s3://bucket/test-file.txt";
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
     when(fileService.readLineFromFile(eq(fileUrl), anyLong())).thenReturn("test content");
 
@@ -143,7 +143,7 @@ class ImportResultEventHandlerTest {
     handler.handle(dto);
 
     // then
-    verify(batchJobExecutionParamsRepo).findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
+    verify(batchJobExecutionParamsRepo).findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL);
     verify(fileService).readLineFromFile(eq(fileUrl), anyLong());
     verify(importResultEventRepo).save(entity);
   }
@@ -151,20 +151,20 @@ class ImportResultEventHandlerTest {
   @Test
   void handle_shouldUseErrorMessageWhenFileUrlDoesNotExist() {
     // given
-    var jobInstanceId = 123L;
-    var dto = createImportResultEventDto(jobInstanceId);
-    var entity = createImportResultEvent(jobInstanceId);
+    var jobExecutionId = 123L;
+    var dto = createImportResultEventDto(jobExecutionId);
+    var entity = createImportResultEvent(jobExecutionId);
     var failedLine = new FailedRdfLine().setId(1L).setLineNumber(1L);
     entity.setFailedRdfLines(Set.of(failedLine));
     when(importResultEventMapper.toEntity(dto)).thenReturn(entity);
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
       .thenReturn(Optional.empty());
 
     // when
     handler.handle(dto);
 
     // then
-    verify(batchJobExecutionParamsRepo).findByJobInstanceIdAndParameterName(jobInstanceId, FILE_URL);
+    verify(batchJobExecutionParamsRepo).findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL);
     verify(importResultEventRepo).save(entity);
     verifyNoInteractions(fileService);
   }

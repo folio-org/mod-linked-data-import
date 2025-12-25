@@ -29,7 +29,7 @@ public class ImportResultEvent {
   @SequenceGenerator(name = IMPORT_RESULT_EVENT_SEQ_GEN, allocationSize = 1)
   @GeneratedValue(strategy = SEQUENCE, generator = IMPORT_RESULT_EVENT_SEQ_GEN)
   private Long id;
-  private Long jobInstanceId;
+  private Long jobExecutionId;
   private int resourcesCount;
   private int createdCount;
   private int updatedCount;

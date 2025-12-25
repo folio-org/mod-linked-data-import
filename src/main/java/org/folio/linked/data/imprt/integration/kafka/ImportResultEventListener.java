@@ -38,8 +38,8 @@ public class ImportResultEventListener {
   }
 
   private void handleRecord(ConsumerRecord<String, ImportResultEvent> consumerRecord) {
-    log.info("Processing import result event with Job ID {} and ts {}",
-      consumerRecord.value().getJobInstanceId(), consumerRecord.value().getTs());
+    log.info("Processing import result event with Job Execution ID {} and ts {}",
+      consumerRecord.value().getJobExecutionId(), consumerRecord.value().getTs());
     var event = consumerRecord.value();
     tenantScopedExecutionService.executeAsyncWithRetry(
       consumerRecord.headers(),

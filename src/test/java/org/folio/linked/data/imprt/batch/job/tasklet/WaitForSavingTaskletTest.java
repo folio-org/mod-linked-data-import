@@ -18,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -48,10 +47,10 @@ class WaitForSavingTaskletTest {
   @Test
   void execute_shouldReturnFinished_givenNoLinesRead() throws InterruptedException {
     // given
-    var jobInstanceId = 123L;
-    var chunkContext = mockChunkContext(jobInstanceId);
+    var jobExecutionId = 123L;
+    var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(0L);
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(0L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -63,12 +62,12 @@ class WaitForSavingTaskletTest {
   @Test
   void execute_shouldReturnFinished_givenAllLinesProcessed() throws InterruptedException {
     // given
-    var jobInstanceId = 123L;
-    var chunkContext = mockChunkContext(jobInstanceId);
+    var jobExecutionId = 123L;
+    var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(100L);
-    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(90L);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(10L);
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
+    when(importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -80,12 +79,12 @@ class WaitForSavingTaskletTest {
   @Test
   void execute_shouldReturnContinuable_givenLinesStillProcessing() throws InterruptedException {
     // given
-    var jobInstanceId = 123L;
-    var chunkContext = mockChunkContext(jobInstanceId);
+    var jobExecutionId = 123L;
+    var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(100L);
-    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(50L);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(5L);
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
+    when(importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId)).thenReturn(50L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(5L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -105,12 +104,12 @@ class WaitForSavingTaskletTest {
   void execute_shouldCheckProcessingCompletion(
     long totalRead, long processedCount, long failedCount, boolean shouldFinish) throws InterruptedException {
     // given
-    var jobInstanceId = 123L;
-    var chunkContext = mockChunkContext(jobInstanceId);
+    var jobExecutionId = 123L;
+    var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId)).thenReturn(totalRead);
-    when(importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId)).thenReturn(processedCount);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId)).thenReturn(failedCount);
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(totalRead);
+    when(importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId)).thenReturn(processedCount);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(failedCount);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -120,20 +119,18 @@ class WaitForSavingTaskletTest {
     assertThat(result).isEqualTo(expectedStatus);
   }
 
-  private ChunkContext mockChunkContext(Long jobInstanceId) {
+  private ChunkContext mockChunkContext(Long jobExecutionId) {
     var chunkContext = mock(ChunkContext.class);
     var stepContext = mock(StepContext.class);
     var stepExecution = mock(StepExecution.class);
     var jobExecution = mock(JobExecution.class);
-    var jobInstance = mock(JobInstance.class);
     var executionContext = new ExecutionContext();
 
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobExecution()).thenReturn(jobExecution);
     lenient().when(stepExecution.getExecutionContext()).thenReturn(executionContext);
-    when(jobExecution.getJobInstance()).thenReturn(jobInstance);
-    when(jobInstance.getInstanceId()).thenReturn(jobInstanceId);
+    when(jobExecution.getId()).thenReturn(jobExecutionId);
     return chunkContext;
   }
 }

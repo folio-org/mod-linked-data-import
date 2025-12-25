@@ -28,31 +28,30 @@ public class WaitForSavingTasklet implements Tasklet {
   @Override
   public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
     throws InterruptedException {
-    var jobInstanceId = chunkContext.getStepContext()
+    var jobExecutionId = chunkContext.getStepContext()
       .getStepExecution()
       .getJobExecution()
-      .getJobInstance()
-      .getInstanceId();
+      .getId();
 
-    var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobInstanceId);
+    var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId);
     if (totalReadCount == 0) {
-      log.warn("No lines read for job instance {}", jobInstanceId);
+      log.warn("No lines read for job execution {}", jobExecutionId);
       return RepeatStatus.FINISHED;
     }
 
-    var processedCount = importResultEventRepo.getTotalResourcesCountByJobInstanceId(jobInstanceId);
-    var failedDuringMappingCount = failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobInstanceId);
+    var processedCount = importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId);
+    var failedDuringMappingCount = failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId);
     var totalProcessedCount = processedCount + failedDuringMappingCount;
 
     if (totalProcessedCount >= totalReadCount) {
-      log.info("Processing completed for job instance {}. Read: {}, Processed: {} (Successful: {}, "
-          + "Failed during mapping: {})", jobInstanceId, totalReadCount, totalProcessedCount, processedCount,
+      log.info("Processing completed for job execution {}. Read: {}, Processed: {} (Successful: {}, "
+          + "Failed during mapping: {})", jobExecutionId, totalReadCount, totalProcessedCount, processedCount,
         failedDuringMappingCount);
       return RepeatStatus.FINISHED;
     }
 
-    log.debug("Processing not yet completed for job instance {}. Read: {}, Processed: {} (Successful: {}, "
-        + "Failed during mapping: {}). Waiting...", jobInstanceId, totalReadCount, totalProcessedCount, processedCount,
+    log.debug("Processing not yet completed for job execution {}. Read: {}, Processed: {} (Successful: {}, "
+        + "Failed during mapping: {}). Waiting...", jobExecutionId, totalReadCount, totalProcessedCount, processedCount,
       failedDuringMappingCount);
 
     Thread.sleep(waitIntervalMs);

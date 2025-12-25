@@ -19,12 +19,12 @@ class ImportResultEventMapperTest {
   @Test
   void toEntity_shouldMapDtoToEntity() {
     // given
-    var jobInstanceId = 123L;
+    var jobExecutionId = 123L;
     var startDate = OffsetDateTime.now();
     var endDate = OffsetDateTime.now();
     var dto = new ImportResultEvent(
       "original-ts-123",
-      jobInstanceId,
+      jobExecutionId,
       startDate,
       endDate,
       100,
@@ -40,7 +40,7 @@ class ImportResultEventMapperTest {
     // then
     assertThat(entity).isNotNull();
     assertThat(entity.getId()).isNull();
-    assertThat(entity.getJobInstanceId()).isEqualTo(jobInstanceId);
+    assertThat(entity.getJobExecutionId()).isEqualTo(jobExecutionId);
     assertThat(entity.getResourcesCount()).isEqualTo(100);
     assertThat(entity.getCreatedCount()).isEqualTo(80);
     assertThat(entity.getUpdatedCount()).isEqualTo(20);
@@ -54,10 +54,10 @@ class ImportResultEventMapperTest {
   @Test
   void toEntity_shouldMapFailedResourcesAndSetBidirectionalRelation() {
     // given
-    var jobInstanceId = 456L;
+    var jobExecutionId = 456L;
     var dto = new ImportResultEvent(
       "original-ts",
-      jobInstanceId,
+      jobExecutionId,
       OffsetDateTime.now(),
       OffsetDateTime.now(),
       10,
@@ -88,7 +88,7 @@ class ImportResultEventMapperTest {
     var failedLine1 = failedLines.getFirst();
     assertThat(failedLine1.getId()).isNull();
     assertThat(failedLine1.getLineNumber()).isEqualTo(5L);
-    assertThat(failedLine1.getJobInstanceId()).isEqualTo(jobInstanceId);
+    assertThat(failedLine1.getJobExecutionId()).isEqualTo(jobExecutionId);
     assertThat(failedLine1.getFailedMappedResource()).isEqualTo("{\"id\": \"res1\"}");
     assertThat(failedLine1.getDescription()).isEqualTo("Error message 1");
     assertThat(failedLine1.getFailedRdfLine()).isNull();
@@ -97,7 +97,7 @@ class ImportResultEventMapperTest {
     var failedLine2 = failedLines.get(1);
     assertThat(failedLine2.getId()).isNull();
     assertThat(failedLine2.getLineNumber()).isEqualTo(10L);
-    assertThat(failedLine2.getJobInstanceId()).isEqualTo(jobInstanceId);
+    assertThat(failedLine2.getJobExecutionId()).isEqualTo(jobExecutionId);
     assertThat(failedLine2.getFailedMappedResource()).isEqualTo("{\"id\": \"res2\"}");
     assertThat(failedLine2.getDescription()).isEqualTo("Error message 2");
     assertThat(failedLine2.getFailedRdfLine()).isNull();
@@ -154,16 +154,16 @@ class ImportResultEventMapperTest {
   void toFailedRdfLine_shouldMapFailedResourceToEntity() {
     // given
     var failedResource = new FailedResource(15L, "{\"data\": \"value\"}", "Description text");
-    var jobInstanceId = 999L;
+    var jobExecutionId = 999L;
 
     // when
-    var failedLine = mapper.toFailedRdfLine(failedResource, jobInstanceId);
+    var failedLine = mapper.toFailedRdfLine(failedResource, jobExecutionId);
 
     // then
     assertThat(failedLine).isNotNull();
     assertThat(failedLine.getId()).isNull();
     assertThat(failedLine.getLineNumber()).isEqualTo(15L);
-    assertThat(failedLine.getJobInstanceId()).isEqualTo(jobInstanceId);
+    assertThat(failedLine.getJobExecutionId()).isEqualTo(jobExecutionId);
     assertThat(failedLine.getFailedMappedResource()).isEqualTo("{\"data\": \"value\"}");
     assertThat(failedLine.getDescription()).isEqualTo("Description text");
     assertThat(failedLine.getFailedRdfLine()).isNull();

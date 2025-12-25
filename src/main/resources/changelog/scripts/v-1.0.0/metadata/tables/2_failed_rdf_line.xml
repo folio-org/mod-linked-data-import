@@ -31,7 +31,7 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_failed_rdf_line"/>
       </column>
       <column name="import_result_event_id" type="BIGINT"/>
-      <column name="job_instance_id" type="BIGINT"/>
+      <column name="job_execution_id" type="BIGINT"/>
       <column name="line_number" type="BIGINT"/>
       <column name="failed_rdf_line" type="TEXT"/>
       <column name="description" type="TEXT"/>

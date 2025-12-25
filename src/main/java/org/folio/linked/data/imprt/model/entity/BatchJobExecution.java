@@ -16,7 +16,6 @@ public class BatchJobExecution {
 
   @Id
   private Long jobExecutionId;
-  private Long jobInstanceId;
   private LocalDateTime startTime;
   private LocalDateTime endTime;
   @Enumerated(value = EnumType.STRING)

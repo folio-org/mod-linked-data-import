@@ -51,26 +51,24 @@ class JobInfoServiceImplTest {
   @Test
   void getJobInfo_shouldReturnJobInfoWithNullValues_givenNoParameters() {
     // given
-    var jobId = 123L;
-    var jobExecutionId = 456L;
+    var jobId = 456L;
     var jobExecution = new BatchJobExecution();
-    jobExecution.setJobInstanceId(jobId);
-    jobExecution.setJobExecutionId(jobExecutionId);
+    jobExecution.setJobExecutionId(jobId);
     jobExecution.setStartTime(LocalDateTime.of(2025, 12, 9, 8, 0, 0));
     jobExecution.setEndTime(LocalDateTime.of(2025, 12, 9, 9, 30, 0));
     jobExecution.setStatus(BatchStatus.FAILED);
 
-    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobId))
+    when(batchJobExecutionRepo.findByJobExecutionId(jobId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, FILE_URL))
       .thenReturn(Optional.empty());
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.empty());
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
       .thenReturn(0L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);
-    when(importResultEventRepo.findAllByJobInstanceId(jobId))
+    when(importResultEventRepo.findAllByJobExecutionId(jobId))
       .thenReturn(List.of());
 
     // when
@@ -96,45 +94,43 @@ class JobInfoServiceImplTest {
   void getJobInfo_shouldThrowException_givenJobNotFound() {
     // given
     var jobId = 999L;
-    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobId))
+    when(batchJobExecutionRepo.findByJobExecutionId(jobId))
       .thenReturn(Optional.empty());
 
     // when & then
     assertThatThrownBy(() -> jobInfoService.getJobInfo(jobId))
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Job execution not found for jobId: 999");
+      .hasMessage("Job execution not found for jobExecutionId: 999");
   }
 
   @Test
   void getJobInfo_shouldCalculateCorrectly_givenEmptyFailedRdfLines() {
     // given
-    var jobId = 123L;
-    var jobExecutionId = 456L;
+    var jobId = 456L;
     var jobExecution = new BatchJobExecution();
-    jobExecution.setJobInstanceId(jobId);
-    jobExecution.setJobExecutionId(jobExecutionId);
+    jobExecution.setJobExecutionId(jobId);
     jobExecution.setStartTime(LocalDateTime.of(2025, 12, 9, 15, 45, 30));
     jobExecution.setEndTime(LocalDateTime.of(2025, 12, 9, 15, 50, 0));
     jobExecution.setStatus(BatchStatus.FAILED);
 
     var importResultEvent = new ImportResultEvent()
-      .setJobInstanceId(jobId)
+      .setJobExecutionId(jobId)
       .setResourcesCount(10)
       .setCreatedCount(10)
       .setUpdatedCount(0)
       .setFailedRdfLines(Set.of());
 
-    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobId))
+    when(batchJobExecutionRepo.findByJobExecutionId(jobId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, FILE_URL))
       .thenReturn(Optional.of("file.rdf"));
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.of("user-123"));
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
       .thenReturn(15L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(5L);
-    when(importResultEventRepo.findAllByJobInstanceId(jobId))
+    when(importResultEventRepo.findAllByJobExecutionId(jobId))
       .thenReturn(List.of(importResultEvent));
 
     // when
@@ -149,11 +145,9 @@ class JobInfoServiceImplTest {
   @Test
   void getJobInfo_shouldHandleMultipleImportResults() {
     // given
-    var jobId = 456L;
-    var jobExecutionId = 789L;
+    var jobId = 789L;
     var jobExecution = new BatchJobExecution();
-    jobExecution.setJobInstanceId(jobId);
-    jobExecution.setJobExecutionId(jobExecutionId);
+    jobExecution.setJobExecutionId(jobId);
     jobExecution.setStartTime(LocalDateTime.of(2025, 12, 9, 8, 0, 0));
     jobExecution.setStatus(BatchStatus.STARTED);
 
@@ -164,19 +158,19 @@ class JobInfoServiceImplTest {
     );
     var startedBy = UUID.randomUUID().toString();
     String fileUrl = "large-file.rdf";
-    when(batchJobExecutionRepo.findFirstByJobInstanceIdOrderByJobExecutionIdDesc(jobId))
+    when(batchJobExecutionRepo.findByJobExecutionId(jobId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, FILE_URL))
       .thenReturn(Optional.of(fileUrl));
-    when(batchJobExecutionParamsRepo.findByJobInstanceIdAndParameterName(jobId, STARTED_BY))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, STARTED_BY))
       .thenReturn(Optional.of(startedBy));
-    when(batchStepExecutionRepo.getTotalReadCountByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
       .thenReturn(2500L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);
-    when(importResultEventRepo.findAllByJobInstanceId(jobId))
+    when(importResultEventRepo.findAllByJobExecutionId(jobId))
       .thenReturn(importResults);
-    when(batchStepExecutionRepo.findLastStepNameByJobInstanceId(jobId))
+    when(batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobId))
       .thenReturn(Optional.of("cleaningStep"));
 
     // when
@@ -200,7 +194,7 @@ class JobInfoServiceImplTest {
   void generateFailedLinesCsv_shouldReturnCsvWithHeader_givenNoFailedLines() throws Exception {
     // given
     var jobId = 123L;
-    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId)).thenReturn(Stream.empty());
+    when(failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobId)).thenReturn(Stream.empty());
 
     // when
     var result = jobInfoService.generateFailedLinesCsv(jobId);
@@ -224,7 +218,7 @@ class JobInfoServiceImplTest {
       .setDescription("Mapping failed")
       .setFailedRdfLine("{\"test\": \"data\"}");
 
-    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
+    when(failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobId))
       .thenReturn(Stream.of(line1, line2));
 
     // when
@@ -248,7 +242,7 @@ class JobInfoServiceImplTest {
       .setDescription("Error with, comma and \"quotes\"")
       .setFailedRdfLine("Line with\nnewline");
 
-    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
+    when(failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobId))
       .thenReturn(Stream.of(line));
 
     // when
@@ -269,7 +263,7 @@ class JobInfoServiceImplTest {
       .setDescription(null)
       .setFailedRdfLine(null);
 
-    when(failedRdfLineRepo.findAllByJobInstanceIdOrderByLineNumber(jobId))
+    when(failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobId))
       .thenReturn(Stream.of(line));
 
     // when
@@ -285,7 +279,7 @@ class JobInfoServiceImplTest {
       .mapToObj(i -> new FailedRdfLine().setLineNumber(i + 1L))
       .collect(Collectors.toCollection(LinkedHashSet::new));
     return new ImportResultEvent()
-      .setJobInstanceId(jobId)
+      .setJobExecutionId(jobId)
       .setResourcesCount(resources)
       .setCreatedCount(created)
       .setUpdatedCount(updated)

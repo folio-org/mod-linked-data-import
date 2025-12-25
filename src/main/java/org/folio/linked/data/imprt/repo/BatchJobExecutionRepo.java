@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BatchJobExecutionRepo extends JpaRepository<BatchJobExecution, Long> {
 
-  Optional<BatchJobExecution> findFirstByJobInstanceIdOrderByJobExecutionIdDesc(Long jobInstanceId);
+  Optional<BatchJobExecution> findByJobExecutionId(Long jobExecutionId);
 }
 

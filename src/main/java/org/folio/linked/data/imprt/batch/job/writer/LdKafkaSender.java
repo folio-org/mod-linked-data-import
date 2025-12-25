@@ -19,14 +19,14 @@ import org.springframework.stereotype.Component;
 @StepScope
 public class LdKafkaSender implements ItemWriter<Set<ResourceWithLineNumber>> {
 
-  private final Long jobInstanceId;
+  private final Long jobExecutionId;
   private final FolioMessageProducer<ImportOutputEvent> importOutputFolioMessageProducer;
   private final Integer chunkSize;
 
-  public LdKafkaSender(@Value("#{jobInstanceId}") Long jobInstanceId,
+  public LdKafkaSender(@Value("#{stepExecution.jobExecution.id}") Long jobExecutionId,
                        @Qualifier("importOutputMessageProducer") FolioMessageProducer<ImportOutputEvent> producer,
                        @Value("${mod-linked-data-import.output-chunk-size}") Integer chunkSize) {
-    this.jobInstanceId = jobInstanceId;
+    this.jobExecutionId = jobExecutionId;
     this.importOutputFolioMessageProducer = producer;
     this.chunkSize = chunkSize;
   }
@@ -36,7 +36,7 @@ public class LdKafkaSender implements ItemWriter<Set<ResourceWithLineNumber>> {
   public void write(Chunk<? extends Set<ResourceWithLineNumber>> chunk) {
     var messages = chunked(chunk.getItems().stream().flatMap(Set::stream), chunkSize)
       .map(resourcesWithLineNumbers ->
-        new ImportOutputEvent(resourcesWithLineNumbers).jobInstanceId(jobInstanceId))
+        new ImportOutputEvent(resourcesWithLineNumbers).jobExecutionId(jobExecutionId))
       .toList();
     importOutputFolioMessageProducer.sendMessages(messages);
   }

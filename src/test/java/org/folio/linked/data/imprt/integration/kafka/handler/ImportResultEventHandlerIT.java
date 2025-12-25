@@ -72,8 +72,8 @@ class ImportResultEventHandlerIT {
   @Test
   void handleImportResultEvent_shouldSaveEntityWithFailedLines() {
     // given
-    var jobInstanceId = 456L;
-    var event = createImportResultEventDto(jobInstanceId);
+    var jobExecutionId = 456L;
+    var event = createImportResultEventDto(jobExecutionId);
 
     var failedResource1 = new FailedResource(2L, "{\"resource\": \"data1\"}", "Error 1");
     var failedResource2 = new FailedResource(5L, "{\"resource\": \"data2\"}", "Error 2");
@@ -82,7 +82,7 @@ class ImportResultEventHandlerIT {
     failedResources.add(failedResource2);
     event.setFailedResources(failedResources);
 
-    createBatchJobExecutionParams(jobInstanceId);
+    createBatchJobExecutionParams(jobExecutionId);
 
     // when
     sendImportResultEvent(event, importResultEventProducer);
@@ -112,24 +112,24 @@ class ImportResultEventHandlerIT {
     });
   }
 
-  private void createBatchJobExecutionParams(Long jobInstanceId) {
+  private void createBatchJobExecutionParams(Long jobExecutionId) {
     var fileUrl = "s3://bucket/" + TEST_FILE_NAME;
     tenantScopedExecutionService.execute(TENANT_ID, () -> {
       jdbcTemplate.update("""
         INSERT INTO batch_job_instance (job_instance_id, job_name, job_key, version) \
-        VALUES (?, 'testJob', 'testKey', 0)""", jobInstanceId
+        VALUES (?, 'testJob', 'testKey', 0)""", jobExecutionId
       );
 
       jdbcTemplate.update(
         """
           INSERT INTO batch_job_execution (job_execution_id, job_instance_id, create_time, start_time, status, \
-          version) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'STARTED', 0)""", jobInstanceId, jobInstanceId
+          version) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'STARTED', 0)""", jobExecutionId, jobExecutionId
       );
 
       jdbcTemplate.update(
         """
           INSERT INTO batch_job_execution_params (job_execution_id, parameter_name, parameter_type, parameter_value, \
-          identifying) VALUES (?, ?, ?, ?, ?)""", jobInstanceId, FILE_URL, "java.lang.String", fileUrl, "Y"
+          identifying) VALUES (?, ?, ?, ?, ?)""", jobExecutionId, FILE_URL, "java.lang.String", fileUrl, "Y"
       );
     });
   }

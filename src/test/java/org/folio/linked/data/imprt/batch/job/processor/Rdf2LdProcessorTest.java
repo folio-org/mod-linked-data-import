@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class Rdf2LdProcessorTest {
 
   private static final String CONTENT_TYPE = "contentType";
-  private static final long JOB_INSTANCE_ID = 1L;
+  private static final long JOB_EXECUTION_ID = 1L;
   private Rdf2LdProcessor rdf2LdProcessor;
   @Mock
   private Rdf4LdService rdf4LdService;
@@ -34,7 +34,8 @@ class Rdf2LdProcessorTest {
 
   @BeforeEach
   void setUp() {
-    rdf2LdProcessor = new Rdf2LdProcessor(JOB_INSTANCE_ID, CONTENT_TYPE, rdf4LdService, failedRdfLineRepo);
+    // jobExecutionId передается напрямую в конструктор для тестов
+    rdf2LdProcessor = new Rdf2LdProcessor(JOB_EXECUTION_ID, CONTENT_TYPE, rdf4LdService, failedRdfLineRepo);
   }
 
   @Test
@@ -42,7 +43,7 @@ class Rdf2LdProcessorTest {
     // given
     var lineNumber = 1L;
     var rdfLine = new RdfLineWithNumber(lineNumber, "rdfLine");
-    var resource = new Resource().setId(JOB_INSTANCE_ID);
+    var resource = new Resource().setId(JOB_EXECUTION_ID);
     var rdf4LdResult = Set.of(resource);
     doReturn(rdf4LdResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
 
@@ -63,7 +64,7 @@ class Rdf2LdProcessorTest {
     var rdf4LdException = "rdf4LdService exception";
     doThrow(new RuntimeException(rdf4LdException)).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
     var expectedFailedRdfLine = new FailedRdfLine()
-      .setJobInstanceId(JOB_INSTANCE_ID)
+      .setJobExecutionId(JOB_EXECUTION_ID)
       .setLineNumber(rdfLine.getLineNumber())
       .setFailedRdfLine(rdfLine.getContent())
       .setDescription(rdf4LdException);
@@ -83,7 +84,7 @@ class Rdf2LdProcessorTest {
     var expectedResult = Set.of();
     doReturn(expectedResult).when(rdf4LdService).mapBibframe2RdfToLd(any(), eq(CONTENT_TYPE));
     var expectedFailedRdfLine = new FailedRdfLine()
-      .setJobInstanceId(JOB_INSTANCE_ID)
+      .setJobExecutionId(JOB_EXECUTION_ID)
       .setLineNumber(rdfLine.getLineNumber())
       .setFailedRdfLine(rdfLine.getContent())
       .setDescription("Empty result returned by rdf4ld library");

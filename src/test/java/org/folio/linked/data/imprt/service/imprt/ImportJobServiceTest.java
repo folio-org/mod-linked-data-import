@@ -31,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -73,9 +72,7 @@ class ImportJobServiceTest {
     doReturn(userId).when(folioExecutionContext).getUserId();
     var jobExecutionMock = mock(JobExecution.class);
     doReturn(jobExecutionMock).when(jobLauncher).run(any(), any());
-    var jobInstanceMock = mock(JobInstance.class);
-    doReturn(jobInstanceMock).when(jobExecutionMock).getJobInstance();
-    doReturn(123L).when(jobInstanceMock).getInstanceId();
+    doReturn(123L).when(jobExecutionMock).getId();
     var contentType = "application/json";
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
@@ -102,9 +99,7 @@ class ImportJobServiceTest {
     doReturn(userId).when(folioExecutionContext).getUserId();
     var jobExecutionMock = mock(JobExecution.class);
     doReturn(jobExecutionMock).when(jobLauncher).run(any(), any());
-    var jobInstanceMock = mock(JobInstance.class);
-    doReturn(jobInstanceMock).when(jobExecutionMock).getJobInstance();
-    doReturn(123L).when(jobInstanceMock).getInstanceId();
+    doReturn(123L).when(jobExecutionMock).getId();
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
     // when

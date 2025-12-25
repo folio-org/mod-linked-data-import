@@ -62,9 +62,9 @@ class ImportIT {
     // then
     var result = resultActions.andExpect(status().isOk())
       .andReturn();
-    var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
+    var jobExecutionId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    awaitJobCompletion(jobExecutionId, jdbcTemplate, tenantScopedExecutionService);
     assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
@@ -97,9 +97,9 @@ class ImportIT {
     // then
     var result = resultActions.andExpect(status().isOk())
       .andReturn();
-    var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
+    var jobExecutionId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    awaitJobCompletion(jobExecutionId, jdbcTemplate, tenantScopedExecutionService);
     assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
@@ -127,9 +127,9 @@ class ImportIT {
     // then
     var result = resultActions.andExpect(status().isOk())
       .andReturn();
-    var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
+    var jobExecutionId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    awaitJobCompletion(jobExecutionId, jdbcTemplate, tenantScopedExecutionService);
     assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
@@ -150,7 +150,7 @@ class ImportIT {
       }
       var failedLine = failedRdfLines.get(i - (i < 3 ? 1 : 2));
       assertThat(failedLine.getLineNumber()).isEqualTo(i);
-      assertThat(failedLine.getJobInstanceId()).isEqualTo(jobInstanceId);
+      assertThat(failedLine.getJobExecutionId()).isEqualTo(jobExecutionId);
       assertThat(failedLine.getFailedRdfLine()).isEqualTo("[{failing line " + i + "}]");
       assertThat(failedLine.getDescription()).isEqualTo("RDF parsing error");
     }
@@ -172,9 +172,9 @@ class ImportIT {
     // then
     var result = resultActions.andExpect(status().isOk())
       .andReturn();
-    var jobInstanceId = Long.parseLong(result.getResponse().getContentAsString());
+    var jobExecutionId = Long.parseLong(result.getResponse().getContentAsString());
 
-    awaitJobCompletion(jobInstanceId, jdbcTemplate, tenantScopedExecutionService);
+    awaitJobCompletion(jobExecutionId, jdbcTemplate, tenantScopedExecutionService);
     assertThat(new File(TMP_DIR, fileName)).doesNotExist();
 
     var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
@@ -195,7 +195,7 @@ class ImportIT {
     assertThat(failedRdfLines).hasSize(failedSavingResourcesCount);
     var failedRdfLine = failedRdfLines.getFirst();
 
-    assertThat(failedRdfLine.getJobInstanceId()).isEqualTo(jobInstanceId);
+    assertThat(failedRdfLine.getJobExecutionId()).isEqualTo(jobExecutionId);
     assertThat(failedRdfLine.getLineNumber()).isEqualTo(2L);
     assertThat(failedRdfLine.getDescription()).isEqualTo("Failed because title = FAIL_SAVING_LINE");
     assertThat(failedRdfLine.getLineNumber()).isEqualTo(2L);

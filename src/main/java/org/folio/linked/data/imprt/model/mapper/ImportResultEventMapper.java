@@ -16,11 +16,11 @@ public interface ImportResultEventMapper {
   ImportResultEvent toEntity(org.folio.linked.data.imprt.domain.dto.ImportResultEvent dto);
 
   @Mapping(target = "id", ignore = true)
-  @Mapping(target = "jobInstanceId", source = "jobInstanceId")
+  @Mapping(target = "jobExecutionId", source = "jobExecutionId")
   @Mapping(target = "failedRdfLine", ignore = true)
   @Mapping(target = "importResultEvent", ignore = true)
   @Mapping(target = "failedMappedResource", source = "failedResource.resource")
-  FailedRdfLine toFailedRdfLine(FailedResource failedResource, Long jobInstanceId);
+  FailedRdfLine toFailedRdfLine(FailedResource failedResource, Long jobExecutionId);
 
   default Set<FailedRdfLine> mapFailedResources(org.folio.linked.data.imprt.domain.dto.ImportResultEvent dto,
                                                 ImportResultEvent entity) {
@@ -28,7 +28,7 @@ public interface ImportResultEventMapper {
       return null;
     }
     return dto.getFailedResources().stream()
-      .map(fr -> toFailedRdfLine(fr, dto.getJobInstanceId()))
+      .map(fr -> toFailedRdfLine(fr, dto.getJobExecutionId()))
       .map(fr -> fr.setImportResultEvent(entity))
       .collect(java.util.stream.Collectors.toSet());
   }
