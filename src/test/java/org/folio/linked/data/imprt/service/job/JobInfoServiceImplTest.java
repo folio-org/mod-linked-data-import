@@ -128,6 +128,8 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.of("user-123"));
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
       .thenReturn(15L);
+    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobId))
+      .thenReturn(10L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(5L);
     when(importResultEventRepo.findAllByJobExecutionId(jobId))
@@ -166,6 +168,8 @@ class JobInfoServiceImplTest {
       .thenReturn(Optional.of(startedBy));
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
       .thenReturn(2500L);
+    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobId))
+      .thenReturn(2482L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
       .thenReturn(0L);
     when(importResultEventRepo.findAllByJobExecutionId(jobId))
@@ -184,7 +188,7 @@ class JobInfoServiceImplTest {
     assertThat(result.getCurrentStep()).isEqualTo("cleaningStep");
     assertThat(result.getLinesRead()).isEqualTo(2500L);
     assertThat(result.getLinesFailedMapping()).isZero();
-    assertThat(result.getLinesMapped()).isEqualTo(2500L); // 1000 + 1000 + 500
+    assertThat(result.getLinesMapped()).isEqualTo(2482L);
     assertThat(result.getLinesCreated()).isEqualTo(2050L); // 800 + 850 + 400
     assertThat(result.getLinesUpdated()).isEqualTo(450L); // 200 + 150 + 100
     assertThat(result.getLinesFailedSaving()).isEqualTo(18L); // 10 + 5 + 3

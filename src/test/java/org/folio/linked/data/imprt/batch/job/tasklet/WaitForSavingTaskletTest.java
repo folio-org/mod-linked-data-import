@@ -5,6 +5,9 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Set;
+import org.folio.linked.data.imprt.model.entity.ImportResultEvent;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
@@ -12,8 +15,6 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,9 +34,9 @@ class WaitForSavingTaskletTest {
   @Mock
   private BatchStepExecutionRepo batchStepExecutionRepo;
   @Mock
-  private ImportResultEventRepo importResultEventRepo;
-  @Mock
   private FailedRdfLineRepo failedRdfLineRepo;
+  @Mock
+  private ImportResultEventRepo importResultEventRepo;
   @InjectMocks
   private WaitForSavingTasklet tasklet;
 
@@ -60,14 +61,21 @@ class WaitForSavingTaskletTest {
   }
 
   @Test
-  void execute_shouldReturnFinished_givenAllLinesProcessed() throws InterruptedException {
+  void execute_shouldReturnFinished_givenAllLinesProcessedAndSaved() throws InterruptedException {
     // given
     var jobExecutionId = 123L;
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
+
+    var importResultEvent = new ImportResultEvent()
+      .setCreatedCount(80)
+      .setUpdatedCount(10)
+      .setFailedRdfLines(Set.of());
+
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
+    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of(importResultEvent));
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -77,14 +85,16 @@ class WaitForSavingTaskletTest {
   }
 
   @Test
-  void execute_shouldReturnContinuable_givenLinesStillProcessing() throws InterruptedException {
+  void execute_shouldReturnContinuable_givenLinesStillMapping() throws InterruptedException {
     // given
     var jobExecutionId = 123L;
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
+
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId)).thenReturn(50L);
+    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(50L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(5L);
+    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of());
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -93,30 +103,47 @@ class WaitForSavingTaskletTest {
     assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
   }
 
-  @ParameterizedTest
-  @CsvSource({
-    "100, 95, 5, true",      // 95 + 5 = 100, all processed
-    "100, 100, 0, true",     // 100 + 0 = 100, all processed
-    "100, 0, 100, true",     // 0 + 100 = 100, all failed
-    "100, 50, 49, false",    // 50 + 49 = 99 < 100, still processing
-    "100, 0, 0, false"       // 0 + 0 = 0 < 100, still processing
-  })
-  void execute_shouldCheckProcessingCompletion(
-    long totalRead, long processedCount, long failedCount, boolean shouldFinish) throws InterruptedException {
+  @Test
+  void execute_shouldReturnContinuable_givenLinesMappedButNotSaved() throws InterruptedException {
     // given
     var jobExecutionId = 123L;
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(totalRead);
-    when(importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId)).thenReturn(processedCount);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(failedCount);
+
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
+    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
+    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of());
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
 
     // then
-    var expectedStatus = shouldFinish ? RepeatStatus.FINISHED : RepeatStatus.CONTINUABLE;
-    assertThat(result).isEqualTo(expectedStatus);
+    assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
+  }
+
+  @Test
+  void execute_shouldReturnContinuable_givenPartialSaving() throws InterruptedException {
+    // given
+    var jobExecutionId = 123L;
+    var chunkContext = mockChunkContext(jobExecutionId);
+    var stepContribution = mock(StepContribution.class);
+
+    var importResultEvent = new ImportResultEvent()
+      .setCreatedCount(30)
+      .setUpdatedCount(10)
+      .setFailedRdfLines(Set.of());
+
+    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
+    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
+    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of(importResultEvent));
+
+    // when
+    var result = tasklet.execute(stepContribution, chunkContext);
+
+    // then
+    assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
   }
 
   private ChunkContext mockChunkContext(Long jobExecutionId) {

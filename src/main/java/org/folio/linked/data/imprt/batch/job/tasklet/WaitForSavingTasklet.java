@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 public class WaitForSavingTasklet implements Tasklet {
 
   private final BatchStepExecutionRepo batchStepExecutionRepo;
-  private final ImportResultEventRepo importResultEventRepo;
   private final FailedRdfLineRepo failedRdfLineRepo;
+  private final ImportResultEventRepo importResultEventRepo;
 
   @Value("${mod-linked-data-import.wait-for-processing-interval-ms}")
   private int waitIntervalMs;
@@ -39,20 +39,24 @@ public class WaitForSavingTasklet implements Tasklet {
       return RepeatStatus.FINISHED;
     }
 
-    var processedCount = importResultEventRepo.getTotalResourcesCountByJobExecutionId(jobExecutionId);
+    var writeCount = batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId);
     var failedDuringMappingCount = failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId);
-    var totalProcessedCount = processedCount + failedDuringMappingCount;
+    var totalMappedCount = writeCount + failedDuringMappingCount;
 
-    if (totalProcessedCount >= totalReadCount) {
-      log.info("Processing completed for job execution {}. Read: {}, Processed: {} (Successful: {}, "
-          + "Failed during mapping: {})", jobExecutionId, totalReadCount, totalProcessedCount, processedCount,
-        failedDuringMappingCount);
+    var importResultEvents = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
+    var savedFromImportResults = importResultEvents.stream()
+      .mapToLong(event -> event.getCreatedCount() + event.getUpdatedCount() + event.getFailedRdfLines().size())
+      .sum();
+    var totalSavedCount = savedFromImportResults + failedDuringMappingCount;
+
+    if (totalMappedCount >= totalReadCount && totalSavedCount >= totalReadCount) {
+      log.info("Processing completed for job execution {}. Read: {}, Mapped: {}, Saved: {}",
+        jobExecutionId, totalReadCount, totalMappedCount, totalSavedCount);
       return RepeatStatus.FINISHED;
     }
 
-    log.debug("Processing not yet completed for job execution {}. Read: {}, Processed: {} (Successful: {}, "
-        + "Failed during mapping: {}). Waiting...", jobExecutionId, totalReadCount, totalProcessedCount, processedCount,
-      failedDuringMappingCount);
+    log.debug("Processing not yet completed for job execution {}. Read: {}, Mapped: {}, Saved: {}. Waiting...",
+      jobExecutionId, totalReadCount, totalMappedCount, totalSavedCount);
 
     Thread.sleep(waitIntervalMs);
     return RepeatStatus.CONTINUABLE;

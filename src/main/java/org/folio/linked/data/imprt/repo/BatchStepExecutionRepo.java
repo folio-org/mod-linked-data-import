@@ -10,10 +10,16 @@ import org.springframework.stereotype.Repository;
 public interface BatchStepExecutionRepo extends JpaRepository<BatchStepExecution, Long> {
 
   @Query(value = """
-    SELECT SUM(s.read_count) FROM batch_step_execution s
+    SELECT COALESCE(SUM(s.read_count), 0) FROM batch_step_execution s
     WHERE s.job_execution_id = :jobExecutionId
     """, nativeQuery = true)
   Long getTotalReadCountByJobExecutionId(Long jobExecutionId);
+
+  @Query(value = """
+    SELECT COALESCE(SUM(s.write_count), 0) FROM batch_step_execution s
+    WHERE s.job_execution_id = :jobExecutionId
+    """, nativeQuery = true)
+  Long getTotalWriteCountByJobExecutionId(Long jobExecutionId);
 
   @Query(value = """
     SELECT s.step_name FROM batch_step_execution s
