@@ -42,17 +42,17 @@ paths:
         '500':
           description: Internal Server Error
 
-  /linked-data-import/jobs/{jobId}:
+  /linked-data-import/jobs/{jobExecutionId}:
     get:
       operationId: getJobInfo
       tags:
         - import, job
       description: Returns information about Import Job by ID
       parameters:
-        - name: jobId
+        - name: jobExecutionId
           in: path
           required: true
-          description: The ID of the Import Job Instance
+          description: The ID of the Import Job Execution
           schema:
             type: integer
             format: int64
@@ -68,17 +68,17 @@ paths:
         '500':
           description: Internal Server Error
 
-  /linked-data-import/jobs/{jobId}/failed-lines:
+  /linked-data-import/jobs/{jobExecutionId}/failed-lines:
     get:
       operationId: getFailedLines
       tags:
         - import, job
       description: Downloads CSV file with failed RDF lines for the specified job
       parameters:
-        - name: jobId
+        - name: jobExecutionId
           in: path
           required: true
-          description: The ID of the Import Job Instance
+          description: The ID of the Import Job Execution
           schema:
             type: integer
             format: int64
@@ -98,6 +98,30 @@ paths:
                 format: binary
         '404':
           description: Job not found
+        '500':
+          description: Internal Server Error
+
+  /linked-data-import/jobs/{jobExecutionId}/cancel:
+    put:
+      operationId: cancelJob
+      tags:
+        - import, job
+      description: Cancels running Import Job by execution ID
+      parameters:
+        - name: jobExecutionId
+          in: path
+          required: true
+          description: The ID of the Import Job Execution
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Job cancelled successfully
+        '404':
+          description: Job not found
+        '409':
+          description: Job cannot be cancelled (already completed or failed)
         '500':
           description: Internal Server Error
 

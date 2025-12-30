@@ -14,7 +14,7 @@ public class ImportController implements ImportStartApi {
 
   @Override
   public ResponseEntity<String> startImport(String fileUrl, String contentType, DefaultWorkType defaultWorkType) {
-    var jobId = importJobService.start(fileUrl, contentType, defaultWorkType);
-    return ResponseEntity.ok(String.valueOf(jobId));
+    var jobExecutionId = importJobService.start(fileUrl, contentType, defaultWorkType);
+    return ResponseEntity.ok(String.valueOf(jobExecutionId));
   }
 }

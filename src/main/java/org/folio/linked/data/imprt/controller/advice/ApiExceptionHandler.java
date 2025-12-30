@@ -1,6 +1,7 @@
 package org.folio.linked.data.imprt.controller.advice;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -40,6 +41,12 @@ public class ApiExceptionHandler {
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<String> handleNotFoundException(NotFoundException exception) {
     return buildResponseEntity(exception, NOT_FOUND);
+  }
+
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<String> handleConflictException(IllegalStateException exception) {
+    logException(exception);
+    return buildResponseEntity(exception, CONFLICT);
   }
 
   @ExceptionHandler(Exception.class)

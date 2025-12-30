@@ -15,9 +15,14 @@ import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.folio.linked.data.imprt.model.RdfLineWithNumber;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.configuration.support.MapJobRegistry;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.support.SimpleJobOperator;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
@@ -84,6 +89,38 @@ public class BatchConfig {
     jobLauncher.setTaskExecutor(jobLauncherTaskExecutor);
     jobLauncher.afterPropertiesSet();
     return jobLauncher;
+  }
+
+  @Bean
+  public JobExplorer jobExplorer(DataSource dataSource,
+                                 PlatformTransactionManager transactionManager) throws Exception {
+    var factory = new org.springframework.batch.core.explore.support.JobExplorerFactoryBean();
+    factory.setDataSource(dataSource);
+    factory.setTransactionManager(transactionManager);
+    factory.setTablePrefix("batch_");
+    factory.afterPropertiesSet();
+    return factory.getObject();
+  }
+
+  @Bean
+  public JobOperator jobOperator(
+    JobRepository jobRepository,
+    JobExplorer jobExplorer,
+    JobLauncher jobLauncher,
+    JobRegistry jobRegistry
+  ) throws Exception {
+    var jobOperator = new SimpleJobOperator();
+    jobOperator.setJobRepository(jobRepository);
+    jobOperator.setJobExplorer(jobExplorer);
+    jobOperator.setJobLauncher(jobLauncher);
+    jobOperator.setJobRegistry(jobRegistry);
+    jobOperator.afterPropertiesSet();
+    return jobOperator;
+  }
+
+  @Bean
+  public JobRegistry jobRegistry() {
+    return new MapJobRegistry();
   }
 
   @Bean

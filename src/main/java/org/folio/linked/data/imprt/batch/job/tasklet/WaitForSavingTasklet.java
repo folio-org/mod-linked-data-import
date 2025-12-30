@@ -28,10 +28,15 @@ public class WaitForSavingTasklet implements Tasklet {
   @Override
   public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
     throws InterruptedException {
-    var jobExecutionId = chunkContext.getStepContext()
+    var jobExecution = chunkContext.getStepContext()
       .getStepExecution()
-      .getJobExecution()
-      .getId();
+      .getJobExecution();
+    var jobExecutionId = jobExecution.getId();
+
+    if (jobExecution.isStopping()) {
+      log.info("Job execution {} is stopping, exiting wait tasklet", jobExecutionId);
+      return RepeatStatus.FINISHED;
+    }
 
     var totalReadCount = batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId);
     if (totalReadCount == 0) {

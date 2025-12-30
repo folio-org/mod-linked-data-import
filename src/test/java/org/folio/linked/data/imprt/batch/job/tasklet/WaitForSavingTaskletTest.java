@@ -146,6 +146,23 @@ class WaitForSavingTaskletTest {
     assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
   }
 
+  @Test
+  void execute_shouldReturnFinished_givenJobIsStopping() throws InterruptedException {
+    // given
+    var jobExecutionId = 123L;
+    var chunkContext = mockChunkContext(jobExecutionId);
+    var stepContribution = mock(StepContribution.class);
+    var jobExecution = chunkContext.getStepContext().getStepExecution().getJobExecution();
+
+    when(jobExecution.isStopping()).thenReturn(true);
+
+    // when
+    var result = tasklet.execute(stepContribution, chunkContext);
+
+    // then
+    assertThat(result).isEqualTo(RepeatStatus.FINISHED);
+  }
+
   private ChunkContext mockChunkContext(Long jobExecutionId) {
     var chunkContext = mock(ChunkContext.class);
     var stepContext = mock(StepContext.class);

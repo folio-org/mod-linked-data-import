@@ -27,11 +27,11 @@ class ImportControllerTest {
     var fileUrl = "http://example.com/file";
     var contentType = "application/json";
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
-    var jobId = 123L;
-    doReturn(jobId).when(importJobService).start(fileUrl, contentType, defaultWorkType);
+    var jobExecutionId = 123L;
+    doReturn(jobExecutionId).when(importJobService).start(fileUrl, contentType, defaultWorkType);
 
     var result = importController.startImport(fileUrl, contentType, defaultWorkType);
 
-    assertThat(result).isEqualTo(ResponseEntity.ok(String.valueOf(jobId)));
+    assertThat(result).isEqualTo(ResponseEntity.ok(String.valueOf(jobExecutionId)));
   }
 }

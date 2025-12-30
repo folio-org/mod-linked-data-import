@@ -28,7 +28,7 @@ x-okapi-token: {token}
 Response is a job id, which could be later used for getting job status or failed lines.
 ## To check the import job status, use:
 ```
-GET /linked-data-import/jobs/{jobId}
+GET /linked-data-import/jobs/{jobExecutionId}
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
@@ -47,7 +47,7 @@ The response includes job information such as:
 
 ## To download failed RDF lines as CSV file:
 ```
-GET /linked-data-import/jobs/{jobId}/failed-lines
+GET /linked-data-import/jobs/{jobExecutionId}/failed-lines
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
@@ -55,6 +55,14 @@ The CSV file contains:
 - `lineNumber`: Line number in the original file
 - `description`: Error description
 - `failedRdfLine`: The RDF line content that failed
+
+## To cancel a running import job:
+```
+PUT /linked-data-import/jobs/{jobExecutionId}/cancel
+x-okapi-tenant: {tenantId}
+x-okapi-token: {token}
+```
+**Note:** The job will stop gracefully after completing the current processing chunk or step. It will not stop immediately.
 
 ## File Format & Contents
 
