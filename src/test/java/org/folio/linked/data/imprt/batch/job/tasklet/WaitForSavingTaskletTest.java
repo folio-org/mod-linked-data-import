@@ -73,7 +73,7 @@ class WaitForSavingTaskletTest {
       .setFailedRdfLines(Set.of());
 
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of(importResultEvent));
 
@@ -92,7 +92,7 @@ class WaitForSavingTaskletTest {
     var stepContribution = mock(StepContribution.class);
 
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(50L);
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(50L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(5L);
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of());
 
@@ -111,7 +111,7 @@ class WaitForSavingTaskletTest {
     var stepContribution = mock(StepContribution.class);
 
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of());
 
@@ -135,7 +135,7 @@ class WaitForSavingTaskletTest {
       .setFailedRdfLines(Set.of());
 
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of(importResultEvent));
 

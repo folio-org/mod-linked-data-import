@@ -17,9 +17,9 @@ public interface BatchStepExecutionRepo extends JpaRepository<BatchStepExecution
 
   @Query(value = """
     SELECT COALESCE(SUM(s.write_count), 0) FROM batch_step_execution s
-    WHERE s.job_execution_id = :jobExecutionId
+    WHERE s.job_execution_id = :jobExecutionId AND s.step_name = 'mappingStep'
     """, nativeQuery = true)
-  Long getTotalWriteCountByJobExecutionId(Long jobExecutionId);
+  Long getMappedCountByJobExecutionId(Long jobExecutionId);
 
   @Query(value = """
     SELECT s.step_name FROM batch_step_execution s
