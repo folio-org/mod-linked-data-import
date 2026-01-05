@@ -20,6 +20,9 @@ import org.folio.linked.data.imprt.repo.BatchJobExecutionRepo;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
+import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Log4j2
 @Service
 @RequiredArgsConstructor
-public class JobInfoServiceImpl implements JobInfoService {
+public class JobServiceImpl implements JobService {
 
   private static final CSVFormat FORMAT = CSVFormat.EXCEL.builder()
     .setHeader("lineNumber", "description", "failedRdfLine")
@@ -39,32 +42,34 @@ public class JobInfoServiceImpl implements JobInfoService {
   private final BatchStepExecutionRepo batchStepExecutionRepo;
   private final ImportResultEventRepo importResultEventRepo;
   private final FailedRdfLineRepo failedRdfLineRepo;
+  private final JobOperator jobOperator;
+  private final JobExplorer jobExplorer;
 
   @Override
-  public JobInfo getJobInfo(Long jobId) {
-    var jobExecution = batchJobExecutionRepo.findByJobExecutionId(jobId)
-      .orElseThrow(() -> new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobId));
+  public JobInfo getJobInfo(Long jobExecutionId) {
+    var jobExecution = batchJobExecutionRepo.findByJobExecutionId(jobExecutionId)
+      .orElseThrow(() -> new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId));
     var startDate = jobExecution.getStartTime().toString();
     var endDate = jobExecution.getEndTime() != null ? jobExecution.getEndTime().toString() : null;
-    var startedBy = getJobParameter(jobId, STARTED_BY);
-    var fileName = getJobParameter(jobId, FILE_URL);
+    var startedBy = getJobParameter(jobExecutionId, STARTED_BY);
+    var fileName = getJobParameter(jobExecutionId, FILE_URL);
     var status = jobExecution.getStatus();
     var currentStep = status.isRunning()
-      ? batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobId).orElse(null)
+      ? batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId).orElse(null)
       : null;
-    var importResults = importResultEventRepo.findAllByJobExecutionId(jobId);
+    var importResults = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
     return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
-      .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobId))
-      .linesMapped(getSum(importResults, ImportResultEvent::getResourcesCount))
-      .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobId))
+      .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
+      .linesMapped(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId))
+      .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
       .linesCreated(getSum(importResults, ImportResultEvent::getCreatedCount))
       .linesUpdated(getSum(importResults, ImportResultEvent::getUpdatedCount))
       .linesFailedSaving(getSum(importResults, ire -> ire.getFailedRdfLines().size()));
   }
 
-  private String getJobParameter(Long jobId, String parameter) {
-    return batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobId, parameter)
+  private String getJobParameter(Long jobExecutionId, String parameter) {
+    return batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, parameter)
       .orElse(null);
   }
 
@@ -76,22 +81,44 @@ public class JobInfoServiceImpl implements JobInfoService {
 
   @Override
   @Transactional
-  public Resource generateFailedLinesCsv(Long jobId) {
+  public Resource generateFailedLinesCsv(Long jobExecutionId) {
     try (var writer = new StringWriter();
          var csvPrinter = new CSVPrinter(writer, FORMAT);
-         var failedLines = failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobId)) {
+         var failedLines = failedRdfLineRepo.findAllByJobExecutionIdOrderByLineNumber(jobExecutionId)) {
       failedLines.forEach(line -> {
         try {
           csvPrinter.printRecord(line.getLineNumber(), line.getDescription(), line.getFailedRdfLine());
         } catch (IOException e) {
-          throw new UncheckedIOException("Failed to printRecord for jobId: " + jobId, e);
+          throw new UncheckedIOException("Failed to printRecord for jobExecutionId: " + jobExecutionId, e);
         }
       });
       csvPrinter.flush();
       return new ByteArrayResource(writer.toString().getBytes(UTF_8));
     } catch (IOException e) {
-      log.error("Error generating CSV for jobId={}", jobId, e);
-      throw new UncheckedIOException("Failed to generate CSV for jobId: " + jobId, e);
+      log.error("Error generating CSV for jobExecutionId={}", jobExecutionId, e);
+      throw new UncheckedIOException("Failed to generate CSV for jobExecutionId: " + jobExecutionId, e);
+    }
+  }
+
+  @Override
+  public void cancelJob(Long jobExecutionId) {
+    try {
+      var jobExecution = jobExplorer.getJobExecution(jobExecutionId);
+      if (jobExecution == null) {
+        throw new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId);
+      }
+      var status = jobExecution.getStatus();
+      if (!status.isRunning()) {
+        throw new IllegalStateException(
+          "Job execution " + jobExecutionId + " is not running. Current status: " + status
+        );
+      }
+      jobOperator.stop(jobExecutionId);
+      log.info("Job execution {} has been stopped", jobExecutionId);
+    } catch (NoSuchJobExecutionException e) {
+      throw new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId, e);
+    } catch (org.springframework.batch.core.launch.JobExecutionNotRunningException e) {
+      throw new IllegalStateException("Job execution " + jobExecutionId + " is not running", e);
     }
   }
 
