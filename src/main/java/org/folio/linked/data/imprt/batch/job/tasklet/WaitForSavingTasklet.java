@@ -44,7 +44,7 @@ public class WaitForSavingTasklet implements Tasklet {
       return RepeatStatus.FINISHED;
     }
 
-    var writeCount = batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId);
+    var writeCount = batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId);
     var failedDuringMappingCount = failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId);
     var totalMappedCount = writeCount + failedDuringMappingCount;
 

@@ -136,7 +136,7 @@ class JobServiceImplTest {
       .thenReturn(Optional.of("user-123"));
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
       .thenReturn(15L);
-    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId))
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
       .thenReturn(10L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
       .thenReturn(5L);
@@ -176,7 +176,7 @@ class JobServiceImplTest {
       .thenReturn(Optional.of(startedBy));
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
       .thenReturn(2500L);
-    when(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId))
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
       .thenReturn(2482L);
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
       .thenReturn(0L);

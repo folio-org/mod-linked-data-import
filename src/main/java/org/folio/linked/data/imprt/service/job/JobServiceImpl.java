@@ -61,7 +61,7 @@ public class JobServiceImpl implements JobService {
     return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
       .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
-      .linesMapped(batchStepExecutionRepo.getTotalWriteCountByJobExecutionId(jobExecutionId))
+      .linesMapped(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
       .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
       .linesCreated(getSum(importResults, ImportResultEvent::getCreatedCount))
       .linesUpdated(getSum(importResults, ImportResultEvent::getUpdatedCount))
