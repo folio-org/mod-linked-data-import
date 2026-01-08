@@ -124,7 +124,7 @@ This value should be `true` if AWS S3 is used.
 | DB_DATABASE                                              | okapi_modules             | Database name                                                               |
 | KAFKA_HOST                                               | kafka                     | Kafka broker host                                                           |
 | KAFKA_PORT                                               | 9092                      | Kafka broker port                                                           |
-| KAFKA_CONSUMER_MAX_POLL_RECORDS                          | 200                       | Maximum number of records returned in a single poll                         |
+| KAFKA_CONSUMER_MAX_POLL_RECORDS                          | 100                       | Maximum number of records returned in a single poll                         |
 | KAFKA_SECURITY_PROTOCOL                                  | PLAINTEXT                 | Kafka security protocol                                                     |
 | KAFKA_SSL_KEYSTORE_PASSWORD                              | -                         | Kafka SSL keystore password                                                 |
 | KAFKA_SSL_KEYSTORE_LOCATION                              | -                         | Kafka SSL keystore location                                                 |
