@@ -62,7 +62,7 @@ folio:
     retry-delivery-attempts: ${KAFKA_RETRY_DELIVERY_ATTEMPTS:6}
     listener:
       import-result-event:
-        concurrency: ${KAFKA_IMPORT_RESULT_EVENT_CONCURRENCY:10}
+        concurrency: ${KAFKA_IMPORT_RESULT_EVENT_CONCURRENCY:1}
         topic-pattern: ${KAFKA_IMPORT_RESULT_EVENT_TOPIC_PATTERN:(${folio.environment}\.)(.*\.)${mod-linked-data-import.kafka.topic.linked_data_import-result}}
         group-id: ${folio.environment}-linked-data-import-result-event-group
     topics:
