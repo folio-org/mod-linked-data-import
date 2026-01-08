@@ -7,6 +7,10 @@ public interface JobService {
 
   JobInfo getJobInfo(Long jobExecutionId);
 
+  Long getMappedCount(Long jobExecutionId);
+
+  long getSavedCount(Long jobExecutionId);
+
   Resource generateFailedLinesCsv(Long jobExecutionId);
 
   void cancelJob(Long jobExecutionId);
