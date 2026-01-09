@@ -5,12 +5,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.Set;
-import org.folio.linked.data.imprt.model.entity.ImportResultEvent;
-import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
-import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
-import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
+import org.folio.linked.data.imprt.service.job.JobService;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,11 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class WaitForSavingTaskletTest {
 
   @Mock
-  private BatchStepExecutionRepo batchStepExecutionRepo;
-  @Mock
-  private FailedRdfLineRepo failedRdfLineRepo;
-  @Mock
-  private ImportResultEventRepo importResultEventRepo;
+  private JobService jobService;
   @InjectMocks
   private WaitForSavingTasklet tasklet;
 
@@ -46,12 +37,12 @@ class WaitForSavingTaskletTest {
   }
 
   @Test
-  void execute_shouldReturnFinished_givenNoLinesRead() throws InterruptedException {
+  void execute_shouldReturnFinished_givenNoLinesMapped() throws InterruptedException {
     // given
     var jobExecutionId = 123L;
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(0L);
+    when(jobService.getMappedCount(jobExecutionId)).thenReturn(0L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -67,15 +58,8 @@ class WaitForSavingTaskletTest {
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
 
-    var importResultEvent = new ImportResultEvent()
-      .setCreatedCount(80)
-      .setUpdatedCount(10)
-      .setFailedRdfLines(Set.of());
-
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
-    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of(importResultEvent));
+    when(jobService.getMappedCount(jobExecutionId)).thenReturn(90L);
+    when(jobService.getSavedCount(jobExecutionId)).thenReturn(90L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -91,10 +75,8 @@ class WaitForSavingTaskletTest {
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
 
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(50L);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(5L);
-    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of());
+    when(jobService.getMappedCount(jobExecutionId)).thenReturn(50L);
+    when(jobService.getSavedCount(jobExecutionId)).thenReturn(0L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -110,10 +92,8 @@ class WaitForSavingTaskletTest {
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
 
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
-    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of());
+    when(jobService.getMappedCount(jobExecutionId)).thenReturn(90L);
+    when(jobService.getSavedCount(jobExecutionId)).thenReturn(0L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
@@ -129,15 +109,8 @@ class WaitForSavingTaskletTest {
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
 
-    var importResultEvent = new ImportResultEvent()
-      .setCreatedCount(30)
-      .setUpdatedCount(10)
-      .setFailedRdfLines(Set.of());
-
-    when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId)).thenReturn(100L);
-    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId)).thenReturn(90L);
-    when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId)).thenReturn(10L);
-    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId)).thenReturn(List.of(importResultEvent));
+    when(jobService.getMappedCount(jobExecutionId)).thenReturn(90L);
+    when(jobService.getSavedCount(jobExecutionId)).thenReturn(40L);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);

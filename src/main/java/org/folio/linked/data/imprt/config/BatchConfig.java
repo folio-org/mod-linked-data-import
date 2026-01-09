@@ -17,6 +17,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.configuration.support.JobRegistrySmartInitializingSingleton;
 import org.springframework.batch.core.configuration.support.MapJobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -124,12 +125,18 @@ public class BatchConfig {
   }
 
   @Bean
+  public JobRegistrySmartInitializingSingleton jobRegistrySmartInitializingSingleton(JobRegistry jobRegistry) {
+    return new JobRegistrySmartInitializingSingleton(jobRegistry);
+  }
+
+  @Bean
   public Job rdfImportJob(JobRepository jobRepository,
                           Step downloadFileStep,
                           Step mappingStep,
                           Step waitForSavingStep,
                           Step cleaningStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
+      .incrementer(new org.springframework.batch.core.launch.support.RunIdIncrementer())
       .start(downloadFileStep)
       .next(mappingStep)
       .next(waitForSavingStep)

@@ -79,7 +79,7 @@ class JobInfoIT {
     assertThat(jobInfo.getStartedBy()).isNotNull();
     assertThat(jobInfo.getStatus()).isEqualTo("COMPLETED");
     assertThat(jobInfo.getFileName()).isEqualTo(fileName);
-    assertThat(jobInfo.getCurrentStep()).isNull();
+    assertThat(jobInfo.getLatestStep()).isEqualTo("cleaningStep");
     assertThat(jobInfo.getLinesRead()).isEqualTo(3L);
     assertThat(jobInfo.getLinesMapped()).isEqualTo(2L);
     assertThat(jobInfo.getLinesFailedMapping()).isEqualTo(1L);
