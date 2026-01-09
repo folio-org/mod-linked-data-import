@@ -54,8 +54,22 @@ public class ListenerConfiguration {
                                                                       KafkaProperties kafkaProperties) {
     var properties = new HashMap<>(kafkaProperties.buildConsumerProperties(null));
     Supplier<Deserializer<String>> keyDeserializer = StringDeserializer::new;
-    Supplier<Deserializer<V>> valueDeserializer = () ->
-      new ErrorHandlingDeserializer<>(new JsonDeserializer<>(clazz, mapper));
+    Supplier<Deserializer<V>> valueDeserializer = () -> {
+      var jsonDeserializer = new JsonDeserializer<>(clazz, mapper);
+      var errorHandlingDeserializer = new ErrorHandlingDeserializer<>(jsonDeserializer);
+      errorHandlingDeserializer.setFailedDeserializationFunction(failedDeserializationInfo -> {
+        var exception = failedDeserializationInfo.getException();
+        var data = failedDeserializationInfo.getData();
+        var topic = failedDeserializationInfo.getTopic();
+
+        var dataPreview = data != null && data.length > 0 ? new String(data, 0, Math.min(data.length, 500)) : "empty";
+
+        throw new RuntimeException(
+          String.format("Failed to deserialize message from topic %s. Data preview: %s", topic, dataPreview), exception
+        );
+      });
+      return errorHandlingDeserializer;
+    };
     return new DefaultKafkaConsumerFactory<>(properties, keyDeserializer, valueDeserializer);
   }
 }
