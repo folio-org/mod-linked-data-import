@@ -29,11 +29,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <swagger.yaml.file>${project.basedir}/src/main/resources/swagger.api/mod-linked-data-import.yaml</swagger.yaml.file>
-    <sonar.exclusions>
-      src/main/java/org/folio/linked/data/imprt/LinkedDataImportApplication.java,
-      src/main/java/org/folio/linked/data/imprt/model/**,
-      src/main/java/org/folio/linked/data/imprt/configuration/properties/**
-    </sonar.exclusions>
 
     <!-- Folio dependencies versions -->
     <folio-spring-base.version>10.0.0-SNAPSHOT</folio-spring-base.version>

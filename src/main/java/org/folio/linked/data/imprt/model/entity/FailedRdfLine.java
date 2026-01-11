@@ -33,6 +33,7 @@ public class FailedRdfLine {
   private Long jobExecutionId;
   private Long lineNumber;
   private String description;
+  @SuppressWarnings("java:S1700")  // this db field name should duplicate class name
   private String failedRdfLine;
   private String failedMappedResource;
 
