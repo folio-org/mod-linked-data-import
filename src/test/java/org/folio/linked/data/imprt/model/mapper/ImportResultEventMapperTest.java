@@ -67,8 +67,8 @@ class ImportResultEventMapperTest {
     dto.setTs("event-ts");
     dto.setTenant("test_tenant");
 
-    var failedResource1 = new FailedResource(5L, "{\"id\": \"res1\"}", "Error message 1");
-    var failedResource2 = new FailedResource(10L, "{\"id\": \"res2\"}", "Error message 2");
+    var failedResource1 = new FailedResource(5L, "Error message 1");
+    var failedResource2 = new FailedResource(10L, "Error message 2");
     var failedResources = new LinkedHashSet<FailedResource>();
     failedResources.add(failedResource1);
     failedResources.add(failedResource2);
@@ -89,7 +89,6 @@ class ImportResultEventMapperTest {
     assertThat(failedLine1.getId()).isNull();
     assertThat(failedLine1.getLineNumber()).isEqualTo(5L);
     assertThat(failedLine1.getJobExecutionId()).isEqualTo(jobExecutionId);
-    assertThat(failedLine1.getFailedMappedResource()).isEqualTo("{\"id\": \"res1\"}");
     assertThat(failedLine1.getDescription()).isEqualTo("Error message 1");
     assertThat(failedLine1.getFailedRdfLine()).isNull();
     assertThat(failedLine1.getImportResultEvent()).isEqualTo(entity);
@@ -98,7 +97,6 @@ class ImportResultEventMapperTest {
     assertThat(failedLine2.getId()).isNull();
     assertThat(failedLine2.getLineNumber()).isEqualTo(10L);
     assertThat(failedLine2.getJobExecutionId()).isEqualTo(jobExecutionId);
-    assertThat(failedLine2.getFailedMappedResource()).isEqualTo("{\"id\": \"res2\"}");
     assertThat(failedLine2.getDescription()).isEqualTo("Error message 2");
     assertThat(failedLine2.getFailedRdfLine()).isNull();
     assertThat(failedLine2.getImportResultEvent()).isEqualTo(entity);
@@ -153,7 +151,7 @@ class ImportResultEventMapperTest {
   @Test
   void toFailedRdfLine_shouldMapFailedResourceToEntity() {
     // given
-    var failedResource = new FailedResource(15L, "{\"data\": \"value\"}", "Description text");
+    var failedResource = new FailedResource(15L, "Description text");
     var jobExecutionId = 999L;
 
     // when
@@ -164,7 +162,6 @@ class ImportResultEventMapperTest {
     assertThat(failedLine.getId()).isNull();
     assertThat(failedLine.getLineNumber()).isEqualTo(15L);
     assertThat(failedLine.getJobExecutionId()).isEqualTo(jobExecutionId);
-    assertThat(failedLine.getFailedMappedResource()).isEqualTo("{\"data\": \"value\"}");
     assertThat(failedLine.getDescription()).isEqualTo("Description text");
     assertThat(failedLine.getFailedRdfLine()).isNull();
     assertThat(failedLine.getImportResultEvent()).isNull();

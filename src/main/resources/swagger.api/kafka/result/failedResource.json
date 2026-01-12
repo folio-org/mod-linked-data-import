@@ -8,10 +8,6 @@
       "type": "integer",
       "format": "int64"
     },
-    "resource": {
-      "description": "Mapped resource",
-      "type": "string"
-    },
     "description": {
       "description": "Failure description",
       "type": "string"

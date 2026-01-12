@@ -207,7 +207,6 @@ class ImportIT {
       {"@id":"http://test-tobe-changed.folio.com/resources/PRIMARY_TITLE_ID",\
       "@type":["http://id.loc.gov/ontologies/bibframe/Title"],\
       "http://id.loc.gov/ontologies/bibframe/mainTitle":[{"@value":"FAIL_SAVING_LINE"}]}]""");
-    assertThat(failedRdfLine.getFailedMappedResource()).isNotNull();
   }
 
 }

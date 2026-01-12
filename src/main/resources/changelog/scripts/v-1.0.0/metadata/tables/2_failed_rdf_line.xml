@@ -35,7 +35,6 @@
       <column name="line_number" type="BIGINT"/>
       <column name="failed_rdf_line" type="TEXT"/>
       <column name="description" type="TEXT"/>
-      <column name="failed_mapped_resource" type="TEXT"/>
     </createTable>
 
     <rollback>

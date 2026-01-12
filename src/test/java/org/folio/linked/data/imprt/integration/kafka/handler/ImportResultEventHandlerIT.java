@@ -75,8 +75,8 @@ class ImportResultEventHandlerIT {
     var jobExecutionId = 456L;
     var event = createImportResultEventDto(jobExecutionId);
 
-    var failedResource1 = new FailedResource(2L, "{\"resource\": \"data1\"}", "Error 1");
-    var failedResource2 = new FailedResource(5L, "{\"resource\": \"data2\"}", "Error 2");
+    var failedResource1 = new FailedResource(2L, "Error 1");
+    var failedResource2 = new FailedResource(5L, "Error 2");
     var failedResources = new LinkedHashSet<FailedResource>();
     failedResources.add(failedResource1);
     failedResources.add(failedResource2);
@@ -103,12 +103,10 @@ class ImportResultEventHandlerIT {
       assertThat(failedLines.getFirst().getLineNumber()).isEqualTo(2L);
       assertThat(failedLines.getFirst().getFailedRdfLine()).isEqualTo("Line 2 content");
       assertThat(failedLines.getFirst().getDescription()).isEqualTo("Error 1");
-      assertThat(failedLines.getFirst().getFailedMappedResource()).isEqualTo("{\"resource\": \"data1\"}");
 
       assertThat(failedLines.get(1).getLineNumber()).isEqualTo(5L);
       assertThat(failedLines.get(1).getFailedRdfLine()).isEqualTo("Line 5 content");
       assertThat(failedLines.get(1).getDescription()).isEqualTo("Error 2");
-      assertThat(failedLines.get(1).getFailedMappedResource()).isEqualTo("{\"resource\": \"data2\"}");
     });
   }
 

@@ -10,6 +10,8 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,87 +38,29 @@ class WaitForSavingTaskletTest {
     ReflectionTestUtils.setField(tasklet, "waitIntervalMs", 100);
   }
 
-  @Test
-  void execute_shouldReturnFinished_givenNoLinesMapped() throws InterruptedException {
-    // given
-    var jobExecutionId = 123L;
-    var chunkContext = mockChunkContext(jobExecutionId);
-    var stepContribution = mock(StepContribution.class);
-    when(jobService.getMappedCount(jobExecutionId)).thenReturn(0L);
-
-    // when
-    var result = tasklet.execute(stepContribution, chunkContext);
-
-    // then
-    assertThat(result).isEqualTo(RepeatStatus.FINISHED);
-  }
-
-  @Test
-  void execute_shouldReturnFinished_givenAllLinesProcessedAndSaved() throws InterruptedException {
+  @ParameterizedTest
+  @CsvSource({
+    "0, 0, FINISHED, 'no lines mapped'",
+    "90, 90, FINISHED, 'all lines processed and saved'",
+    "50, 0, CONTINUABLE, 'lines still mapping'",
+    "90, 0, CONTINUABLE, 'lines mapped but not saved'",
+    "90, 40, CONTINUABLE, 'partial saving'"
+  })
+  void execute_shouldReturnExpectedStatus(long mappedCount, long savedCount, RepeatStatus expectedStatus,
+                                          String scenario) throws InterruptedException {
     // given
     var jobExecutionId = 123L;
     var chunkContext = mockChunkContext(jobExecutionId);
     var stepContribution = mock(StepContribution.class);
 
-    when(jobService.getMappedCount(jobExecutionId)).thenReturn(90L);
-    when(jobService.getSavedCount(jobExecutionId)).thenReturn(90L);
+    when(jobService.getMappedCount(jobExecutionId)).thenReturn(mappedCount);
+    lenient().when(jobService.getSavedCount(jobExecutionId)).thenReturn(savedCount);
 
     // when
     var result = tasklet.execute(stepContribution, chunkContext);
 
     // then
-    assertThat(result).isEqualTo(RepeatStatus.FINISHED);
-  }
-
-  @Test
-  void execute_shouldReturnContinuable_givenLinesStillMapping() throws InterruptedException {
-    // given
-    var jobExecutionId = 123L;
-    var chunkContext = mockChunkContext(jobExecutionId);
-    var stepContribution = mock(StepContribution.class);
-
-    when(jobService.getMappedCount(jobExecutionId)).thenReturn(50L);
-    when(jobService.getSavedCount(jobExecutionId)).thenReturn(0L);
-
-    // when
-    var result = tasklet.execute(stepContribution, chunkContext);
-
-    // then
-    assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
-  }
-
-  @Test
-  void execute_shouldReturnContinuable_givenLinesMappedButNotSaved() throws InterruptedException {
-    // given
-    var jobExecutionId = 123L;
-    var chunkContext = mockChunkContext(jobExecutionId);
-    var stepContribution = mock(StepContribution.class);
-
-    when(jobService.getMappedCount(jobExecutionId)).thenReturn(90L);
-    when(jobService.getSavedCount(jobExecutionId)).thenReturn(0L);
-
-    // when
-    var result = tasklet.execute(stepContribution, chunkContext);
-
-    // then
-    assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
-  }
-
-  @Test
-  void execute_shouldReturnContinuable_givenPartialSaving() throws InterruptedException {
-    // given
-    var jobExecutionId = 123L;
-    var chunkContext = mockChunkContext(jobExecutionId);
-    var stepContribution = mock(StepContribution.class);
-
-    when(jobService.getMappedCount(jobExecutionId)).thenReturn(90L);
-    when(jobService.getSavedCount(jobExecutionId)).thenReturn(40L);
-
-    // when
-    var result = tasklet.execute(stepContribution, chunkContext);
-
-    // then
-    assertThat(result).isEqualTo(RepeatStatus.CONTINUABLE);
+    assertThat(result).isEqualTo(expectedStatus);
   }
 
   @Test

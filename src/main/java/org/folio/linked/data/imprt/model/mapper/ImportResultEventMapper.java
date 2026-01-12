@@ -19,7 +19,6 @@ public interface ImportResultEventMapper {
   @Mapping(target = "jobExecutionId", source = "jobExecutionId")
   @Mapping(target = "failedRdfLine", ignore = true)
   @Mapping(target = "importResultEvent", ignore = true)
-  @Mapping(target = "failedMappedResource", source = "failedResource.resource")
   FailedRdfLine toFailedRdfLine(FailedResource failedResource, Long jobExecutionId);
 
   default Set<FailedRdfLine> mapFailedResources(org.folio.linked.data.imprt.domain.dto.ImportResultEvent dto,
