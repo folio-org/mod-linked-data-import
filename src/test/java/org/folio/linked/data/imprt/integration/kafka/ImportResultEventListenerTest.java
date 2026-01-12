@@ -53,13 +53,13 @@ class ImportResultEventListenerTest {
       when(retryContext.getLastThrowable()).thenReturn(null);
       retryJob.accept(retryContext);
       return null;
-    }).when(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
     // when
     listener.handleImportOutputEvent(List.of(consumerRecord));
 
     // then
-    verify(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    verify(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
     verify(importResultEventHandler).handle(event);
   }
 
@@ -74,7 +74,7 @@ class ImportResultEventListenerTest {
     listener.handleImportOutputEvent(List.of(consumerRecord));
 
     // then
-    verify(tenantScopedExecutionService, never()).executeAsyncWithRetry(any(), any(), any());
+    verify(tenantScopedExecutionService, never()).executeWithRetry(any(), any(), any());
     verify(importResultEventHandler, never()).handle(event);
   }
 
@@ -90,7 +90,7 @@ class ImportResultEventListenerTest {
       when(retryContext.getLastThrowable()).thenReturn(null);
       retryJob.accept(retryContext);
       return null;
-    }).when(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
     // when
     listener.handleImportOutputEvent(List.of(consumerRecord));
@@ -112,7 +112,7 @@ class ImportResultEventListenerTest {
       when(retryContext.getLastThrowable()).thenReturn(exception);
       retryJob.accept(retryContext);
       return null;
-    }).when(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
     // when
     listener.handleImportOutputEvent(List.of(consumerRecord));
@@ -132,13 +132,13 @@ class ImportResultEventListenerTest {
       var exception = new RuntimeException("Processing failed");
       errorHandler.accept(exception);
       return null;
-    }).when(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
     // when
     listener.handleImportOutputEvent(List.of(consumerRecord));
 
     // then
-    verify(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    verify(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
   }
 
   @Test
@@ -157,13 +157,13 @@ class ImportResultEventListenerTest {
       when(retryContext.getLastThrowable()).thenReturn(null);
       retryJob.accept(retryContext);
       return null;
-    }).when(tenantScopedExecutionService).executeAsyncWithRetry(any(), any(), any());
+    }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
     // when
     listener.handleImportOutputEvent(List.of(consumerRecord1, consumerRecord2, consumerRecord3));
 
     // then
-    verify(tenantScopedExecutionService, times(3)).executeAsyncWithRetry(any(), any(), any());
+    verify(tenantScopedExecutionService, times(3)).executeWithRetry(any(), any(), any());
     verify(importResultEventHandler).handle(event1);
     verify(importResultEventHandler).handle(event2);
     verify(importResultEventHandler).handle(event3);

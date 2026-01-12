@@ -45,7 +45,7 @@ public class ImportResultEventListener {
     log.info("Processing import result event with Job Execution ID {} and ts {}",
       consumerRecord.value().getJobExecutionId(), consumerRecord.value().getTs());
     var event = consumerRecord.value();
-    tenantScopedExecutionService.executeAsyncWithRetry(
+    tenantScopedExecutionService.executeWithRetry(
       consumerRecord.headers(),
       retryContext -> runRetryableJob(event, retryContext),
       ex -> logFailedEvent(event, ex, false)

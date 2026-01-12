@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,8 +42,7 @@ public class TenantScopedExecutionService {
     }
   }
 
-  @Async
-  public void executeAsyncWithRetry(Headers headers, Consumer<RetryContext> job, Consumer<Throwable> failureHandler) {
+  public void executeWithRetry(Headers headers, Consumer<RetryContext> job, Consumer<Throwable> failureHandler) {
     try (var fex = new FolioExecutionContextSetter(kafkaFolioExecutionContext(headers))) {
       retryTemplate.execute(
         context -> runJob(job, context),
