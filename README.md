@@ -6,7 +6,8 @@ See the file "[LICENSE](LICENSE)" for more information.
 ## Introduction
 
 This module provides bulk import functionality for RDF data graphs into the [`mod-linked-data`](https://github.com/folio-org/mod-linked-data) application.
-It reads RDF subgraphs in Bibframe 2 format, transforms them into the Builde vocabulary, and delivers them to `mod-linked-data` via Kafka.
+It reads RDF subgraphs in [Bibframe 2](https://id.loc.gov/ontologies/bibframe.html) format, transforms them into the
+[Builde](https://bibfra.me/) vocabulary, and delivers them to `mod-linked-data` via Kafka.
 
 ## Third party libraries used in this software
 This software uses the following Weak Copyleft (Eclipse Public License 1.0 / 2.0) licensed software libraries:
@@ -25,7 +26,7 @@ POST /linked-data-import/start?fileUrl={fileNameInS3}&contentType=application/ld
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
-Response is a job id, which could be later used for getting job status or failed lines.
+Response is a job execution id, which could be later used for getting job status or failed lines.
 ## To check the import job status, use:
 ```
 GET /linked-data-import/jobs/{jobExecutionId}
