@@ -152,3 +152,8 @@ This value should be `true` if AWS S3 is used.
 | JOB_POOL_SIZE                                            | 1                         | Number of concurrent Import Jobs                                            |
 | PROCESS_FILE_MAX_POOL_SIZE                               | 1000                      | Maximum threads used for parallel chunk processing                          |
 | WAIT_FOR_PROCESSING_INTERVAL_MS                          | 5000                      | Interval in milliseconds to wait between checks for processing completion   |
+
+## Further information
+
+### Issue tracker
+Project [MODLDI](https://issues.folio.org/browse/MODLDI)
