@@ -24,7 +24,13 @@ public interface BatchStepExecutionRepo extends JpaRepository<BatchStepExecution
   @Query(value = """
     SELECT s.step_name FROM batch_step_execution s
     WHERE s.job_execution_id = :jobExecutionId
-    ORDER BY s.start_time DESC
+    ORDER BY
+      CASE
+        WHEN s.status = 'STARTED' THEN 1
+        WHEN s.status = 'STARTING' THEN 2
+        ELSE 3
+      END,
+      s.start_time DESC
     LIMIT 1
     """, nativeQuery = true)
   Optional<String> findLastStepNameByJobExecutionId(Long jobExecutionId);

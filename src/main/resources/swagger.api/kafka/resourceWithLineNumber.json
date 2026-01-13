@@ -9,8 +9,6 @@
       "format": "int64"
     },
     "resource": {
-      "description": "Mapped resource",
-      "type": "object",
       "$ref": "resourcePlaceholder.json"
     }
   },

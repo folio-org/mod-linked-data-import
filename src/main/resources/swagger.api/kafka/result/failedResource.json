@@ -13,6 +13,6 @@
       "type": "string"
     }
   },
-  "required": ["lineNumber", "resource", "description"]
+  "required": ["lineNumber", "description"]
 }
 
