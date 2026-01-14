@@ -49,7 +49,6 @@ public class ImportOutputEventResponder {
       .filter(rwl -> rwl.getResource().getLabel().contains("FAIL_SAVING_LINE"))
       .map(rwl -> new FailedResource(
         rwl.getLineNumber(),
-        rwl.getResource().toString(),
         "Failed because title = FAIL_SAVING_LINE")
       )
       .collect(Collectors.toSet());

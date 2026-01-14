@@ -42,7 +42,6 @@
       "type": "array",
       "uniqueItems": true,
       "items": {
-        "type": "object",
         "$ref": "failedResource.json"
       }
     },
@@ -56,5 +55,5 @@
     }
   },
   "x-implements": "org.folio.spring.tools.kafka.BaseKafkaMessage",
-  "required": ["originalEventTs", "jobExecutionId", "startDate", "endDate", "resourcesCount", "createdCount", "updatedCount","resourcesWithLineNumbers"]
+  "required": ["originalEventTs", "jobExecutionId", "startDate", "endDate", "resourcesCount", "createdCount", "updatedCount"]
 }

@@ -8,7 +8,6 @@
       "type": "array",
       "uniqueItems": true,
       "items": {
-        "type": "object",
         "$ref": "resourceWithLineNumber.json"
       }
     },

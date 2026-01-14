@@ -7,7 +7,7 @@
     "startedBy",
     "status",
     "fileName",
-    "currentStep"
+    "latestStep"
   ],
   "properties": {
     "startDate": {
@@ -30,7 +30,7 @@
       "type": "string",
       "description": "Name of the file being imported"
     },
-    "currentStep": {
+    "latestStep": {
       "type": "string",
       "description": "Current step being executed"
     },

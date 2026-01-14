@@ -125,7 +125,7 @@ This value should be `true` if AWS S3 is used.
 | DB_DATABASE                                              | okapi_modules             | Database name                                                               |
 | KAFKA_HOST                                               | kafka                     | Kafka broker host                                                           |
 | KAFKA_PORT                                               | 9092                      | Kafka broker port                                                           |
-| KAFKA_CONSUMER_MAX_POLL_RECORDS                          | 200                       | Maximum number of records returned in a single poll                         |
+| KAFKA_CONSUMER_MAX_POLL_RECORDS                          | 100                       | Maximum number of records returned in a single poll                         |
 | KAFKA_SECURITY_PROTOCOL                                  | PLAINTEXT                 | Kafka security protocol                                                     |
 | KAFKA_SSL_KEYSTORE_PASSWORD                              | -                         | Kafka SSL keystore password                                                 |
 | KAFKA_SSL_KEYSTORE_LOCATION                              | -                         | Kafka SSL keystore location                                                 |
@@ -134,7 +134,7 @@ This value should be `true` if AWS S3 is used.
 | ENV                                                      | folio                     | Environment name used in Kafka topic names                                  |
 | KAFKA_RETRY_INTERVAL_MS                                  | 2000                      | Kafka retry interval in milliseconds                                        |
 | KAFKA_RETRY_DELIVERY_ATTEMPTS                            | 6                         | Number of Kafka delivery retry attempts                                     |
-| KAFKA_IMPORT_RESULT_EVENT_CONCURRENCY                    | 10                        | Number of concurrent consumers for import result events                     |
+| KAFKA_IMPORT_RESULT_EVENT_CONCURRENCY                    | 1                         | Number of concurrent consumers for import result events                     |
 | KAFKA_IMPORT_RESULT_EVENT_TOPIC_PATTERN                  | (${ENV}\.)(.*\.)result    | Kafka topic pattern for import result events                                |
 | KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC                    | linked_data_import.output | Kafka topic where the transformed subgraph is published for mod-linked-data |
 | KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_PARTITIONS         | 3                         | Number of partitions for the output topic                                   |

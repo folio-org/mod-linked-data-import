@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Entity
-@EqualsAndHashCode(exclude = {"id", "failedRdfLine", "failedMappedResource"})
+@EqualsAndHashCode(exclude = {"id", "failedRdfLine"})
 @Accessors(chain = true)
 public class FailedRdfLine {
   private static final String FAILED_RDF_LINE_SEQ_GEN = "failed_rdf_line_seq";
@@ -35,6 +35,5 @@ public class FailedRdfLine {
   private String description;
   @SuppressWarnings("java:S1700")  // this db field name should duplicate class name
   private String failedRdfLine;
-  private String failedMappedResource;
 
 }

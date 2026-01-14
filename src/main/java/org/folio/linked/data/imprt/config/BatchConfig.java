@@ -17,11 +17,14 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.configuration.support.JobRegistrySmartInitializingSingleton;
 import org.springframework.batch.core.configuration.support.MapJobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.SimpleJobOperator;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -73,7 +76,7 @@ public class BatchConfig {
 
   @Bean
   public TaskExecutor jobLauncherTaskExecutor(@Value("${mod-linked-data-import.job-pool-size}") int jobPoolSize) {
-    var exec = new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
+    var exec = new ThreadPoolTaskExecutor();
     exec.setMaxPoolSize(jobPoolSize);
     exec.setQueueCapacity(jobPoolSize);
     exec.setThreadNamePrefix("job-launcher-");
@@ -94,7 +97,7 @@ public class BatchConfig {
   @Bean
   public JobExplorer jobExplorer(DataSource dataSource,
                                  PlatformTransactionManager transactionManager) throws Exception {
-    var factory = new org.springframework.batch.core.explore.support.JobExplorerFactoryBean();
+    var factory = new JobExplorerFactoryBean();
     factory.setDataSource(dataSource);
     factory.setTransactionManager(transactionManager);
     factory.setTablePrefix("batch_");
@@ -124,12 +127,18 @@ public class BatchConfig {
   }
 
   @Bean
+  public JobRegistrySmartInitializingSingleton jobRegistrySmartInitializingSingleton(JobRegistry jobRegistry) {
+    return new JobRegistrySmartInitializingSingleton(jobRegistry);
+  }
+
+  @Bean
   public Job rdfImportJob(JobRepository jobRepository,
                           Step downloadFileStep,
                           Step mappingStep,
                           Step waitForSavingStep,
                           Step cleaningStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
+      .incrementer(new RunIdIncrementer())
       .start(downloadFileStep)
       .next(mappingStep)
       .next(waitForSavingStep)

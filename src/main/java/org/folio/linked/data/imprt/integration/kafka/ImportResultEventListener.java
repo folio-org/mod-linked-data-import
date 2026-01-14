@@ -3,6 +3,7 @@ package org.folio.linked.data.imprt.integration.kafka;
 import static java.util.Optional.ofNullable;
 import static org.folio.linked.data.imprt.util.KafkaUtils.handleForExistedTenant;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -32,16 +33,19 @@ public class ImportResultEventListener {
     groupId = "#{folioKafkaProperties.listener['import-result-event'].groupId}",
     concurrency = "#{folioKafkaProperties.listener['import-result-event'].concurrency}",
     topicPattern = "#{folioKafkaProperties.listener['import-result-event'].topicPattern}")
-  public void handleImportOutputEvent(ConsumerRecord<String, ImportResultEvent> consumerRecord) {
-    var event = consumerRecord.value();
-    handleForExistedTenant(consumerRecord, event.getTs(), linkedDataTenantService, log, this::handleRecord);
+  public void handleImportOutputEvent(List<ConsumerRecord<String, ImportResultEvent>> consumerRecords) {
+    log.info("Processing batch of {} import result events", consumerRecords.size());
+    consumerRecords.forEach(consumerRecord -> {
+      var event = consumerRecord.value();
+      handleForExistedTenant(consumerRecord, event.getTs(), linkedDataTenantService, log, this::handleRecord);
+    });
   }
 
   private void handleRecord(ConsumerRecord<String, ImportResultEvent> consumerRecord) {
     log.info("Processing import result event with Job Execution ID {} and ts {}",
       consumerRecord.value().getJobExecutionId(), consumerRecord.value().getTs());
     var event = consumerRecord.value();
-    tenantScopedExecutionService.executeAsyncWithRetry(
+    tenantScopedExecutionService.executeWithRetry(
       consumerRecord.headers(),
       retryContext -> runRetryableJob(event, retryContext),
       ex -> logFailedEvent(event, ex, false)

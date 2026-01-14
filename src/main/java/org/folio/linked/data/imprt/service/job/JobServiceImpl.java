@@ -54,29 +54,27 @@ public class JobServiceImpl implements JobService {
     var startedBy = getJobParameter(jobExecutionId, STARTED_BY);
     var fileName = getJobParameter(jobExecutionId, FILE_URL);
     var status = jobExecution.getStatus();
-    var currentStep = status.isRunning()
-      ? batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId).orElse(null)
-      : null;
+    var currentStep = batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId).orElse(null);
     var importResults = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
     return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
       .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
-      .linesMapped(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
+      .linesMapped(getMappedCount(jobExecutionId))
       .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
-      .linesCreated(getSum(importResults, ImportResultEvent::getCreatedCount))
-      .linesUpdated(getSum(importResults, ImportResultEvent::getUpdatedCount))
-      .linesFailedSaving(getSum(importResults, ire -> ire.getFailedRdfLines().size()));
+      .linesCreated(getCreatedCount(importResults))
+      .linesUpdated(getUpdatedCount(importResults))
+      .linesFailedSaving(getFailedSavingCount(importResults));
   }
 
-  private String getJobParameter(Long jobExecutionId, String parameter) {
-    return batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, parameter)
-      .orElse(null);
+  @Override
+  public Long getMappedCount(Long jobExecutionId) {
+    return batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId);
   }
 
-  private long getSum(List<ImportResultEvent> importResults, ToLongFunction<ImportResultEvent> valueSupplier) {
-    return importResults.stream()
-      .mapToLong(valueSupplier)
-      .sum();
+  @Override
+  public long getSavedCount(Long jobExecutionId) {
+    var importResults = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
+    return getCreatedCount(importResults) + getUpdatedCount(importResults) + getFailedSavingCount(importResults);
   }
 
   @Override
@@ -122,5 +120,27 @@ public class JobServiceImpl implements JobService {
     }
   }
 
+  private String getJobParameter(Long jobExecutionId, String parameter) {
+    return batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, parameter)
+      .orElse(null);
+  }
+
+  private long getCreatedCount(List<ImportResultEvent> importResults) {
+    return getSum(importResults, ImportResultEvent::getCreatedCount);
+  }
+
+  private long getUpdatedCount(List<ImportResultEvent> importResults) {
+    return getSum(importResults, ImportResultEvent::getUpdatedCount);
+  }
+
+  private long getFailedSavingCount(List<ImportResultEvent> importResults) {
+    return getSum(importResults, ire -> ire.getFailedRdfLines().size());
+  }
+
+  private long getSum(List<ImportResultEvent> importResults, ToLongFunction<ImportResultEvent> valueSupplier) {
+    return importResults.stream()
+      .mapToLong(valueSupplier)
+      .sum();
+  }
 }
 

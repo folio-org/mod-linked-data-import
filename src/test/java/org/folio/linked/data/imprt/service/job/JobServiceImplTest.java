@@ -74,6 +74,10 @@ class JobServiceImplTest {
       .thenReturn(Optional.empty());
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
       .thenReturn(0L);
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
+      .thenReturn(0L);
+    when(batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId))
+      .thenReturn(Optional.empty());
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
       .thenReturn(0L);
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId))
@@ -89,7 +93,7 @@ class JobServiceImplTest {
     assertThat(result.getStartedBy()).isNull();
     assertThat(result.getStatus()).isEqualTo("FAILED");
     assertThat(result.getFileName()).isNull();
-    assertThat(result.getCurrentStep()).isNull();
+    assertThat(result.getLatestStep()).isNull();
     assertThat(result.getLinesRead()).isZero();
     assertThat(result.getLinesMapped()).isZero();
     assertThat(result.getLinesFailedMapping()).isZero();
@@ -138,6 +142,8 @@ class JobServiceImplTest {
       .thenReturn(15L);
     when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
       .thenReturn(10L);
+    when(batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId))
+      .thenReturn(Optional.empty());
     when(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
       .thenReturn(5L);
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId))
@@ -193,7 +199,7 @@ class JobServiceImplTest {
     assertThat(result.getStartedBy()).isEqualTo(startedBy);
     assertThat(result.getStatus()).isEqualTo("STARTED");
     assertThat(result.getFileName()).isEqualTo(fileUrl);
-    assertThat(result.getCurrentStep()).isEqualTo("cleaningStep");
+    assertThat(result.getLatestStep()).isEqualTo("cleaningStep");
     assertThat(result.getLinesRead()).isEqualTo(2500L);
     assertThat(result.getLinesFailedMapping()).isZero();
     assertThat(result.getLinesMapped()).isEqualTo(2482L);
@@ -373,6 +379,39 @@ class JobServiceImplTest {
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Job execution not found for jobExecutionId: 123")
       .hasCauseInstanceOf(NoSuchJobExecutionException.class);
+  }
+
+  @Test
+  void getMappedCount_shouldReturnCount() {
+    // given
+    var jobExecutionId = 123L;
+    when(batchStepExecutionRepo.getMappedCountByJobExecutionId(jobExecutionId))
+      .thenReturn(95L);
+
+    // when
+    var result = jobInfoService.getMappedCount(jobExecutionId);
+
+    // then
+    assertThat(result).isEqualTo(95L);
+  }
+
+
+  @Test
+  void getSavedCount_shouldReturnTotalSavedCount() {
+    // given
+    var jobExecutionId = 123L;
+    var importResults = List.of(
+      createImportResultEvent(jobExecutionId, 100, 80, 15, 3),
+      createImportResultEvent(jobExecutionId, 50, 40, 5, 2)
+    );
+    when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId))
+      .thenReturn(importResults);
+
+    // when
+    var result = jobInfoService.getSavedCount(jobExecutionId);
+
+    // then
+    assertThat(result).isEqualTo(145L); // 80 + 15 + 3 + 40 + 5 + 2
   }
 }
 

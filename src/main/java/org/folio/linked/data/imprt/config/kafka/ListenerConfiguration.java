@@ -30,7 +30,7 @@ public class ListenerConfiguration {
   public ConcurrentKafkaListenerContainerFactory<String, ImportResultEvent> importResultEventListenerContainerFactory(
     ConsumerFactory<String, ImportResultEvent> importResultEventConsumerFactory
   ) {
-    return concurrentKafkaBatchListenerContainerFactory(importResultEventConsumerFactory, false);
+    return concurrentKafkaBatchListenerContainerFactory(importResultEventConsumerFactory, true);
   }
 
   @Bean
