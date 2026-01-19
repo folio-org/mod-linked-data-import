@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+  <changeSet id="4_create_rdf_file_line_table" author="system">
+    <createSequence sequenceName="rdf_file_line_seq" startValue="1" incrementBy="1"/>
+
+    <createTable tableName="rdf_file_line">
+      <column name="id" type="BIGINT">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="job_execution_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="line_number" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="content" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <createIndex tableName="rdf_file_line" indexName="idx_rdf_file_line_job_execution">
+      <column name="job_execution_id"/>
+    </createIndex>
+
+    <createIndex tableName="rdf_file_line" indexName="idx_rdf_file_line_job_line">
+      <column name="job_execution_id"/>
+      <column name="line_number"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>
+

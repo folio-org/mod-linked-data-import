@@ -2,16 +2,12 @@ package org.folio.linked.data.imprt.integration.kafka.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
-import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.createImportResultEventDto;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import org.folio.linked.data.imprt.domain.dto.FailedResource;
@@ -19,7 +15,6 @@ import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
 import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
 import org.folio.linked.data.imprt.test.IntegrationTest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,30 +38,9 @@ class ImportResultEventHandlerIT {
   @Autowired
   private TenantScopedExecutionService tenantScopedExecutionService;
 
-  private File testFile;
-
   @BeforeEach
-  void setUp() throws IOException {
+  void setUp() {
     tenantScopedExecutionService.execute(TENANT_ID, () -> cleanTables(jdbcTemplate));
-
-    testFile = new File(TMP_DIR, TEST_FILE_NAME);
-    Files.writeString(testFile.toPath(), """
-      Line 1 content
-      Line 2 content
-      Line 3 content
-      Line 4 content
-      Line 5 content
-      """);
-  }
-
-  @AfterEach
-  void tearDown() {
-    if (testFile != null && testFile.exists()) {
-      var deleted = testFile.delete();
-      if (!deleted) {
-        testFile.deleteOnExit();
-      }
-    }
   }
 
   @Test
@@ -129,6 +103,13 @@ class ImportResultEventHandlerIT {
           INSERT INTO batch_job_execution_params (job_execution_id, parameter_name, parameter_type, parameter_value, \
           identifying) VALUES (?, ?, ?, ?, ?)""", jobExecutionId, FILE_URL, "java.lang.String", fileUrl, "Y"
       );
+
+      for (long i = 1; i <= 5; i++) {
+        jdbcTemplate.update(
+          "INSERT INTO rdf_file_line (id, job_execution_id, line_number, content) "
+            + "VALUES (nextval('rdf_file_line_seq'), ?, ?, ?)", jobExecutionId, i, "Line " + i + " content"
+        );
+      }
     });
   }
 }
