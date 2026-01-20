@@ -219,7 +219,7 @@ class JobServiceImplTest {
 
     // then
     var content = new String(result.getInputStream().readAllBytes());
-    assertThat(content).isEqualTo("lineNumber,description,failedRdfLine\n");
+    assertThat(content).isEqualTo("lineNumber;description;failedRdfLine\n");
   }
 
   @Test
@@ -245,9 +245,9 @@ class JobServiceImplTest {
     // then
     var content = new String(result.getInputStream().readAllBytes());
     assertThat(content).isEqualTo("""
-      lineNumber,description,failedRdfLine
-      5,RDF parsing error,"{""@id"": ""invalid""}"
-      10,Mapping failed,"{""test"": ""data""}"
+      lineNumber;description;failedRdfLine
+      5;RDF parsing error;"{""@id"": ""invalid""}"
+      10;Mapping failed;"{""test"": ""data""}"
       """);
   }
 
@@ -289,7 +289,7 @@ class JobServiceImplTest {
 
     // then
     var content = new String(result.getInputStream().readAllBytes());
-    assertThat(content).isEqualTo("lineNumber,description,failedRdfLine\n1,,\n");
+    assertThat(content).isEqualTo("lineNumber;description;failedRdfLine\n1;;\n");
   }
 
   private ImportResultEvent createImportResultEvent(Long jobExecutionId, int resources, int created, int updated,

@@ -35,6 +35,7 @@ public class JobServiceImpl implements JobService {
 
   private static final CSVFormat FORMAT = CSVFormat.EXCEL.builder()
     .setHeader("lineNumber", "description", "failedRdfLine")
+    .setDelimiter(';')
     .setRecordSeparator("\n")
     .get();
   private final BatchJobExecutionRepo batchJobExecutionRepo;
