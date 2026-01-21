@@ -19,7 +19,6 @@ import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.SimpleJobOperator;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -131,7 +130,6 @@ public class BatchConfig {
                           Step fileToDatabaseStep,
                           Step mappingStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
-      .incrementer(new RunIdIncrementer())
       .start(downloadFileStep)
       .next(fileToDatabaseStep)
       .next(mappingStep)

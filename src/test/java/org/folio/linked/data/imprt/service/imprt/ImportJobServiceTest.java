@@ -83,6 +83,7 @@ class ImportJobServiceTest {
     assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo(contentType);
     assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
     assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
+    assertThat(capturedProps.getProperty("run.timestamp")).isNotNull();
   }
 
   @Test
@@ -110,6 +111,7 @@ class ImportJobServiceTest {
     assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo("application/ld+json");
     assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
     assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
+    assertThat(capturedProps.getProperty("run.timestamp")).isNotNull();
   }
 
   @Test

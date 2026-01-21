@@ -40,6 +40,7 @@ public class ImportJobServiceImpl implements ImportJobService {
     params.setProperty(FILE_URL, fileUrl);
     params.setProperty(CONTENT_TYPE, isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType);
     params.setProperty(STARTED_BY, ofNullable(userId).map(UUID::toString).orElse("unknown"));
+    params.setProperty("run.timestamp", String.valueOf(System.currentTimeMillis()));
     if (nonNull(defaultWorkType)) {
       params.setProperty(DEFAULT_WORK_TYPE, defaultWorkType.name());
     }
