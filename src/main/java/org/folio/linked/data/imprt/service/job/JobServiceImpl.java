@@ -57,14 +57,19 @@ public class JobServiceImpl implements JobService {
     var status = jobExecution.getStatus();
     var currentStep = batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId).orElse(null);
     var importResults = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
+    var mappedCount = getMappedCount(jobExecutionId);
+    var createdCount = getCreatedCount(importResults);
+    var updatedCount = getUpdatedCount(importResults);
+    var failedSavingCount = getFailedSavingCount(importResults);
     return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
       .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
-      .linesMapped(getMappedCount(jobExecutionId))
+      .linesMapped(mappedCount)
       .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
-      .linesCreated(getCreatedCount(importResults))
-      .linesUpdated(getUpdatedCount(importResults))
-      .linesFailedSaving(getFailedSavingCount(importResults));
+      .linesCreated(createdCount)
+      .linesUpdated(updatedCount)
+      .linesFailedSaving(failedSavingCount)
+      .savingComplete(mappedCount == createdCount + updatedCount + failedSavingCount);
   }
 
   @Override
@@ -107,7 +112,7 @@ public class JobServiceImpl implements JobService {
         throw new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId);
       }
       var status = jobExecution.getStatus();
-      if (!status.isRunning()) {
+      if (! status.isRunning()) {
         throw new IllegalStateException(
           "Job execution " + jobExecutionId + " is not running. Current status: " + status
         );
