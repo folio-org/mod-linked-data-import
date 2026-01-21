@@ -129,16 +129,12 @@ public class BatchConfig {
   public Job rdfImportJob(JobRepository jobRepository,
                           Step downloadFileStep,
                           Step fileToDatabaseStep,
-                          Step mappingStep,
-                          Step waitForSavingStep,
-                          Step cleaningStep) {
+                          Step mappingStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
       .incrementer(new RunIdIncrementer())
       .start(downloadFileStep)
       .next(fileToDatabaseStep)
       .next(mappingStep)
-      .next(waitForSavingStep)
-      .next(cleaningStep)
       .build();
   }
 
@@ -198,24 +194,6 @@ public class BatchConfig {
     var synchronizedReader = new SynchronizedItemStreamReader<RdfLineWithNumber>();
     synchronizedReader.setDelegate(reader);
     return synchronizedReader;
-  }
-
-  @Bean
-  public Step cleaningStep(JobRepository jobRepository,
-                           Tasklet fileCleanupTasklet,
-                           PlatformTransactionManager transactionManager) {
-    return new StepBuilder("cleaningStep", jobRepository)
-      .tasklet(fileCleanupTasklet, transactionManager)
-      .build();
-  }
-
-  @Bean
-  public Step waitForSavingStep(JobRepository jobRepository,
-                                Tasklet waitForSavingTasklet,
-                                PlatformTransactionManager transactionManager) {
-    return new StepBuilder("waitForSavingStep", jobRepository)
-      .tasklet(waitForSavingTasklet, transactionManager)
-      .build();
   }
 
 }

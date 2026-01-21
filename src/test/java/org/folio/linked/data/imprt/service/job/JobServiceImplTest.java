@@ -189,7 +189,7 @@ class JobServiceImplTest {
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId))
       .thenReturn(importResults);
     when(batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId))
-      .thenReturn(Optional.of("cleaningStep"));
+      .thenReturn(Optional.of("mappingStep"));
 
     // when
     var result = jobInfoService.getJobInfo(jobExecutionId);
@@ -199,7 +199,7 @@ class JobServiceImplTest {
     assertThat(result.getStartedBy()).isEqualTo(startedBy);
     assertThat(result.getStatus()).isEqualTo("STARTED");
     assertThat(result.getFileName()).isEqualTo(fileUrl);
-    assertThat(result.getLatestStep()).isEqualTo("cleaningStep");
+    assertThat(result.getLatestStep()).isEqualTo("mappingStep");
     assertThat(result.getLinesRead()).isEqualTo(2500L);
     assertThat(result.getLinesFailedMapping()).isZero();
     assertThat(result.getLinesMapped()).isEqualTo(2482L);
