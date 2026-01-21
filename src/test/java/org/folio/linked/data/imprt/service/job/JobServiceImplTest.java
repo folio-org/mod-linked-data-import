@@ -101,7 +101,7 @@ class JobServiceImplTest {
     assertThat(result.getLinesCreated()).isZero();
     assertThat(result.getLinesUpdated()).isZero();
     assertThat(result.getLinesFailedSaving()).isZero();
-    assertThat(result.getSavingComplete()).isTrue();
+    assertThat(result.getSavingComplete()).isNull();
   }
 
   @Test
@@ -209,7 +209,7 @@ class JobServiceImplTest {
     assertThat(result.getLinesCreated()).isEqualTo(2050L); // 800 + 850 + 400
     assertThat(result.getLinesUpdated()).isEqualTo(450L); // 200 + 150 + 100
     assertThat(result.getLinesFailedSaving()).isEqualTo(18L); // 10 + 5 + 3
-    assertThat(result.getSavingComplete()).isFalse();
+    assertThat(result.getSavingComplete()).isFalse(); // 2482 != 2518 (2050 + 450 + 18)
   }
 
   @Test
