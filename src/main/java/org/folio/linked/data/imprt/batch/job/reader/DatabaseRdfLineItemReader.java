@@ -11,7 +11,8 @@ import org.springframework.batch.item.support.AbstractItemStreamItemReader;
 
 public class DatabaseRdfLineItemReader extends AbstractItemStreamItemReader<RdfLineWithNumber> {
 
-  private static final String SELECTION_QUERY = "SELECT r FROM RdfFileLine r WHERE r.jobExecutionId = :jobExecutionId";
+  private static final String SELECTION_QUERY =
+    "SELECT r FROM RdfFileLine r WHERE r.jobExecutionId = :jobExecutionId ORDER BY lineNumber";
   private static final String QUERY_PARAM_JOB_EXECUTION_ID = "jobExecutionId";
   private final JpaCursorItemReader<RdfFileLine> delegate;
 
