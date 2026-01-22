@@ -186,9 +186,11 @@ public class BatchConfig {
   @Bean
   @StepScope
   public SynchronizedItemStreamReader<RdfLineWithNumber> databaseRdfLineItemReader(
-    @Value("#{stepExecution.jobExecutionId}") Long jobExecutionId, EntityManagerFactory entityManagerFactory
+    @Value("#{stepExecution.jobExecutionId}") Long jobExecutionId,
+    @Value("${mod-linked-data-import.chunk-size}") int chunkSize,
+    EntityManagerFactory entityManagerFactory
   ) {
-    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory);
+    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory, chunkSize);
     var synchronizedReader = new SynchronizedItemStreamReader<RdfLineWithNumber>();
     synchronizedReader.setDelegate(reader);
     return synchronizedReader;

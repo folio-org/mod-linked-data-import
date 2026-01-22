@@ -66,7 +66,7 @@ class DatabaseRdfLineItemReaderTest {
   @Test
   void read_shouldReturnRdfLinesForJobExecutionId() {
     // given
-    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory);
+    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory, 1000);
     var executionContext = new ExecutionContext();
 
     // when
@@ -101,7 +101,7 @@ class DatabaseRdfLineItemReaderTest {
   @Test
   void read_shouldReturnOnlyLinesForSpecificJobExecutionId() {
     // given
-    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory);
+    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory, 1000);
     var executionContext = new ExecutionContext();
 
     // when
@@ -128,7 +128,7 @@ class DatabaseRdfLineItemReaderTest {
   void read_shouldReturnNullWhenNoLinesExist() {
     // given
     var emptyJobExecutionId = 777L;
-    var reader = new DatabaseRdfLineItemReader(emptyJobExecutionId, entityManagerFactory);
+    var reader = new DatabaseRdfLineItemReader(emptyJobExecutionId, entityManagerFactory, 1000);
     var executionContext = new ExecutionContext();
 
     // when
