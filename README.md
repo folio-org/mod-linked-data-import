@@ -123,6 +123,7 @@ This value should be `true` if AWS S3 is used.
 | DB_HOST                                                  | postgres                  | Database host                                                               |
 | DB_PORT                                                  | 5432                      | Database port                                                               |
 | DB_DATABASE                                              | okapi_modules             | Database name                                                               |
+| DB_MAXPOOLSIZE                                           | 100                       | Maximum database connection pool size                                       |
 | KAFKA_HOST                                               | kafka                     | Kafka broker host                                                           |
 | KAFKA_PORT                                               | 9092                      | Kafka broker port                                                           |
 | KAFKA_CONSUMER_MAX_POLL_RECORDS                          | 100                       | Maximum number of records returned in a single poll                         |
