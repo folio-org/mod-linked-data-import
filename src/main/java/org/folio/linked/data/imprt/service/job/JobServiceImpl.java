@@ -115,7 +115,7 @@ public class JobServiceImpl implements JobService {
         throw new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId);
       }
       var status = jobExecution.getStatus();
-      if (! status.isRunning()) {
+      if (!status.isRunning()) {
         throw new IllegalStateException(
           "Job execution " + jobExecutionId + " is not running. Current status: " + status
         );

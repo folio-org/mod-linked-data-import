@@ -152,7 +152,8 @@ This value should be `true` if AWS S3 is used.
 | OUTPUT_CHUNK_SIZE                                        | 100                       | Number of Graph resources sent to Kafka per chunk                           |
 | JOB_POOL_SIZE                                            | 1                         | Number of concurrent Import Jobs                                            |
 | PROCESS_FILE_MAX_POOL_SIZE                               | 1000                      | Maximum threads used for parallel chunk processing                          |
-| WAIT_FOR_PROCESSING_INTERVAL_MS                          | 5000                      | Interval in milliseconds to wait between checks for processing completion   |
+| DATA_CLEANUP_CRON                                        | 0 0 2 * * *               | Cron expression for automatic cleanup of completed job data (daily at 2 AM) |
+| DATA_CLEANUP_AGE_DAYS                                    | 2                         | Number of days after which job data is eligible for cleanup                 |
 
 ## Further information
 
