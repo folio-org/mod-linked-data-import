@@ -9,7 +9,8 @@
       "format": "int64"
     },
     "resource": {
-      "$ref": "resourcePlaceholder.json"
+      "$ref": "resourcePlaceholder.json",
+      "description": "Resource mapped from the RDF line"
     }
   },
   "required": ["lineNumber", "resource"]

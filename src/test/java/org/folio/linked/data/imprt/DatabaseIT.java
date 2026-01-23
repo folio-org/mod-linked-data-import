@@ -25,7 +25,8 @@ class DatabaseIT {
     "batch_step_execution_context",
     "batch_job_execution_context",
     "failed_rdf_line",
-    "import_result_event"
+    "import_result_event",
+    "rdf_file_line"
   );
   private static final String LIST_TABLES_QUERY = """
           SELECT table_name

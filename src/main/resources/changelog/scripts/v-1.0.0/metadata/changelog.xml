@@ -7,5 +7,6 @@
   <include file="tables/1_spring_batch_init.xml" relativeToChangelogFile="true"/>
   <include file="tables/2_failed_rdf_line.xml" relativeToChangelogFile="true"/>
   <include file="tables/3_import_result_event.xml" relativeToChangelogFile="true"/>
+  <include file="tables/4_rdf_file_line.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
