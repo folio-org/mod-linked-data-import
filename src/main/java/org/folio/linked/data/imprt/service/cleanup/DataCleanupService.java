@@ -1,6 +1,5 @@
 package org.folio.linked.data.imprt.service.cleanup;
 
-import static java.util.Objects.nonNull;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +28,13 @@ public class DataCleanupService {
     log.info("Starting scheduled cleanup of job data older than {} days", cleanupAgeDays);
 
     var cutoffDate = LocalDateTime.now().minusDays(cleanupAgeDays);
-    var applicableJobs = batchJobExecutionRepo.findAll().stream()
-      .filter(job -> nonNull(job.getStartTime()) && job.getStartTime().isBefore(cutoffDate))
-      .toList();
+    var applicableJobs = batchJobExecutionRepo.findByStartTimeBefore(cutoffDate);
+
     if (applicableJobs.isEmpty()) {
       log.info("No applicable jobs found for cleanup");
       return;
     }
+
     var totalCleaned = applicableJobs.stream()
       .mapToLong(job -> cleanupJobData(job.getJobExecutionId()))
       .sum();

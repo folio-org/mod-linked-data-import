@@ -1,5 +1,6 @@
 package org.folio.linked.data.imprt.service.cleanup;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -51,12 +52,8 @@ class DataCleanupServiceTest {
     oldJob2.setStartTime(LocalDateTime.now().minusDays(5));
     oldJob2.setStatus(BatchStatus.FAILED);
 
-    var recentJob = new BatchJobExecution();
-    recentJob.setJobExecutionId(3L);
-    recentJob.setStartTime(LocalDateTime.now().minusDays(1));
-    recentJob.setStatus(BatchStatus.COMPLETED);
-
-    when(batchJobExecutionRepo.findAll()).thenReturn(List.of(oldJob1, oldJob2, recentJob));
+    when(batchJobExecutionRepo.findByStartTimeBefore(any(LocalDateTime.class)))
+      .thenReturn(List.of(oldJob1, oldJob2));
     when(rdfFileLineRepo.deleteByJobExecutionId(1L)).thenReturn(100L);
     when(rdfFileLineRepo.deleteByJobExecutionId(2L)).thenReturn(50L);
 
@@ -66,18 +63,13 @@ class DataCleanupServiceTest {
     // Then
     verify(rdfFileLineRepo, times(1)).deleteByJobExecutionId(1L);
     verify(rdfFileLineRepo, times(1)).deleteByJobExecutionId(2L);
-    verify(rdfFileLineRepo, never()).deleteByJobExecutionId(3L);
   }
 
   @Test
   void shouldNotCleanupJobsWithNullStartTime() {
-    // Given
-    var jobWithNullStartTime = new BatchJobExecution();
-    jobWithNullStartTime.setJobExecutionId(1L);
-    jobWithNullStartTime.setStartTime(null);
-    jobWithNullStartTime.setStatus(BatchStatus.COMPLETED);
-
-    when(batchJobExecutionRepo.findAll()).thenReturn(List.of(jobWithNullStartTime));
+    // Given - repository method filters by startTime, so null startTime jobs won't be returned
+    when(batchJobExecutionRepo.findByStartTimeBefore(any(LocalDateTime.class)))
+      .thenReturn(List.of());
 
     // When
     dataCleanupService.cleanupCompletedJobData();
@@ -89,7 +81,8 @@ class DataCleanupServiceTest {
   @Test
   void shouldHandleEmptyJobList() {
     // Given
-    when(batchJobExecutionRepo.findAll()).thenReturn(List.of());
+    when(batchJobExecutionRepo.findByStartTimeBefore(any(LocalDateTime.class)))
+      .thenReturn(List.of());
 
     // When
     dataCleanupService.cleanupCompletedJobData();
@@ -111,7 +104,8 @@ class DataCleanupServiceTest {
     oldJob2.setStartTime(LocalDateTime.now().minusDays(4));
     oldJob2.setStatus(BatchStatus.COMPLETED);
 
-    when(batchJobExecutionRepo.findAll()).thenReturn(List.of(oldJob1, oldJob2));
+    when(batchJobExecutionRepo.findByStartTimeBefore(any(LocalDateTime.class)))
+      .thenReturn(List.of(oldJob1, oldJob2));
     doThrow(new RuntimeException("Database error")).when(rdfFileLineRepo).deleteByJobExecutionId(1L);
     when(rdfFileLineRepo.deleteByJobExecutionId(2L)).thenReturn(50L);
 
@@ -146,7 +140,8 @@ class DataCleanupServiceTest {
     startedJob.setStartTime(LocalDateTime.now().minusDays(3));
     startedJob.setStatus(BatchStatus.STARTED);
 
-    when(batchJobExecutionRepo.findAll()).thenReturn(List.of(completedJob, failedJob, stoppedJob, startedJob));
+    when(batchJobExecutionRepo.findByStartTimeBefore(any(LocalDateTime.class)))
+      .thenReturn(List.of(completedJob, failedJob, stoppedJob, startedJob));
     when(rdfFileLineRepo.deleteByJobExecutionId(1L)).thenReturn(10L);
     when(rdfFileLineRepo.deleteByJobExecutionId(2L)).thenReturn(20L);
     when(rdfFileLineRepo.deleteByJobExecutionId(3L)).thenReturn(30L);
