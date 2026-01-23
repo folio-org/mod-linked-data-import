@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -100,6 +101,7 @@ class JobServiceImplTest {
     assertThat(result.getLinesCreated()).isZero();
     assertThat(result.getLinesUpdated()).isZero();
     assertThat(result.getLinesFailedSaving()).isZero();
+    assertThat(result.getSavingComplete()).isNull();
   }
 
   @Test
@@ -156,6 +158,7 @@ class JobServiceImplTest {
     assertThat(result.getLinesFailedSaving()).isZero();
     assertThat(result.getLinesFailedMapping()).isEqualTo(5L);
     assertThat(result.getStatus()).isEqualTo("FAILED");
+    assertThat(result.getSavingComplete()).isTrue();
   }
 
   @Test
@@ -189,7 +192,7 @@ class JobServiceImplTest {
     when(importResultEventRepo.findAllByJobExecutionId(jobExecutionId))
       .thenReturn(importResults);
     when(batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId))
-      .thenReturn(Optional.of("cleaningStep"));
+      .thenReturn(Optional.of("mappingStep"));
 
     // when
     var result = jobInfoService.getJobInfo(jobExecutionId);
@@ -199,13 +202,14 @@ class JobServiceImplTest {
     assertThat(result.getStartedBy()).isEqualTo(startedBy);
     assertThat(result.getStatus()).isEqualTo("STARTED");
     assertThat(result.getFileName()).isEqualTo(fileUrl);
-    assertThat(result.getLatestStep()).isEqualTo("cleaningStep");
+    assertThat(result.getLatestStep()).isEqualTo("mappingStep");
     assertThat(result.getLinesRead()).isEqualTo(2500L);
     assertThat(result.getLinesFailedMapping()).isZero();
     assertThat(result.getLinesMapped()).isEqualTo(2482L);
     assertThat(result.getLinesCreated()).isEqualTo(2050L); // 800 + 850 + 400
     assertThat(result.getLinesUpdated()).isEqualTo(450L); // 200 + 150 + 100
     assertThat(result.getLinesFailedSaving()).isEqualTo(18L); // 10 + 5 + 3
+    assertThat(result.getSavingComplete()).isFalse(); // 2482 != 2518 (2050 + 450 + 18)
   }
 
   @Test
@@ -318,7 +322,7 @@ class JobServiceImplTest {
     jobInfoService.cancelJob(jobExecutionId);
 
     // then
-    org.mockito.Mockito.verify(jobOperator).stop(jobExecutionId);
+    verify(jobOperator).stop(jobExecutionId);
   }
 
   @Test

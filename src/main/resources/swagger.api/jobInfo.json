@@ -63,6 +63,10 @@
       "type": "integer",
       "format": "int64",
       "description": "Number of lines failed during saving"
+    },
+    "savingComplete": {
+      "type": "boolean",
+      "description": "Indicates if the saving process is complete"
     }
   }
 }

@@ -95,6 +95,7 @@
       { "name": "DB_USERNAME", "value": "folio_admin" },
       { "name": "DB_PASSWORD", "value": "folio_admin" },
       { "name": "DB_DATABASE", "value": "okapi_modules" },
+      { "name": "DB_MAXPOOLSIZE", "value": "100" },
       { "name": "KAFKA_HOST", "value": "kafka" },
       { "name": "KAFKA_PORT", "value": "9092" },
       { "name": "KAFKA_SECURITY_PROTOCOL", "value": "PLAINTEXT" },
@@ -120,7 +121,8 @@
       { "name": "OUTPUT_CHUNK_SIZE", "value": "100" },
       { "name": "JOB_POOL_SIZE", "value": "1" },
       { "name": "PROCESS_FILE_MAX_POOL_SIZE", "value": "1000" },
-      { "name": "WAIT_FOR_PROCESSING_INTERVAL_MS", "value": "5000" }
+      { "name": "DATA_CLEANUP_CRON", "value": "0 0 2 * * *" },
+      { "name": "DATA_CLEANUP_AGE_DAYS", "value": "2" }
     ]
   }
 }

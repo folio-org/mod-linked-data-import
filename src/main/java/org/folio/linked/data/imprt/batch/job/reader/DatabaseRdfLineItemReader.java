@@ -6,21 +6,22 @@ import org.folio.linked.data.imprt.model.RdfLineWithNumber;
 import org.folio.linked.data.imprt.model.entity.RdfFileLine;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
-import org.springframework.batch.item.database.JpaCursorItemReader;
+import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.support.AbstractItemStreamItemReader;
 
 public class DatabaseRdfLineItemReader extends AbstractItemStreamItemReader<RdfLineWithNumber> {
 
   private static final String SELECTION_QUERY =
-    "SELECT r FROM RdfFileLine r WHERE r.jobExecutionId = :jobExecutionId ORDER BY lineNumber";
+    "SELECT r FROM RdfFileLine r WHERE r.jobExecutionId = :jobExecutionId ORDER BY r.lineNumber";
   private static final String QUERY_PARAM_JOB_EXECUTION_ID = "jobExecutionId";
-  private final JpaCursorItemReader<RdfFileLine> delegate;
+  private final JpaPagingItemReader<RdfFileLine> delegate;
 
-  public DatabaseRdfLineItemReader(Long jobExecutionId, EntityManagerFactory entityManagerFactory) {
-    this.delegate = new JpaCursorItemReader<>();
+  public DatabaseRdfLineItemReader(Long jobExecutionId, EntityManagerFactory entityManagerFactory, int chunkSize) {
+    this.delegate = new JpaPagingItemReader<>();
     this.delegate.setEntityManagerFactory(entityManagerFactory);
     this.delegate.setQueryString(SELECTION_QUERY);
     this.delegate.setParameterValues(java.util.Map.of(QUERY_PARAM_JOB_EXECUTION_ID, jobExecutionId));
+    this.delegate.setPageSize(chunkSize);
     this.delegate.setName("databaseRdfLineReader");
   }
 

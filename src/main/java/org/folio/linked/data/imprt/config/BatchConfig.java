@@ -19,7 +19,6 @@ import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.SimpleJobOperator;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -129,16 +128,11 @@ public class BatchConfig {
   public Job rdfImportJob(JobRepository jobRepository,
                           Step downloadFileStep,
                           Step fileToDatabaseStep,
-                          Step mappingStep,
-                          Step waitForSavingStep,
-                          Step cleaningStep) {
+                          Step mappingStep) {
     return new JobBuilder(JOB_RDF_IMPORT, jobRepository)
-      .incrementer(new RunIdIncrementer())
       .start(downloadFileStep)
       .next(fileToDatabaseStep)
       .next(mappingStep)
-      .next(waitForSavingStep)
-      .next(cleaningStep)
       .build();
   }
 
@@ -192,30 +186,14 @@ public class BatchConfig {
   @Bean
   @StepScope
   public SynchronizedItemStreamReader<RdfLineWithNumber> databaseRdfLineItemReader(
-    @Value("#{stepExecution.jobExecutionId}") Long jobExecutionId, EntityManagerFactory entityManagerFactory
+    @Value("#{stepExecution.jobExecutionId}") Long jobExecutionId,
+    @Value("${mod-linked-data-import.chunk-size}") int chunkSize,
+    EntityManagerFactory entityManagerFactory
   ) {
-    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory);
+    var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory, chunkSize);
     var synchronizedReader = new SynchronizedItemStreamReader<RdfLineWithNumber>();
     synchronizedReader.setDelegate(reader);
     return synchronizedReader;
-  }
-
-  @Bean
-  public Step cleaningStep(JobRepository jobRepository,
-                           Tasklet fileCleanupTasklet,
-                           PlatformTransactionManager transactionManager) {
-    return new StepBuilder("cleaningStep", jobRepository)
-      .tasklet(fileCleanupTasklet, transactionManager)
-      .build();
-  }
-
-  @Bean
-  public Step waitForSavingStep(JobRepository jobRepository,
-                                Tasklet waitForSavingTasklet,
-                                PlatformTransactionManager transactionManager) {
-    return new StepBuilder("waitForSavingStep", jobRepository)
-      .tasklet(waitForSavingTasklet, transactionManager)
-      .build();
   }
 
 }

@@ -10,6 +10,6 @@ public interface RdfFileLineRepo extends JpaRepository<RdfFileLine, Long> {
 
   Optional<RdfFileLine> findByJobExecutionIdAndLineNumber(Long jobExecutionId, Long lineNumber);
 
-  void deleteByJobExecutionId(Long jobExecutionId);
+  long deleteByJobExecutionId(Long jobExecutionId);
 }
 

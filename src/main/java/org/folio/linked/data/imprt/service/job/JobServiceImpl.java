@@ -57,14 +57,22 @@ public class JobServiceImpl implements JobService {
     var status = jobExecution.getStatus();
     var currentStep = batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId).orElse(null);
     var importResults = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
-    return new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
+    var mappedCount = getMappedCount(jobExecutionId);
+    var createdCount = getCreatedCount(importResults);
+    var updatedCount = getUpdatedCount(importResults);
+    var failedSavingCount = getFailedSavingCount(importResults);
+    var jobInfo = new JobInfo(startDate, startedBy, status.name(), fileName, currentStep)
       .endDate(endDate)
       .linesRead(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
-      .linesMapped(getMappedCount(jobExecutionId))
+      .linesMapped(mappedCount)
       .linesFailedMapping(failedRdfLineRepo.countFailedLinesWithoutImportResultEvent(jobExecutionId))
-      .linesCreated(getCreatedCount(importResults))
-      .linesUpdated(getUpdatedCount(importResults))
-      .linesFailedSaving(getFailedSavingCount(importResults));
+      .linesCreated(createdCount)
+      .linesUpdated(updatedCount)
+      .linesFailedSaving(failedSavingCount);
+    if (mappedCount > 0) {
+      jobInfo.setSavingComplete(mappedCount == createdCount + updatedCount + failedSavingCount);
+    }
+    return jobInfo;
   }
 
   @Override
