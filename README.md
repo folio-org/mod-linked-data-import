@@ -136,7 +136,7 @@ This value should be `true` if AWS S3 is used.
 | KAFKA_RETRY_INTERVAL_MS                                  | 2000                      | Kafka retry interval in milliseconds                                        |
 | KAFKA_RETRY_DELIVERY_ATTEMPTS                            | 6                         | Number of Kafka delivery retry attempts                                     |
 | KAFKA_IMPORT_RESULT_EVENT_CONCURRENCY                    | 1                         | Number of concurrent consumers for import result events                     |
-| KAFKA_IMPORT_RESULT_EVENT_TOPIC_PATTERN                  | (${ENV}\.)(.*\.)result    | Kafka topic pattern for import result events                                |
+| KAFKA_IMPORT_RESULT_EVENT_TOPIC_PATTERN                  | (${ENV}\\.)(.\*\\.)result | Kafka topic pattern for import result events                                |
 | KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC                    | linked_data_import.output | Kafka topic where the transformed subgraph is published for mod-linked-data |
 | KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_PARTITIONS         | 3                         | Number of partitions for the output topic                                   |
 | KAFKA_LINKED_DATA_IMPORT_OUTPUT_TOPIC_REPLICATION_FACTOR | -                         | Replication factor for the output topic                                     |
