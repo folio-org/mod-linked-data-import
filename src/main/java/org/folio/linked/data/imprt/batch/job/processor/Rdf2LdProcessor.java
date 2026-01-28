@@ -17,7 +17,6 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -42,8 +41,6 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
   }
 
   @Override
-  @Nullable
-  @SuppressWarnings("java:S2638")
   public Set<ResourceWithLineNumber> process(@NonNull RdfLineWithNumber rdfLineWithNumber) {
     var rdfLine = rdfLineWithNumber.getContent();
     var lineNumber = rdfLineWithNumber.getLineNumber();
@@ -54,7 +51,7 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
       if (result.isEmpty()) {
         log.debug(EMPTY_RESULT + ", saving FailedRdfLine. JobExecutionId [{}], line #{}", jobExecutionId, lineNumber);
         saveFailedLine(lineNumber, rdfLine, EMPTY_RESULT);
-        return null;
+        return Set.of();
       }
       return result.stream()
         .map(resource -> new ResourceWithLineNumber(lineNumber, resource))
@@ -63,7 +60,7 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
       log.warn("Exception during processing RDF line #{}, saving FailedRdfLine. JobExecutionId [{}]", lineNumber,
         jobExecutionId);
       saveFailedLine(lineNumber, rdfLine, e.getMessage());
-      return null;
+      return Set.of();
     }
   }
 
