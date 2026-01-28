@@ -73,7 +73,7 @@ class Rdf2LdProcessorTest {
     var result = rdf2LdProcessor.process(rdfLine);
 
     // then
-    assertThat(result).isNull();
+    assertThat(result).isEmpty();
     verify(failedRdfLineRepo).save(expectedFailedRdfLine);
   }
 
@@ -93,7 +93,7 @@ class Rdf2LdProcessorTest {
     var result = rdf2LdProcessor.process(rdfLine);
 
     // then
-    assertThat(result).isNull();
+    assertThat(result).isEmpty();
     verify(failedRdfLineRepo).save(expectedFailedRdfLine);
   }
 }

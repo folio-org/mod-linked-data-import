@@ -81,7 +81,7 @@ class JobInfoIT {
     assertThat(jobInfo.getFileName()).isEqualTo(fileName);
     assertThat(jobInfo.getLatestStep()).isEqualTo("mappingStep");
     assertThat(jobInfo.getLinesRead()).isEqualTo(3L);
-    assertThat(jobInfo.getLinesMapped()).isEqualTo(2L);
+    assertThat(jobInfo.getLinesMapped()).isEqualTo(3L);
     assertThat(jobInfo.getLinesFailedMapping()).isEqualTo(1L);
     assertThat(jobInfo.getLinesCreated()).isEqualTo(1L);
     assertThat(jobInfo.getLinesUpdated()).isZero();
