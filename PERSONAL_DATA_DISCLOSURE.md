@@ -10,10 +10,10 @@ For the purposes of this form, "store" includes the following:
 * Sending to an external piece of infrastructure such as a queue (e.g. Kafka), search engine (e.g. Elasticsearch), distributed table, etc.
 
 ## Personal Data Stored by This Module
-- [x] This module does not store any personal data.
+- [ ] This module does not store any personal data.
 - [ ] This module provides [custom fields](https://github.com/folio-org/folio-custom-fields).
 - [ ] This module stores fields with free-form text (tags, notes, descriptions, etc.)
-- [ ] This module caches personal data
+- [x] This module caches personal data
 ---
 - [ ] First name
 - [ ] Last name
@@ -35,8 +35,13 @@ For the purposes of this form, "store" includes the following:
 - [ ] Geolocation data
 - [ ] Financial information
 - [ ] Logic or algorithms used to build a user/profile
+- [x] Work time of a person (date/time of data import activity)
 
 **NOTE** This is not intended to be a comprehensive list, but instead provide a starting point for module developers/maintainers to use.
+
+Additional disclosure:
+- The `startDate` field stored in `import_result_event` database table can be personal data under [GDPR](https://gdpr.eu/).
+  In a library where only one person perform data import, this can reveal that person's work time.
 
 ## Privacy Laws, Regulations, and Policies
 The following laws and policies were considered when creating the list of personal data fields above.
