@@ -43,7 +43,7 @@ public class Rdf2LdProcessor implements ItemProcessor<RdfLineWithNumber, Set<Res
 
   @Override
   @Nullable
-  @SuppressWarnings("java:S2638")
+  @SuppressWarnings("java:S2638")  // false positive "Method override should not change contracts"
   public Set<ResourceWithLineNumber> process(@NonNull RdfLineWithNumber rdfLineWithNumber) {
     var rdfLine = rdfLineWithNumber.getContent();
     var lineNumber = rdfLineWithNumber.getLineNumber();
