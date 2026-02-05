@@ -25,25 +25,25 @@
         {
           "methods": [ "POST" ],
           "pathPattern": "/linked-data-import/start",
-          "permissionsRequired": [ "linked-data-import.start" ],
+          "permissionsRequired": [ "linked-data-import.start.post" ],
           "modulePermissions": []
         },
         {
           "methods": [ "GET" ],
           "pathPattern": "/linked-data-import/jobs/{jobExecutionId}",
-          "permissionsRequired": [ "linked-data-import.job.get" ],
+          "permissionsRequired": [ "linked-data-import.jobs.item.get" ],
           "modulePermissions": []
         },
         {
           "methods": [ "GET" ],
           "pathPattern": "/linked-data-import/jobs/{jobExecutionId}/failed-lines",
-          "permissionsRequired": [ "linked-data-import.job.failed-lines.get" ],
+          "permissionsRequired": [ "linked-data-import.jobs.failed-lines.collection.get" ],
           "modulePermissions": []
         },
         {
           "methods": [ "PUT" ],
           "pathPattern": "/linked-data-import/jobs/{jobExecutionId}/cancel",
-          "permissionsRequired": [ "linked-data-import.job.cancel" ],
+          "permissionsRequired": [ "linked-data-import.jobs.item.cancel.put" ],
           "modulePermissions": []
         }
       ]
@@ -57,22 +57,22 @@
   ],
   "permissionSets": [
     {
-      "permissionName": "linked-data-import.start",
+      "permissionName": "linked-data-import.start.post",
       "displayName": "Linked Data Import: Start Linked Data Import process",
       "description": "Start Linked Data Import process"
     },
     {
-      "permissionName": "linked-data-import.job.get",
+      "permissionName": "linked-data-import.jobs.item.get",
       "displayName": "Linked Data Import: Get import job information",
       "description": "Get import job information by job ID"
     },
     {
-      "permissionName": "linked-data-import.job.failed-lines.get",
+      "permissionName": "linked-data-import.jobs.failed-lines.collection.get",
       "displayName": "Linked Data Import: Download failed RDF lines",
       "description": "Download CSV file with failed RDF lines for a job"
     },
     {
-      "permissionName": "linked-data-import.job.cancel",
+      "permissionName": "linked-data-import.jobs.item.cancel.put",
       "displayName": "Linked Data Import: Cancel running import job",
       "description": "Cancel a running import job by job execution ID"
     }
