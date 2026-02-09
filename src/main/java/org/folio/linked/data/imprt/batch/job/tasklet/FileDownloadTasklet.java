@@ -1,6 +1,6 @@
 package org.folio.linked.data.imprt.batch.job.tasklet;
 
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 
 import java.io.IOException;
@@ -22,15 +22,15 @@ public class FileDownloadTasklet implements Tasklet {
 
   @Override
   public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) {
-    var fileUrl = chunkContext.getStepContext()
+    var fileName = chunkContext.getStepContext()
       .getStepExecution()
       .getJobParameters()
-      .getString(FILE_URL);
+      .getString(FILE_NAME);
     try {
-      s3Service.download(fileUrl, TMP_DIR);
+      s3Service.download(fileName, TMP_DIR);
     } catch (IOException e) {
-      log.error("Error downloading file {}", fileUrl, e);
-      throw new IllegalArgumentException("Error downloading file " + fileUrl, e);
+      log.error("Error downloading file {}", fileName, e);
+      throw new IllegalArgumentException("Error downloading file " + fileName, e);
     }
     return RepeatStatus.FINISHED;
   }

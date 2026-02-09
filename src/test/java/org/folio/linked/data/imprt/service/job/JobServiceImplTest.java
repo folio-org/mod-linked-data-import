@@ -2,7 +2,7 @@ package org.folio.linked.data.imprt.service.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +69,7 @@ class JobServiceImplTest {
 
     when(batchJobExecutionRepo.findByJobExecutionId(jobExecutionId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_NAME))
       .thenReturn(Optional.empty());
     when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, STARTED_BY))
       .thenReturn(Optional.empty());
@@ -136,7 +136,7 @@ class JobServiceImplTest {
 
     when(batchJobExecutionRepo.findByJobExecutionId(jobExecutionId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_NAME))
       .thenReturn(Optional.of("file.rdf"));
     when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, STARTED_BY))
       .thenReturn(Optional.of("user-123"));
@@ -179,7 +179,7 @@ class JobServiceImplTest {
     String fileUrl = "large-file.rdf";
     when(batchJobExecutionRepo.findByJobExecutionId(jobExecutionId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_NAME))
       .thenReturn(Optional.of(fileUrl));
     when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, STARTED_BY))
       .thenReturn(Optional.of(startedBy));

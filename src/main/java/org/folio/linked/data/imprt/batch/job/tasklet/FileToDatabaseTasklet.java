@@ -1,8 +1,7 @@
 package org.folio.linked.data.imprt.batch.job.tasklet;
 
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
-import static org.folio.linked.data.imprt.util.FileUtil.extractFileName;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,23 +32,23 @@ public class FileToDatabaseTasklet implements Tasklet {
   @Transactional
   public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext) {
     var jobExecutionId = chunkContext.getStepContext().getStepExecution().getJobExecutionId();
-    var fileUrl = chunkContext.getStepContext()
+    var fileName = chunkContext.getStepContext()
       .getStepExecution()
       .getJobParameters()
-      .getString(FILE_URL);
+      .getString(FILE_NAME);
 
-    if (fileUrl == null) {
+    if (fileName == null) {
       throw new IllegalArgumentException("File URL parameter is required");
     }
 
-    var file = new File(TMP_DIR, extractFileName(fileUrl));
+    var file = new File(TMP_DIR, fileName);
 
     try {
       saveFileToDatabase(file, jobExecutionId);
       deleteFile(file);
     } catch (IOException e) {
-      log.error("Error saving file to database: {}", fileUrl, e);
-      throw new IllegalArgumentException("Error saving file to database: " + fileUrl, e);
+      log.error("Error saving file to database: {}", fileName, e);
+      throw new IllegalArgumentException("Error saving file to database: " + fileName, e);
     }
 
     return RepeatStatus.FINISHED;

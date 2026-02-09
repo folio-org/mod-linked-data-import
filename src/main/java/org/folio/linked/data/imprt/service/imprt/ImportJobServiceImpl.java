@@ -4,7 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -37,7 +37,7 @@ public class ImportJobServiceImpl implements ImportJobService {
     checkFile(fileUrl);
     var userId = folioExecutionContext.getUserId();
     var params = new Properties();
-    params.setProperty(FILE_URL, fileUrl);
+    params.setProperty(FILE_NAME, fileUrl);
     params.setProperty(CONTENT_TYPE, isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType);
     params.setProperty(STARTED_BY, ofNullable(userId).map(UUID::toString).orElse("unknown"));
     params.setProperty("run.timestamp", String.valueOf(System.currentTimeMillis()));

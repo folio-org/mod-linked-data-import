@@ -1,7 +1,7 @@
 package org.folio.linked.data.imprt.batch.job.tasklet;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
@@ -43,7 +43,7 @@ class FileDownloadTaskletTest {
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobParameters()).thenReturn(jobParameters);
-    when(jobParameters.getString(FILE_URL)).thenReturn(fileUrl);
+    when(jobParameters.getString(FILE_NAME)).thenReturn(fileUrl);
     var stepContribution = mock(StepContribution.class);
 
     // when
@@ -64,7 +64,7 @@ class FileDownloadTaskletTest {
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobParameters()).thenReturn(jobParameters);
-    when(jobParameters.getString(FILE_URL)).thenReturn(fileUrl);
+    when(jobParameters.getString(FILE_NAME)).thenReturn(fileUrl);
     doThrow(new IOException()).when(s3Service).download(fileUrl, TMP_DIR);
     var stepContribution = mock(StepContribution.class);
 

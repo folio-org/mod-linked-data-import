@@ -13,6 +13,7 @@ import java.util.List;
 import org.folio.linked.data.imprt.model.entity.BatchJobExecution;
 import org.folio.linked.data.imprt.repo.BatchJobExecutionRepo;
 import org.folio.linked.data.imprt.repo.RdfFileLineRepo;
+import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@UnitTest
 @ExtendWith(MockitoExtension.class)
 class DataCleanupServiceTest {
 

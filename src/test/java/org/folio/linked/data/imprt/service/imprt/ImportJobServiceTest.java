@@ -3,7 +3,7 @@ package org.folio.linked.data.imprt.service.imprt;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -79,7 +79,7 @@ class ImportJobServiceTest {
     var propertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(jobOperator).start(eq(jobName), propertiesCaptor.capture());
     var capturedProps = propertiesCaptor.getValue();
-    assertThat(capturedProps.getProperty(FILE_URL)).isEqualTo(fileUrl);
+    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileUrl);
     assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo(contentType);
     assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
     assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
@@ -107,7 +107,7 @@ class ImportJobServiceTest {
     var propertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(jobOperator).start(eq(jobName), propertiesCaptor.capture());
     var capturedProps = propertiesCaptor.getValue();
-    assertThat(capturedProps.getProperty(FILE_URL)).isEqualTo(fileUrl);
+    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileUrl);
     assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo("application/ld+json");
     assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
     assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());

@@ -12,10 +12,10 @@ paths:
         - import, start
       description: Starts the process of Linked Data Import and returns ID of Import Job Instance
       parameters:
-        - name: fileUrl
+        - name: fileName
           in: query
           required: true
-          description: The URL of the file to be imported from S3
+          description: The name of a file to be imported from S3. Should be located in Tenant's folder
           schema:
             type: string
         - name: contentType

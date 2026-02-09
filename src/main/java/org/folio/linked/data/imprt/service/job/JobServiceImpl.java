@@ -1,7 +1,7 @@
 package org.folio.linked.data.imprt.service.job;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class JobServiceImpl implements JobService {
     var startDate = jobExecution.getStartTime().toString();
     var endDate = jobExecution.getEndTime() != null ? jobExecution.getEndTime().toString() : null;
     var startedBy = getJobParameter(jobExecutionId, STARTED_BY);
-    var fileName = getJobParameter(jobExecutionId, FILE_URL);
+    var fileName = getJobParameter(jobExecutionId, FILE_NAME);
     var status = jobExecution.getStatus();
     var currentStep = batchStepExecutionRepo.findLastStepNameByJobExecutionId(jobExecutionId).orElse(null);
     var importResults = importResultEventRepo.findAllByJobExecutionId(jobExecutionId);
