@@ -31,13 +31,13 @@ class S3ServiceTest {
   @Test
   void exists_shouldReturnTrue_ifFolioS3ClientListIsNotEmpty() {
     // given
-    var fileUrl = "s3://bucket/key";
+    var fileName = "fileName";
     var tenantId = "test-tenant";
     doReturn(tenantId).when(folioExecutionContext).getTenantId();
-    doReturn(List.of("someObject")).when(folioS3Client).list(tenantId + "/" + fileUrl);
+    doReturn(List.of("someObject")).when(folioS3Client).list(tenantId + "/" + fileName);
 
     // when
-    boolean result = s3Service.exists(fileUrl);
+    boolean result = s3Service.exists(fileName);
 
     // then
     assertThat(result).isTrue();
@@ -46,13 +46,13 @@ class S3ServiceTest {
   @Test
   void exists_shouldReturnFalse_ifFolioS3ClientListIsEmpty() {
     // given
-    var fileUrl = "s3://bucket/key";
+    var fileName = "fileName";
     var tenantId = "test-tenant";
     doReturn(tenantId).when(folioExecutionContext).getTenantId();
-    doReturn(EMPTY_LIST).when(folioS3Client).list(tenantId + "/" + fileUrl);
+    doReturn(EMPTY_LIST).when(folioS3Client).list(tenantId + "/" + fileName);
 
     // when
-    boolean result = s3Service.exists(fileUrl);
+    boolean result = s3Service.exists(fileName);
 
     // then
     assertThat(result).isFalse();

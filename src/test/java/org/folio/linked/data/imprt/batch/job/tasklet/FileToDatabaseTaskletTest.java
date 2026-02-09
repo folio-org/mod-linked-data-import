@@ -88,7 +88,7 @@ class FileToDatabaseTaskletTest {
   }
 
   @Test
-  void execute_shouldThrowException_whenFileUrlIsNull() {
+  void execute_shouldThrowException_whenFileNameIsNull() {
     // given
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);

@@ -35,7 +35,7 @@ class FileDownloadTaskletTest {
   @Test
   void shouldTriggerS3ServiceDownloadWithCorrectParameters() throws IOException {
     // given
-    var fileUrl = "s3://bucket/key";
+    var fileName = "fileName";
     var jobParameters = mock(JobParameters.class);
     var chunkContext = mock(ChunkContext.class);
     var stepContext = mock(StepContext.class);
@@ -43,20 +43,20 @@ class FileDownloadTaskletTest {
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobParameters()).thenReturn(jobParameters);
-    when(jobParameters.getString(FILE_NAME)).thenReturn(fileUrl);
+    when(jobParameters.getString(FILE_NAME)).thenReturn(fileName);
     var stepContribution = mock(StepContribution.class);
 
     // when
     fileDownloadTasklet.execute(stepContribution, chunkContext);
 
     // then
-    verify(s3Service).download(fileUrl, TMP_DIR);
+    verify(s3Service).download(fileName, TMP_DIR);
   }
 
   @Test
   void shouldThrowIllegalArgumentException_ifS3ServiceThrowsIoException() throws IOException {
     // given
-    var fileUrl = "s3://bucket/key";
+    var fileName = "fileName";
     var chunkContext = mock(ChunkContext.class);
     var stepContext = mock(StepContext.class);
     var stepExecution = mock(StepExecution.class);
@@ -64,8 +64,8 @@ class FileDownloadTaskletTest {
     when(chunkContext.getStepContext()).thenReturn(stepContext);
     when(stepContext.getStepExecution()).thenReturn(stepExecution);
     when(stepExecution.getJobParameters()).thenReturn(jobParameters);
-    when(jobParameters.getString(FILE_NAME)).thenReturn(fileUrl);
-    doThrow(new IOException()).when(s3Service).download(fileUrl, TMP_DIR);
+    when(jobParameters.getString(FILE_NAME)).thenReturn(fileName);
+    doThrow(new IOException()).when(s3Service).download(fileName, TMP_DIR);
     var stepContribution = mock(StepContribution.class);
 
     // when
@@ -73,6 +73,6 @@ class FileDownloadTaskletTest {
       () -> fileDownloadTasklet.execute(stepContribution, chunkContext));
 
     // then
-    assertThat(thrown.getMessage()).isEqualTo("Error downloading file " + fileUrl);
+    assertThat(thrown.getMessage()).isEqualTo("Error downloading file " + fileName);
   }
 }

@@ -33,11 +33,11 @@ public class ImportJobServiceImpl implements ImportJobService {
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
-  public Long start(String fileUrl, String contentType, DefaultWorkType defaultWorkType) {
-    checkFile(fileUrl);
+  public Long start(String fileName, String contentType, DefaultWorkType defaultWorkType) {
+    checkFile(fileName);
     var userId = folioExecutionContext.getUserId();
     var params = new Properties();
-    params.setProperty(FILE_NAME, fileUrl);
+    params.setProperty(FILE_NAME, fileName);
     params.setProperty(CONTENT_TYPE, isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType);
     params.setProperty(STARTED_BY, ofNullable(userId).map(UUID::toString).orElse("unknown"));
     params.setProperty("run.timestamp", String.valueOf(System.currentTimeMillis()));
@@ -52,12 +52,12 @@ public class ImportJobServiceImpl implements ImportJobService {
     }
   }
 
-  private void checkFile(String fileUrl) {
-    if (isEmpty(fileUrl)) {
+  private void checkFile(String fileName) {
+    if (isEmpty(fileName)) {
       throw new IllegalArgumentException("File URL should be provided");
     }
-    if (!s3Service.exists(fileUrl)) {
-      throw new NotFoundException("File with provided URL doesn't exist: " + fileUrl);
+    if (!s3Service.exists(fileName)) {
+      throw new NotFoundException("File with provided URL doesn't exist: " + fileName);
     }
   }
 

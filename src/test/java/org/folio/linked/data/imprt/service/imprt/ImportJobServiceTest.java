@@ -61,8 +61,8 @@ class ImportJobServiceTest {
   @Test
   void start_shouldInvokeJobOperatorStart_ifGivenFileExists() throws Exception {
     // given
-    var fileUrl = "http://example.com/file";
-    doReturn(true).when(s3Service).exists(fileUrl);
+    var fileName = "http://example.com/file";
+    doReturn(true).when(s3Service).exists(fileName);
     var userId = java.util.UUID.randomUUID();
     doReturn(userId).when(folioExecutionContext).getUserId();
     var jobName = "testJob";
@@ -72,14 +72,14 @@ class ImportJobServiceTest {
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
     // when
-    var result = importJobService.start(fileUrl, contentType, defaultWorkType);
+    var result = importJobService.start(fileName, contentType, defaultWorkType);
 
     // then
     assertThat(result).isEqualTo(123L);
     var propertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(jobOperator).start(eq(jobName), propertiesCaptor.capture());
     var capturedProps = propertiesCaptor.getValue();
-    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileUrl);
+    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileName);
     assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo(contentType);
     assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
     assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
@@ -90,8 +90,8 @@ class ImportJobServiceTest {
   void start_shouldInvokeJobOperatorStartWithDefaultContentType_ifGivenFileExistsAndNoContentTypeProvided()
     throws Exception {
     // given
-    var fileUrl = "http://example.com/file";
-    doReturn(true).when(s3Service).exists(fileUrl);
+    var fileName = "http://example.com/file";
+    doReturn(true).when(s3Service).exists(fileName);
     var userId = java.util.UUID.randomUUID();
     doReturn(userId).when(folioExecutionContext).getUserId();
     var jobName = "testJob";
@@ -100,14 +100,14 @@ class ImportJobServiceTest {
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
     // when
-    var result = importJobService.start(fileUrl, null, defaultWorkType);
+    var result = importJobService.start(fileName, null, defaultWorkType);
 
     // then
     assertThat(result).isEqualTo(123L);
     var propertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(jobOperator).start(eq(jobName), propertiesCaptor.capture());
     var capturedProps = propertiesCaptor.getValue();
-    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileUrl);
+    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileName);
     assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo("application/ld+json");
     assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
     assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
@@ -115,13 +115,13 @@ class ImportJobServiceTest {
   }
 
   @Test
-  void start_shouldThrowIllegalArgumentException_ifGivenFileUrlIsEmpty() {
+  void start_shouldThrowIllegalArgumentException_ifGivenfileNameIsEmpty() {
     // given
-    var fileUrl = "";
+    var fileName = "";
 
     // when
     var thrown = assertThrows(IllegalArgumentException.class,
-      () -> importJobService.start(fileUrl, null, null));
+      () -> importJobService.start(fileName, null, null));
 
     // then
     assertThat(thrown.getMessage()).isEqualTo("File URL should be provided");
@@ -130,30 +130,30 @@ class ImportJobServiceTest {
   @Test
   void start_shouldThrowNotFoundException_ifGivenFileDoesNotExist() {
     // given
-    var fileUrl = "http://example.com/file";
-    doReturn(false).when(s3Service).exists(fileUrl);
+    var fileName = "http://example.com/file";
+    doReturn(false).when(s3Service).exists(fileName);
 
     // when
     var thrown = assertThrows(NotFoundException.class,
-      () -> importJobService.start(fileUrl, null, null));
+      () -> importJobService.start(fileName, null, null));
 
     // then
-    assertThat(thrown.getMessage()).isEqualTo("File with provided URL doesn't exist: " + fileUrl);
+    assertThat(thrown.getMessage()).isEqualTo("File with provided URL doesn't exist: " + fileName);
   }
 
   @ParameterizedTest
   @MethodSource("jobLaunchExceptions")
   void start_shouldThrowIllegalArgumentException_ifJobOperatorThrowsException(Exception e) throws Exception {
     // given
-    var fileUrl = "http://example.com/file";
-    doReturn(true).when(s3Service).exists(fileUrl);
+    var fileName = "http://example.com/file";
+    doReturn(true).when(s3Service).exists(fileName);
     var jobName = "testJob";
     doReturn(jobName).when(rdfImportJob).getName();
     doThrow(e).when(jobOperator).start(eq(jobName), any(Properties.class));
 
     // when
     var thrown = assertThrows(IllegalArgumentException.class,
-      () -> importJobService.start(fileUrl, null, null));
+      () -> importJobService.start(fileName, null, null));
 
     // then
     assertThat(thrown.getMessage()).isEqualTo("Job launch exception");

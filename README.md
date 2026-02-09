@@ -22,10 +22,12 @@ This software uses the following Weak Copyleft (Eclipse Public License 1.0 / 2.0
 2. Inside that bucket, place the file within the subdirectory corresponding to the target tenant ID.
 3. Trigger the import by calling the following API:
 ```
-POST /linked-data-import/start?fileUrl={fileNameInS3}&contentType=application/ld+json
+POST /linked-data-import/start?fileName={fileNameInS3}&contentType=application/ld+json
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
+The `fileName` parameter should contain the file name. The module will retrieve the file from S3 bucket (specified by `S3_BUCKET` environment variable) from the subdirectory matching the tenant ID.
+
 Response is a job execution id, which could be later used for getting job status or failed lines.
 ## To check the import job status, use:
 ```
