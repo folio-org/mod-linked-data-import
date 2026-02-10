@@ -10,6 +10,7 @@ import static org.testcontainers.shaded.org.awaitility.Durations.ONE_HUNDRED_MIL
 import static org.testcontainers.shaded.org.awaitility.Durations.TWO_MINUTES;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.io.InputStream;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -128,7 +129,11 @@ public class TestUtil {
   }
 
   public static void writeFileToS3(FolioS3Client s3Client, String fileName, InputStream is) {
-    s3Client.write(TENANT_ID + "/" + fileName, is);
+    try (InputStream in = is) {
+      s3Client.write(TENANT_ID + "/" + fileName, in);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

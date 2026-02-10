@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Random;
 import org.folio.linked.data.imprt.model.entity.RdfFileLine;
 import org.folio.linked.data.imprt.repo.RdfFileLineRepo;
 import org.folio.spring.testing.type.UnitTest;
@@ -50,13 +51,15 @@ class FileToDatabaseTaskletTest {
   @Test
   void execute_shouldSaveFileToDatabaseAndDeleteFile() throws Exception {
     // given
-    var fileName = "test.rdf";
+    var fileName = "testFile" + new Random().nextInt();
     var tmpDir = System.getProperty("java.io.tmpdir");
     var testFile = new File(tmpDir, fileName);
     try (var writer = new FileWriter(testFile)) {
       writer.write("line1\n");
       writer.write("line2\n");
       writer.write("line3\n");
+    } finally {
+      testFile.deleteOnExit();
     }
 
     var jobExecutionId = 123L;
@@ -98,6 +101,6 @@ class FileToDatabaseTaskletTest {
     // when & then
     assertThatThrownBy(() -> tasklet.execute(contribution, chunkContext))
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("File URL parameter is required");
+      .hasMessageContaining("fileName parameter is required");
   }
 }

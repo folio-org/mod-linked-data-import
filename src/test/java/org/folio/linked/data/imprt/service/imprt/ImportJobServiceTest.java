@@ -115,7 +115,7 @@ class ImportJobServiceTest {
   }
 
   @Test
-  void start_shouldThrowIllegalArgumentException_ifGivenfileNameIsEmpty() {
+  void start_shouldThrowIllegalArgumentException_ifGivenFileNameIsEmpty() {
     // given
     var fileName = "";
 
@@ -124,7 +124,7 @@ class ImportJobServiceTest {
       () -> importJobService.start(fileName, null, null));
 
     // then
-    assertThat(thrown.getMessage()).isEqualTo("File URL should be provided");
+    assertThat(thrown.getMessage()).isEqualTo("File name should be provided");
   }
 
   @Test
@@ -138,7 +138,7 @@ class ImportJobServiceTest {
       () -> importJobService.start(fileName, null, null));
 
     // then
-    assertThat(thrown.getMessage()).isEqualTo("File with provided URL doesn't exist: " + fileName);
+    assertThat(thrown.getMessage()).isEqualTo("File with provided name doesn't exist in tenant's folder: " + fileName);
   }
 
   @ParameterizedTest

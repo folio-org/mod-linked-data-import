@@ -38,7 +38,7 @@ public class FileToDatabaseTasklet implements Tasklet {
       .getString(FILE_NAME);
 
     if (fileName == null) {
-      throw new IllegalArgumentException("File URL parameter is required");
+      throw new IllegalArgumentException("fileName parameter is required");
     }
 
     var file = new File(TMP_DIR, fileName);

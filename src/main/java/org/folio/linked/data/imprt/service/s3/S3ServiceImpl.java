@@ -25,10 +25,10 @@ public class S3ServiceImpl implements S3Service {
 
   @Override
   public void download(String fileName, String destinationPath) throws IOException {
-    var is = folioS3Client.read(filePathWithTenantFolder(fileName));
-    var targetFile = new File(destinationPath, fileName);
-    Files.copy(is, targetFile.toPath(), REPLACE_EXISTING);
-    is.close();
+    try (var is = folioS3Client.read(filePathWithTenantFolder(fileName))) {
+      var targetFile = new File(destinationPath, fileName);
+      Files.copy(is, targetFile.toPath(), REPLACE_EXISTING);
+    }
     log.info("File {} downloaded successfully to {}", fileName, destinationPath + "/" + fileName);
   }
 

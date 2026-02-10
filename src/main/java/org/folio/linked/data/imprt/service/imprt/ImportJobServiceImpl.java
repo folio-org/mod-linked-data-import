@@ -54,10 +54,10 @@ public class ImportJobServiceImpl implements ImportJobService {
 
   private void checkFile(String fileName) {
     if (isEmpty(fileName)) {
-      throw new IllegalArgumentException("File URL should be provided");
+      throw new IllegalArgumentException("File name should be provided");
     }
     if (!s3Service.exists(fileName)) {
-      throw new NotFoundException("File with provided URL doesn't exist: " + fileName);
+      throw new NotFoundException("File with provided name doesn't exist in tenant's folder: " + fileName);
     }
   }
 
