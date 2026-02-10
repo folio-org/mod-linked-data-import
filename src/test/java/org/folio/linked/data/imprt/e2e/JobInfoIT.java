@@ -1,12 +1,13 @@
 package org.folio.linked.data.imprt.e2e;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitJobCompletion;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
+import static org.folio.linked.data.imprt.test.TestUtil.writeFileToS3;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -48,11 +49,11 @@ class JobInfoIT {
   @Test
   void getJobInfo_shouldReturnJobInformation_givenCompletedJob() throws Exception {
     // given
-    var fileName = "rdf/failing_mapping_and_saving_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "failing_mapping_and_saving_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var startRequestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
     var startResult = mockMvc.perform(startRequestBuilder)
       .andExpect(status().isOk())
@@ -91,11 +92,11 @@ class JobInfoIT {
   @Test
   void getFailedLines_shouldReturnCsvFile_givenJobWithFailedLines() throws Exception {
     // given
-    var fileName = "rdf/failing_mapping_and_saving_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "failing_mapping_and_saving_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var startRequestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
     var startResult = mockMvc.perform(startRequestBuilder)
       .andExpect(status().isOk())
@@ -122,11 +123,11 @@ class JobInfoIT {
   @Test
   void cancelJob_shouldAcceptCancelRequest_givenStartedJob() throws Exception {
     // given
-    var fileName = "rdf/10_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "10_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var startRequestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
     var startResult = mockMvc.perform(startRequestBuilder)
       .andExpect(status().isOk())
@@ -181,11 +182,11 @@ class JobInfoIT {
   @Test
   void cancelJob_shouldReturn409_givenCompletedJob() throws Exception {
     // given
-    var fileName = "rdf/failing_mapping_and_saving_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "failing_mapping_and_saving_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var startRequestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
     var startResult = mockMvc.perform(startRequestBuilder)
       .andExpect(status().isOk())

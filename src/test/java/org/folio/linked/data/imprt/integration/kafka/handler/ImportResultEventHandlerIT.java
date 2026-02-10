@@ -1,7 +1,7 @@
 package org.folio.linked.data.imprt.integration.kafka.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
@@ -85,7 +85,7 @@ class ImportResultEventHandlerIT {
   }
 
   private void createBatchJobExecutionParams(Long jobExecutionId) {
-    var fileUrl = "s3://bucket/" + TEST_FILE_NAME;
+    var fileName = "s3://bucket/" + TEST_FILE_NAME;
     tenantScopedExecutionService.execute(TENANT_ID, () -> {
       jdbcTemplate.update("""
         INSERT INTO batch_job_instance (job_instance_id, job_name, job_key, version) \
@@ -101,7 +101,7 @@ class ImportResultEventHandlerIT {
       jdbcTemplate.update(
         """
           INSERT INTO batch_job_execution_params (job_execution_id, parameter_name, parameter_type, parameter_value, \
-          identifying) VALUES (?, ?, ?, ?, ?)""", jobExecutionId, FILE_URL, "java.lang.String", fileUrl, "Y"
+          identifying) VALUES (?, ?, ?, ?, ?)""", jobExecutionId, FILE_NAME, "java.lang.String", fileName, "Y"
       );
 
       for (long i = 1; i <= 5; i++) {

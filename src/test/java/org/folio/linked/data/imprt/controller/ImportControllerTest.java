@@ -24,13 +24,13 @@ class ImportControllerTest {
 
   @Test
   void importStart_shouldReturnOkResponse() {
-    var fileUrl = "http://example.com/file";
+    var fileName = "http://example.com/file";
     var contentType = "application/json";
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
     var jobExecutionId = 123L;
-    doReturn(jobExecutionId).when(importJobService).start(fileUrl, contentType, defaultWorkType);
+    doReturn(jobExecutionId).when(importJobService).start(fileName, contentType, defaultWorkType);
 
-    var result = importController.startImport(fileUrl, contentType, defaultWorkType);
+    var result = importController.startImport(fileName, contentType, defaultWorkType);
 
     assertThat(result).isEqualTo(ResponseEntity.ok(String.valueOf(jobExecutionId)));
   }

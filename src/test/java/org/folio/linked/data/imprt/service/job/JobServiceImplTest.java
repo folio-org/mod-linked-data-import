@@ -2,7 +2,7 @@ package org.folio.linked.data.imprt.service.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +69,7 @@ class JobServiceImplTest {
 
     when(batchJobExecutionRepo.findByJobExecutionId(jobExecutionId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_NAME))
       .thenReturn(Optional.empty());
     when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, STARTED_BY))
       .thenReturn(Optional.empty());
@@ -136,7 +136,7 @@ class JobServiceImplTest {
 
     when(batchJobExecutionRepo.findByJobExecutionId(jobExecutionId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_NAME))
       .thenReturn(Optional.of("file.rdf"));
     when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, STARTED_BY))
       .thenReturn(Optional.of("user-123"));
@@ -176,11 +176,11 @@ class JobServiceImplTest {
       createImportResultEvent(jobExecutionId, 500, 400, 100, 3)
     );
     var startedBy = UUID.randomUUID().toString();
-    String fileUrl = "large-file.rdf";
+    String fileName = "large-file.rdf";
     when(batchJobExecutionRepo.findByJobExecutionId(jobExecutionId))
       .thenReturn(Optional.of(jobExecution));
-    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_URL))
-      .thenReturn(Optional.of(fileUrl));
+    when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, FILE_NAME))
+      .thenReturn(Optional.of(fileName));
     when(batchJobExecutionParamsRepo.findByJobExecutionIdAndParameterName(jobExecutionId, STARTED_BY))
       .thenReturn(Optional.of(startedBy));
     when(batchStepExecutionRepo.getTotalReadCountByJobExecutionId(jobExecutionId))
@@ -201,7 +201,7 @@ class JobServiceImplTest {
     assertThat(result.getStartDate()).isEqualTo("2025-12-09T08:00");
     assertThat(result.getStartedBy()).isEqualTo(startedBy);
     assertThat(result.getStatus()).isEqualTo("STARTED");
-    assertThat(result.getFileName()).isEqualTo(fileUrl);
+    assertThat(result.getFileName()).isEqualTo(fileName);
     assertThat(result.getLatestStep()).isEqualTo("mappingStep");
     assertThat(result.getLinesRead()).isEqualTo(2500L);
     assertThat(result.getLinesFailedMapping()).isZero();

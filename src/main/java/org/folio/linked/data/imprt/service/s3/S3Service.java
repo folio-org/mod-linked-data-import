@@ -4,8 +4,8 @@ import java.io.IOException;
 
 public interface S3Service {
 
-  boolean exists(String fileUrl);
+  boolean exists(String fileName);
 
-  void download(String fileUrl, String destinationPath) throws IOException;
+  void download(String fileName, String destinationPath) throws IOException;
 
 }

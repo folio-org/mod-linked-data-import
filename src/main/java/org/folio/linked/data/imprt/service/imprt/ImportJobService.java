@@ -4,6 +4,6 @@ import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 
 public interface ImportJobService {
 
-  Long start(String fileUrl, String contentType, DefaultWorkType defaultWorkType);
+  Long start(String fileName, String contentType, DefaultWorkType defaultWorkType);
 
 }

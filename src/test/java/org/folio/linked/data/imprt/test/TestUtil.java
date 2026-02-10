@@ -10,6 +10,8 @@ import static org.testcontainers.shaded.org.awaitility.Durations.ONE_HUNDRED_MIL
 import static org.testcontainers.shaded.org.awaitility.Durations.TWO_MINUTES;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,6 +20,7 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import org.folio.linked.data.imprt.config.ObjectMapperConfig;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
+import org.folio.s3.client.FolioS3Client;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -123,6 +126,14 @@ public class TestUtil {
       assertThat(status).isIn(BatchStatus.COMPLETED.name(),
         BatchStatus.FAILED.name());
     });
+  }
+
+  public static void writeFileToS3(FolioS3Client s3Client, String fileName, InputStream is) {
+    try (InputStream in = is) {
+      s3Client.write(TENANT_ID + "/" + fileName, in);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

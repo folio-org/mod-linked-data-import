@@ -4,7 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.folio.linked.data.imprt.batch.job.Parameters.CONTENT_TYPE;
 import static org.folio.linked.data.imprt.batch.job.Parameters.DEFAULT_WORK_TYPE;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -33,11 +33,11 @@ public class ImportJobServiceImpl implements ImportJobService {
   private final FolioExecutionContext folioExecutionContext;
 
   @Override
-  public Long start(String fileUrl, String contentType, DefaultWorkType defaultWorkType) {
-    checkFile(fileUrl);
+  public Long start(String fileName, String contentType, DefaultWorkType defaultWorkType) {
+    checkFile(fileName);
     var userId = folioExecutionContext.getUserId();
     var params = new Properties();
-    params.setProperty(FILE_URL, fileUrl);
+    params.setProperty(FILE_NAME, fileName);
     params.setProperty(CONTENT_TYPE, isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType);
     params.setProperty(STARTED_BY, ofNullable(userId).map(UUID::toString).orElse("unknown"));
     params.setProperty("run.timestamp", String.valueOf(System.currentTimeMillis()));
@@ -52,12 +52,12 @@ public class ImportJobServiceImpl implements ImportJobService {
     }
   }
 
-  private void checkFile(String fileUrl) {
-    if (isEmpty(fileUrl)) {
-      throw new IllegalArgumentException("File URL should be provided");
+  private void checkFile(String fileName) {
+    if (isEmpty(fileName)) {
+      throw new IllegalArgumentException("File name should be provided");
     }
-    if (!s3Service.exists(fileUrl)) {
-      throw new NotFoundException("File with provided URL doesn't exist: " + fileUrl);
+    if (!s3Service.exists(fileName)) {
+      throw new NotFoundException("File with provided name doesn't exist in tenant's folder: " + fileName);
     }
   }
 

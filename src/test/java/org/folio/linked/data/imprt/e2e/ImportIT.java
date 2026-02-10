@@ -1,13 +1,14 @@
 package org.folio.linked.data.imprt.e2e;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_URL;
+import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.TMP_DIR;
 import static org.folio.linked.data.imprt.rest.resource.ImportStartApi.PATH_START_IMPORT;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitJobCompletion;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
+import static org.folio.linked.data.imprt.test.TestUtil.writeFileToS3;
 import static org.springframework.data.domain.Sort.by;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,11 +50,11 @@ class ImportIT {
   @Test
   void checkSuccessfullyMappedLines_local() throws Exception {
     // given
-    var fileName = "rdf/10_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "10_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
 
     // when
@@ -84,11 +85,11 @@ class ImportIT {
   @Test
   void checkSuccessfullyMappedLines_usingSearchAndLinkedDataAndSrs() throws Exception {
     // given
-    var fileName = "rdf/2_records_lccn_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "2_records_lccn_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
 
     // when
@@ -114,11 +115,11 @@ class ImportIT {
   @Test
   void checkPartiallyFailingMappingLines() throws Exception {
     // given
-    var fileName = "rdf/failing_mapping_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "failing_mapping_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
 
     // when
@@ -159,11 +160,11 @@ class ImportIT {
   @Test
   void checkPartiallyFailingSavingLines() throws Exception {
     // given
-    var fileName = "rdf/failing_saving_records_json.rdf";
-    var input = this.getClass().getResourceAsStream("/" + fileName);
-    s3Client.write(fileName, input);
+    var fileName = "failing_saving_records_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
     var requestBuilder = post(PATH_START_IMPORT)
-      .param(FILE_URL, fileName)
+      .param(FILE_NAME, fileName)
       .headers(defaultHeaders());
 
     // when
