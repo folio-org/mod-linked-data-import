@@ -40,7 +40,10 @@ class ImportResultEventHandlerIT {
 
   @BeforeEach
   void setUp() {
-    tenantScopedExecutionService.execute(TENANT_ID, () -> cleanTables(jdbcTemplate));
+    tenantScopedExecutionService.execute(TENANT_ID, () -> {
+      cleanTables(jdbcTemplate);
+      return null;
+    });
   }
 
   @Test
@@ -110,6 +113,8 @@ class ImportResultEventHandlerIT {
             + "VALUES (nextval('rdf_file_line_seq'), ?, ?, ?)", jobExecutionId, i, "Line " + i + " content"
         );
       }
+
+      return null;
     });
   }
 }

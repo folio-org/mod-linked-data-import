@@ -8,13 +8,13 @@ import static org.folio.linked.data.imprt.test.TestUtil.awaitJobCompletion;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
 import static org.folio.linked.data.imprt.test.TestUtil.writeFileToS3;
+import static org.folio.linked.data.imprt.util.JsonUtil.JSON_MAPPER;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import org.folio.linked.data.imprt.domain.dto.JobInfo;
 import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
@@ -38,12 +38,13 @@ class JobInfoIT {
   private FolioS3Client s3Client;
   @Autowired
   private TenantScopedExecutionService tenantScopedExecutionService;
-  @Autowired
-  private ObjectMapper objectMapper;
 
   @BeforeEach
   void clean() {
-    tenantScopedExecutionService.execute(TENANT_ID, () -> cleanTables(jdbcTemplate));
+    tenantScopedExecutionService.execute(TENANT_ID, () -> {
+      cleanTables(jdbcTemplate);
+      return null;
+    });
   }
 
   @Test
@@ -69,7 +70,7 @@ class JobInfoIT {
       .andReturn();
 
     // then
-    var jobInfo = objectMapper.readValue(
+    var jobInfo = JSON_MAPPER.readValue(
       jobInfoResult.getResponse().getContentAsString(),
       JobInfo.class
     );
@@ -121,7 +122,7 @@ class JobInfoIT {
   }
 
   @Test
-  void cancelJob_shouldAcceptCancelRequest_givenStartedJob() throws Exception {
+  void stopJob_shouldAcceptStopRequest_givenStartedJob() throws Exception {
     // given
     var fileName = "10_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
@@ -134,15 +135,15 @@ class JobInfoIT {
       .andReturn();
     var jobExecutionId = Long.parseLong(startResult.getResponse().getContentAsString());
 
-    // when - try to cancel the job immediately
-    var cancelRequest = put(JOBS_API_PATH + jobExecutionId + "/cancel")
+    // when - try to stop the job immediately
+    var stopRequest = put(JOBS_API_PATH + jobExecutionId + "/stop")
       .headers(defaultHeaders());
-    var cancelResult = mockMvc.perform(cancelRequest)
+    var stopResult = mockMvc.perform(stopRequest)
       .andReturn();
 
-    // then - cancel should succeed with 200 (job was running) or 409 (already completed)
-    var cancelStatus = cancelResult.getResponse().getStatus();
-    assertThat(cancelStatus).as("Cancel request should return 200 or 409").isIn(200, 409);
+    // then - stop should succeed with 200 (job was running) or 400 (already completed)
+    var stopStatus = stopResult.getResponse().getStatus();
+    assertThat(stopStatus).isIn(200, 400);
 
     // Wait for the job to reach terminal state
     await()
@@ -168,11 +169,11 @@ class JobInfoIT {
       )
     );
 
-    // The job can be STOPPED (cancel succeeded), COMPLETED (finished before cancel),
+    // The job can be STOPPED (stop succeeded), COMPLETED (finished before stop),
     // or STOPPING (in the process of stopping)
     assertThat(finalStatus).as("Job should be in terminal state").isIn("STOPPED", "COMPLETED", "STOPPING");
 
-    // Verify we can still get job info after cancel attempt
+    // Verify we can still get job info after stop attempt
     var getJobInfoRequest = get(JOBS_API_PATH + jobExecutionId)
       .headers(defaultHeaders());
     mockMvc.perform(getJobInfoRequest)
@@ -180,7 +181,7 @@ class JobInfoIT {
   }
 
   @Test
-  void cancelJob_shouldReturn409_givenCompletedJob() throws Exception {
+  void stopJob_shouldReturn409_givenCompletedJob() throws Exception {
     // given
     var fileName = "failing_mapping_and_saving_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
@@ -195,25 +196,25 @@ class JobInfoIT {
     awaitJobCompletion(jobExecutionId, jdbcTemplate, tenantScopedExecutionService);
 
     // when
-    var cancelRequest = put(JOBS_API_PATH + jobExecutionId + "/cancel")
+    var stopRequest = put(JOBS_API_PATH + jobExecutionId + "/stop")
       .headers(defaultHeaders());
 
     // then
-    mockMvc.perform(cancelRequest)
-      .andExpect(status().isConflict());
+    mockMvc.perform(stopRequest)
+      .andExpect(status().isBadRequest());
   }
 
   @Test
-  void cancelJob_shouldReturn404_givenNonExistentJob() throws Exception {
+  void stopJob_shouldReturn404_givenNonExistentJob() throws Exception {
     // given
     var nonExistentJobExecutionId = 99999L;
 
     // when
-    var cancelRequest = put(JOBS_API_PATH + nonExistentJobExecutionId + "/cancel")
+    var stopRequest = put(JOBS_API_PATH + nonExistentJobExecutionId + "/stop")
       .headers(defaultHeaders());
 
     // then
-    mockMvc.perform(cancelRequest)
-      .andExpect(status().isBadRequest());
+    mockMvc.perform(stopRequest)
+      .andExpect(status().isNotFound());
   }
 }

@@ -11,9 +11,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.util.Properties;
 import java.util.stream.Stream;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.service.s3.S3Service;
@@ -29,11 +29,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.launch.JobInstanceAlreadyExistsException;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.JobExecutionException;
+import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.batch.core.launch.JobRestartException;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -52,9 +55,9 @@ class ImportJobServiceTest {
 
   public static Stream<Arguments> jobLaunchExceptions() {
     return Stream.of(
-      arguments(new NoSuchJobException("Job not found")),
-      arguments(new JobInstanceAlreadyExistsException("Job instance already exists")),
-      arguments(new JobParametersInvalidException("Invalid parameters"))
+      arguments(new JobRestartException("Restart issue")),
+      arguments(new JobExecutionAlreadyRunningException("Job instance is already running")),
+      arguments(new InvalidJobParametersException("Invalid parameters"))
     );
   }
 
@@ -65,9 +68,9 @@ class ImportJobServiceTest {
     doReturn(true).when(s3Service).exists(fileName);
     var userId = java.util.UUID.randomUUID();
     doReturn(userId).when(folioExecutionContext).getUserId();
-    var jobName = "testJob";
-    doReturn(jobName).when(rdfImportJob).getName();
-    doReturn(123L).when(jobOperator).start(eq(jobName), any(Properties.class));
+    var jobExecution = mock(JobExecution.class);
+    doReturn(123L).when(jobExecution).getJobInstanceId();
+    doReturn(jobExecution).when(jobOperator).start(eq(rdfImportJob), any(JobParameters.class));
     var contentType = "application/json";
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
@@ -76,14 +79,14 @@ class ImportJobServiceTest {
 
     // then
     assertThat(result).isEqualTo(123L);
-    var propertiesCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(jobOperator).start(eq(jobName), propertiesCaptor.capture());
-    var capturedProps = propertiesCaptor.getValue();
-    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileName);
-    assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo(contentType);
-    assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
-    assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
-    assertThat(capturedProps.getProperty("run.timestamp")).isNotNull();
+    var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
+    verify(jobOperator).start(eq(rdfImportJob), jobParametersCaptor.capture());
+    var capturedParameters = jobParametersCaptor.getValue();
+    assertThat(capturedParameters.getString(FILE_NAME)).isEqualTo(fileName);
+    assertThat(capturedParameters.getString(CONTENT_TYPE)).isEqualTo(contentType);
+    assertThat(capturedParameters.getString(STARTED_BY)).isEqualTo(userId.toString());
+    assertThat(capturedParameters.getString(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
+    assertThat(capturedParameters.getLong("run.timestamp")).isNotNull();
   }
 
   @Test
@@ -94,9 +97,9 @@ class ImportJobServiceTest {
     doReturn(true).when(s3Service).exists(fileName);
     var userId = java.util.UUID.randomUUID();
     doReturn(userId).when(folioExecutionContext).getUserId();
-    var jobName = "testJob";
-    doReturn(jobName).when(rdfImportJob).getName();
-    doReturn(123L).when(jobOperator).start(eq(jobName), any(Properties.class));
+    var jobExecution = mock(JobExecution.class);
+    doReturn(123L).when(jobExecution).getJobInstanceId();
+    doReturn(jobExecution).when(jobOperator).start(eq(rdfImportJob), any(JobParameters.class));
     var defaultWorkType = DefaultWorkType.MONOGRAPH;
 
     // when
@@ -104,14 +107,14 @@ class ImportJobServiceTest {
 
     // then
     assertThat(result).isEqualTo(123L);
-    var propertiesCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(jobOperator).start(eq(jobName), propertiesCaptor.capture());
-    var capturedProps = propertiesCaptor.getValue();
-    assertThat(capturedProps.getProperty(FILE_NAME)).isEqualTo(fileName);
-    assertThat(capturedProps.getProperty(CONTENT_TYPE)).isEqualTo("application/ld+json");
-    assertThat(capturedProps.getProperty(STARTED_BY)).isEqualTo(userId.toString());
-    assertThat(capturedProps.getProperty(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
-    assertThat(capturedProps.getProperty("run.timestamp")).isNotNull();
+    var jobParametersCaptor = ArgumentCaptor.forClass(JobParameters.class);
+    verify(jobOperator).start(eq(rdfImportJob), jobParametersCaptor.capture());
+    var capturedProps = jobParametersCaptor.getValue();
+    assertThat(capturedProps.getString(FILE_NAME)).isEqualTo(fileName);
+    assertThat(capturedProps.getString(CONTENT_TYPE)).isEqualTo("application/ld+json");
+    assertThat(capturedProps.getString(STARTED_BY)).isEqualTo(userId.toString());
+    assertThat(capturedProps.getString(DEFAULT_WORK_TYPE)).isEqualTo(defaultWorkType.name());
+    assertThat(capturedProps.getLong("run.timestamp")).isNotNull();
   }
 
   @Test
@@ -143,13 +146,12 @@ class ImportJobServiceTest {
 
   @ParameterizedTest
   @MethodSource("jobLaunchExceptions")
-  void start_shouldThrowIllegalArgumentException_ifJobOperatorThrowsException(Exception e) throws Exception {
+  void start_shouldThrowIllegalArgumentException_ifJobOperatorThrowsException(JobExecutionException e)
+    throws JobExecutionException {
     // given
     var fileName = "http://example.com/file";
     doReturn(true).when(s3Service).exists(fileName);
-    var jobName = "testJob";
-    doReturn(jobName).when(rdfImportJob).getName();
-    doThrow(e).when(jobOperator).start(eq(jobName), any(Properties.class));
+    doThrow(e).when(jobOperator).start(eq(rdfImportJob), any(JobParameters.class));
 
     // when
     var thrown = assertThrows(IllegalArgumentException.class,

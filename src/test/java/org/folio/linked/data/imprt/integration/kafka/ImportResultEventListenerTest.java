@@ -5,7 +5,6 @@ import static org.folio.linked.data.imprt.test.TestUtil.createConsumerRecord;
 import static org.folio.linked.data.imprt.test.TestUtil.createImportResultEventDto;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,7 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.retry.RetryContext;
+import org.springframework.core.retry.Retryable;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -48,10 +47,8 @@ class ImportResultEventListenerTest {
     var consumerRecord = createConsumerRecord(event);
     when(linkedDataTenantService.isTenantExists(TENANT_ID)).thenReturn(true);
     doAnswer(invocation -> {
-      Consumer<RetryContext> retryJob = invocation.getArgument(1);
-      var retryContext = mock(RetryContext.class);
-      when(retryContext.getLastThrowable()).thenReturn(null);
-      retryJob.accept(retryContext);
+      Retryable<?> retryable = invocation.getArgument(1);
+      retryable.execute();
       return null;
     }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
@@ -85,32 +82,8 @@ class ImportResultEventListenerTest {
     var consumerRecord = createConsumerRecord(event);
     when(linkedDataTenantService.isTenantExists(TENANT_ID)).thenReturn(true);
     doAnswer(invocation -> {
-      Consumer<RetryContext> retryJob = invocation.getArgument(1);
-      var retryContext = mock(RetryContext.class);
-      when(retryContext.getLastThrowable()).thenReturn(null);
-      retryJob.accept(retryContext);
-      return null;
-    }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
-
-    // when
-    listener.handleImportOutputEvent(List.of(consumerRecord));
-
-    // then
-    verify(importResultEventHandler).handle(event);
-  }
-
-  @Test
-  void runRetryableJob_shouldLogFailedEventOnRetry() {
-    // given
-    var event = createImportResultEventDto(123L);
-    var consumerRecord = createConsumerRecord(event);
-    when(linkedDataTenantService.isTenantExists(TENANT_ID)).thenReturn(true);
-    doAnswer(invocation -> {
-      Consumer<RetryContext> retryJob = invocation.getArgument(1);
-      var retryContext = mock(RetryContext.class);
-      var exception = new RuntimeException("Test exception");
-      when(retryContext.getLastThrowable()).thenReturn(exception);
-      retryJob.accept(retryContext);
+      Retryable<?> retryable = invocation.getArgument(1);
+      retryable.execute();
       return null;
     }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 
@@ -152,10 +125,8 @@ class ImportResultEventListenerTest {
     var consumerRecord3 = createConsumerRecord(event3);
     when(linkedDataTenantService.isTenantExists(TENANT_ID)).thenReturn(true);
     doAnswer(invocation -> {
-      Consumer<RetryContext> retryJob = invocation.getArgument(1);
-      var retryContext = mock(RetryContext.class);
-      when(retryContext.getLastThrowable()).thenReturn(null);
-      retryJob.accept(retryContext);
+      Retryable<?> retryable = invocation.getArgument(1);
+      retryable.execute();
       return null;
     }).when(tenantScopedExecutionService).executeWithRetry(any(), any(), any());
 

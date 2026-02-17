@@ -44,7 +44,10 @@ class ImportIT {
 
   @BeforeEach
   void clean() {
-    tenantScopedExecutionService.execute(TENANT_ID, () -> cleanTables(jdbcTemplate));
+    tenantScopedExecutionService.execute(TENANT_ID, () -> {
+      cleanTables(jdbcTemplate);
+      return null;
+    });
   }
 
   @Test

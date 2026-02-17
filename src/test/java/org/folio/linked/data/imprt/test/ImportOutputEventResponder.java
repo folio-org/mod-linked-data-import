@@ -1,10 +1,9 @@
 package org.folio.linked.data.imprt.test;
 
-import static org.folio.linked.data.imprt.test.TestUtil.OBJECT_MAPPER;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
+import static org.folio.linked.data.imprt.util.JsonUtil.JSON_MAPPER;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 
 @Getter
 @Log4j2
@@ -33,9 +33,9 @@ public class ImportOutputEventResponder {
     log.info("received consumerRecord = [{}]", consumerRecord.toString());
     var messageValue = consumerRecord.value().toString();
     try {
-      var outputEvent = OBJECT_MAPPER.readValue(messageValue, ImportOutputEvent.class);
+      var outputEvent = JSON_MAPPER.readValue(messageValue, ImportOutputEvent.class);
       respondWithImportResultEvent(outputEvent);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       log.error("Failed to parse ImportOutputEvent", e);
     }
   }

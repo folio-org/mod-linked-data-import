@@ -26,8 +26,8 @@ public class JobController implements ImportJobApi {
   }
 
   @Override
-  public ResponseEntity<Void> cancelJob(Long jobExecutionId) {
-    jobService.cancelJob(jobExecutionId);
+  public ResponseEntity<Void> stopJob(Long jobExecutionId) {
+    jobService.stopJob(jobExecutionId);
     return ResponseEntity.ok().build();
   }
 }

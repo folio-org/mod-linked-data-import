@@ -5,12 +5,10 @@ import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 
 import java.util.List;
 import org.folio.linked.data.imprt.test.IntegrationTest;
-import org.folio.spring.tools.kafka.KafkaAdminService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @IntegrationTest
 class DatabaseIT {
@@ -38,8 +36,6 @@ class DatabaseIT {
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
-  @MockitoSpyBean
-  private KafkaAdminService kafkaAdminService;
 
   @Test
   void testTablesCreated() {

@@ -8,18 +8,18 @@ import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
 import static org.folio.linked.data.imprt.batch.job.Parameters.STARTED_BY;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
-import java.util.Properties;
+import java.util.HashSet;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.folio.linked.data.imprt.domain.dto.DefaultWorkType;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.folio.spring.FolioExecutionContext;
 import org.folio.spring.exception.NotFoundException;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.launch.JobInstanceAlreadyExistsException;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecutionException;
+import org.springframework.batch.core.job.parameters.JobParameter;
+import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,18 +36,21 @@ public class ImportJobServiceImpl implements ImportJobService {
   public Long start(String fileName, String contentType, DefaultWorkType defaultWorkType) {
     checkFile(fileName);
     var userId = folioExecutionContext.getUserId();
-    var params = new Properties();
-    params.setProperty(FILE_NAME, fileName);
-    params.setProperty(CONTENT_TYPE, isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType);
-    params.setProperty(STARTED_BY, ofNullable(userId).map(UUID::toString).orElse("unknown"));
-    params.setProperty("run.timestamp", String.valueOf(System.currentTimeMillis()));
+    var params = new HashSet<JobParameter<?>>();
+    params.add(new JobParameter<>(FILE_NAME, fileName, String.class));
+    params.add(new JobParameter<>(CONTENT_TYPE,
+      isEmpty(contentType) ? DEFAULT_CONTENT_TYPE : contentType, String.class));
+    params.add(new JobParameter<>(STARTED_BY,
+      ofNullable(userId).map(UUID::toString).orElse("unknown"), String.class)
+    );
+    params.add(new JobParameter<>("run.timestamp", System.currentTimeMillis(), Long.class));
     if (nonNull(defaultWorkType)) {
-      params.setProperty(DEFAULT_WORK_TYPE, defaultWorkType.name());
+      params.add(new JobParameter<>(DEFAULT_WORK_TYPE, defaultWorkType.name(), String.class));
     }
 
     try {
-      return jobOperator.start(rdfImportJob.getName(), params);
-    } catch (NoSuchJobException | JobInstanceAlreadyExistsException | JobParametersInvalidException e) {
+      return jobOperator.start(rdfImportJob, new JobParameters(params)).getJobInstanceId();
+    } catch (JobExecutionException e) {
       throw new IllegalArgumentException("Job launch exception", e);
     }
   }

@@ -31,10 +31,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.repository.JobRepository;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -53,7 +53,7 @@ class JobServiceImplTest {
   @Mock
   private JobOperator jobOperator;
   @Mock
-  private JobExplorer jobExplorer;
+  private JobRepository jobRepository;
   @InjectMocks
   private JobServiceImpl jobInfoService;
 
@@ -310,79 +310,79 @@ class JobServiceImplTest {
   }
 
   @Test
-  void cancelJob_shouldStopJob_givenRunningJob() throws Exception {
+  void stopJob_shouldStopJob_givenRunningJob() throws Exception {
     // given
     var jobExecutionId = 123L;
-    var jobExecution = new JobExecution(jobExecutionId);
+    var jobExecution = new JobExecution(jobExecutionId, null, null);
     jobExecution.setStatus(BatchStatus.STARTED);
 
-    when(jobExplorer.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
+    when(jobRepository.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
 
     // when
-    jobInfoService.cancelJob(jobExecutionId);
+    jobInfoService.stopJob(jobExecutionId);
 
     // then
-    verify(jobOperator).stop(jobExecutionId);
+    verify(jobOperator).stop(jobExecution);
   }
 
   @Test
-  void cancelJob_shouldThrowException_givenJobNotFound() {
+  void stopJob_shouldThrowException_givenJobNotFound() {
     // given
     var jobExecutionId = 999L;
-    when(jobExplorer.getJobExecution(jobExecutionId)).thenReturn(null);
+    when(jobRepository.getJobExecution(jobExecutionId)).thenReturn(null);
 
     // when & then
-    assertThatThrownBy(() -> jobInfoService.cancelJob(jobExecutionId))
+    assertThatThrownBy(() -> jobInfoService.stopJob(jobExecutionId))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Job execution not found for jobExecutionId: 999");
   }
 
   @Test
-  void cancelJob_shouldThrowException_givenCompletedJob() {
+  void stopJob_shouldThrowException_givenCompletedJob() {
     // given
     var jobExecutionId = 123L;
-    var jobExecution = new JobExecution(jobExecutionId);
+    var jobExecution = new JobExecution(jobExecutionId, null, null);
     jobExecution.setStatus(BatchStatus.COMPLETED);
 
-    when(jobExplorer.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
+    when(jobRepository.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
 
     // when & then
-    assertThatThrownBy(() -> jobInfoService.cancelJob(jobExecutionId))
-      .isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(() -> jobInfoService.stopJob(jobExecutionId))
+      .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Job execution 123 is not running. Current status: COMPLETED");
   }
 
   @Test
-  void cancelJob_shouldThrowException_givenFailedJob() {
+  void stopJob_shouldThrowException_givenFailedJob() {
     // given
     var jobExecutionId = 456L;
-    var jobExecution = new JobExecution(jobExecutionId);
+    var jobExecution = new JobExecution(jobExecutionId, null, null);
     jobExecution.setStatus(BatchStatus.FAILED);
 
-    when(jobExplorer.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
+    when(jobRepository.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
 
     // when & then
-    assertThatThrownBy(() -> jobInfoService.cancelJob(jobExecutionId))
-      .isInstanceOf(IllegalStateException.class)
+    assertThatThrownBy(() -> jobInfoService.stopJob(jobExecutionId))
+      .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Job execution 456 is not running. Current status: FAILED");
   }
 
   @Test
-  void cancelJob_shouldThrowException_givenJobOperatorThrowsNoSuchJobExecutionException() throws Exception {
+  void stopJob_shouldThrowException_givenJobOperatorThrowsJobExecutionNotRunningException() throws Exception {
     // given
     var jobExecutionId = 123L;
-    var jobExecution = new JobExecution(jobExecutionId);
+    var jobExecution = new JobExecution(jobExecutionId, null, null);
     jobExecution.setStatus(BatchStatus.STARTED);
 
-    when(jobExplorer.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
-    when(jobOperator.stop(jobExecutionId))
-      .thenThrow(new NoSuchJobExecutionException("Job not found"));
+    when(jobRepository.getJobExecution(jobExecutionId)).thenReturn(jobExecution);
+    when(jobOperator.stop(jobExecution))
+      .thenThrow(new JobExecutionNotRunningException("Job execution 123 is not running"));
 
     // when & then
-    assertThatThrownBy(() -> jobInfoService.cancelJob(jobExecutionId))
+    assertThatThrownBy(() -> jobInfoService.stopJob(jobExecutionId))
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Job execution not found for jobExecutionId: 123")
-      .hasCauseInstanceOf(NoSuchJobExecutionException.class);
+      .hasMessage("Job execution 123 is not running")
+      .hasCauseInstanceOf(JobExecutionNotRunningException.class);
   }
 
   @Test

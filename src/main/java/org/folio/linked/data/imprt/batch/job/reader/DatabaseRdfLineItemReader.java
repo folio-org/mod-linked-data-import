@@ -4,10 +4,10 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.NonNull;
 import org.folio.linked.data.imprt.model.RdfLineWithNumber;
 import org.folio.linked.data.imprt.model.entity.RdfFileLine;
-import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.ItemStreamException;
-import org.springframework.batch.item.database.JpaPagingItemReader;
-import org.springframework.batch.item.support.AbstractItemStreamItemReader;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ItemStreamException;
+import org.springframework.batch.infrastructure.item.database.JpaPagingItemReader;
+import org.springframework.batch.infrastructure.item.support.AbstractItemStreamItemReader;
 
 public class DatabaseRdfLineItemReader extends AbstractItemStreamItemReader<RdfLineWithNumber> {
 
@@ -17,8 +17,7 @@ public class DatabaseRdfLineItemReader extends AbstractItemStreamItemReader<RdfL
   private final JpaPagingItemReader<RdfFileLine> delegate;
 
   public DatabaseRdfLineItemReader(Long jobExecutionId, EntityManagerFactory entityManagerFactory, int chunkSize) {
-    this.delegate = new JpaPagingItemReader<>();
-    this.delegate.setEntityManagerFactory(entityManagerFactory);
+    this.delegate = new JpaPagingItemReader<>(entityManagerFactory);
     this.delegate.setQueryString(SELECTION_QUERY);
     this.delegate.setParameterValues(java.util.Map.of(QUERY_PARAM_JOB_EXECUTION_ID, jobExecutionId));
     this.delegate.setPageSize(chunkSize);
