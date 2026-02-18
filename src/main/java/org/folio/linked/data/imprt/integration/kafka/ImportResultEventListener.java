@@ -1,6 +1,5 @@
 package org.folio.linked.data.imprt.integration.kafka;
 
-import static java.util.Optional.ofNullable;
 import static org.folio.linked.data.imprt.util.KafkaUtils.handleForExistedTenant;
 
 import java.util.List;
@@ -13,7 +12,6 @@ import org.folio.linked.data.imprt.integration.kafka.handler.KafkaMessageHandler
 import org.folio.linked.data.imprt.service.tenant.LinkedDataImportTenantService;
 import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.retry.RetryContext;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -47,15 +45,12 @@ public class ImportResultEventListener {
     var event = consumerRecord.value();
     tenantScopedExecutionService.executeWithRetry(
       consumerRecord.headers(),
-      retryContext -> runRetryableJob(event, retryContext),
+      () -> {
+        importResultEventHandler.handle(event);
+        return null;
+      },
       ex -> logFailedEvent(event, ex, false)
     );
-  }
-
-  private void runRetryableJob(ImportResultEvent event, RetryContext retryContext) {
-    ofNullable(retryContext.getLastThrowable())
-      .ifPresent(ex -> logFailedEvent(event, ex, true));
-    importResultEventHandler.handle(event);
   }
 
   private void logFailedEvent(ImportResultEvent event, Throwable ex, boolean isRetrying) {

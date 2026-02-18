@@ -1,8 +1,8 @@
 package org.folio.linked.data.imprt.test;
 
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
-import static org.folio.linked.data.imprt.test.TestUtil.asJsonString;
 import static org.folio.linked.data.imprt.test.TestUtil.defaultHeaders;
+import static org.folio.linked.data.imprt.util.JsonUtil.JSON_MAPPER;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,7 +31,9 @@ public class TenantInstallationExtension implements Extension, BeforeEachCallbac
       var env = context.getEnvironment();
       var mockMvc = context.getBean(MockMvc.class);
       mockMvc.perform(post(TENANT_ENDPOINT_URI, TENANT_ID)
-          .content(asJsonString(new TenantAttributes().moduleTo(env.getProperty("spring.application.name"))))
+          .content(JSON_MAPPER.writeValueAsString(
+            new TenantAttributes().moduleTo(env.getProperty("spring.application.name")))
+          )
           .headers(defaultHeaders())
           .contentType(APPLICATION_JSON))
         .andExpect(status().isNoContent());

@@ -101,12 +101,12 @@ paths:
         '500':
           description: Internal Server Error
 
-  /linked-data-import/jobs/{jobExecutionId}/cancel:
+  /linked-data-import/jobs/{jobExecutionId}/stop:
     put:
-      operationId: cancelJob
+      operationId: stopJob
       tags:
         - import, job
-      description: Cancels running Import Job by execution ID
+      description: Stops running Import Job by execution ID
       parameters:
         - name: jobExecutionId
           in: path
@@ -117,11 +117,11 @@ paths:
             format: int64
       responses:
         '200':
-          description: Job cancelled successfully
+          description: Job has been stopped successfully
         '404':
-          description: Job not found
+          description: Job is not found
         '409':
-          description: Job cannot be cancelled (already completed or failed)
+          description: Job cannot be stopped because it's not running
         '500':
           description: Internal Server Error
 

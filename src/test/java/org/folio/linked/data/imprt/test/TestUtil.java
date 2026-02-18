@@ -9,15 +9,12 @@ import static org.testcontainers.shaded.org.awaitility.Durations.FIVE_SECONDS;
 import static org.testcontainers.shaded.org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
 import static org.testcontainers.shaded.org.awaitility.Durations.TWO_MINUTES;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.folio.linked.data.imprt.config.ObjectMapperConfig;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
 import org.folio.s3.client.FolioS3Client;
@@ -32,14 +29,8 @@ import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
 public class TestUtil {
 
   public static final String TENANT_ID = "test_tenant";
-  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
   private static final String FOLIO_OKAPI_URL = "folio.okapi-url";
   private static final String IMPORT_RESULT_TOPIC = "folio.test_tenant.linked_data_import.result";
-
-  @SneakyThrows
-  public static String asJsonString(Object value) {
-    return OBJECT_MAPPER.writeValueAsString(value);
-  }
 
   public static HttpHeaders defaultHeaders() {
     var httpHeaders = new HttpHeaders();

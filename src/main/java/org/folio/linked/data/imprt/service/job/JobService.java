@@ -13,6 +13,6 @@ public interface JobService {
 
   Resource generateFailedLinesCsv(Long jobExecutionId);
 
-  void cancelJob(Long jobExecutionId);
+  void stopJob(Long jobExecutionId);
 }
 

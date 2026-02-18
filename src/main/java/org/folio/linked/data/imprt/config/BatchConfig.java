@@ -5,32 +5,29 @@ import java.util.Set;
 import javax.sql.DataSource;
 import org.folio.linked.data.imprt.batch.job.processor.Rdf2LdProcessor;
 import org.folio.linked.data.imprt.batch.job.reader.DatabaseRdfLineItemReader;
+import org.folio.linked.data.imprt.batch.job.tasklet.FileDownloadTasklet;
+import org.folio.linked.data.imprt.batch.job.tasklet.FileToDatabaseTasklet;
 import org.folio.linked.data.imprt.batch.job.writer.LdKafkaSender;
 import org.folio.linked.data.imprt.domain.dto.ResourceWithLineNumber;
 import org.folio.linked.data.imprt.model.RdfLineWithNumber;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.configuration.support.JobRegistrySmartInitializingSingleton;
 import org.springframework.batch.core.configuration.support.MapJobRegistry;
-import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
+import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.support.SimpleJobOperator;
-import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
+import org.springframework.batch.core.launch.support.TaskExecutorJobOperator;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
+import org.springframework.batch.core.repository.support.JdbcJobRepositoryFactoryBean;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.support.SynchronizedItemStreamReader;
+import org.springframework.batch.infrastructure.item.support.SynchronizedItemStreamReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -54,7 +51,7 @@ public class BatchConfig {
   @Bean
   public JobRepository jobRepository(DataSource dataSource,
                                      PlatformTransactionManager transactionManager) throws Exception {
-    var factory = new JobRepositoryFactoryBean();
+    var factory = new JdbcJobRepositoryFactoryBean();
     factory.setDataSource(dataSource);
     factory.setTransactionManager(transactionManager);
     factory.setTablePrefix("batch_");
@@ -78,50 +75,17 @@ public class BatchConfig {
   }
 
   @Bean
-  public JobLauncher jobLauncher(JobRepository jobRepository,
-                                 TaskExecutor jobLauncherTaskExecutor) throws Exception {
-    var jobLauncher = new TaskExecutorJobLauncher();
-    jobLauncher.setJobRepository(jobRepository);
-    jobLauncher.setTaskExecutor(jobLauncherTaskExecutor);
-    jobLauncher.afterPropertiesSet();
-    return jobLauncher;
-  }
-
-  @Bean
-  public JobExplorer jobExplorer(DataSource dataSource,
-                                 PlatformTransactionManager transactionManager) throws Exception {
-    var factory = new JobExplorerFactoryBean();
-    factory.setDataSource(dataSource);
-    factory.setTransactionManager(transactionManager);
-    factory.setTablePrefix("batch_");
-    factory.afterPropertiesSet();
-    return factory.getObject();
-  }
-
-  @Bean
-  public JobOperator jobOperator(
-    JobRepository jobRepository,
-    JobExplorer jobExplorer,
-    JobLauncher jobLauncher,
-    JobRegistry jobRegistry
-  ) throws Exception {
-    var jobOperator = new SimpleJobOperator();
+  public JobOperator jobOperator(JobRepository jobRepository, JobRegistry jobRegistry) throws Exception {
+    var jobOperator = new TaskExecutorJobOperator();
     jobOperator.setJobRepository(jobRepository);
-    jobOperator.setJobExplorer(jobExplorer);
-    jobOperator.setJobLauncher(jobLauncher);
     jobOperator.setJobRegistry(jobRegistry);
     jobOperator.afterPropertiesSet();
     return jobOperator;
   }
 
   @Bean
-  public JobRegistry jobRegistry() {
+  public MapJobRegistry jobRegistry() {
     return new MapJobRegistry();
-  }
-
-  @Bean
-  public JobRegistrySmartInitializingSingleton jobRegistrySmartInitializingSingleton(JobRegistry jobRegistry) {
-    return new JobRegistrySmartInitializingSingleton(jobRegistry);
   }
 
   @Bean
@@ -138,7 +102,7 @@ public class BatchConfig {
 
   @Bean
   public Step downloadFileStep(JobRepository jobRepository,
-                               Tasklet fileDownloadTasklet,
+                               FileDownloadTasklet fileDownloadTasklet,
                                PlatformTransactionManager transactionManager) {
     return new StepBuilder(STEP_DOWNLOAD_FILE, jobRepository)
       .tasklet(fileDownloadTasklet, transactionManager)
@@ -147,7 +111,7 @@ public class BatchConfig {
 
   @Bean
   public Step fileToDatabaseStep(JobRepository jobRepository,
-                                 Tasklet fileToDatabaseTasklet,
+                                 FileToDatabaseTasklet fileToDatabaseTasklet,
                                  PlatformTransactionManager transactionManager) {
     return new StepBuilder("fileToDatabaseStep", jobRepository)
       .tasklet(fileToDatabaseTasklet, transactionManager)
@@ -155,7 +119,7 @@ public class BatchConfig {
   }
 
   @Bean
-  public TaskExecutor processFileTaskExecutor(
+  public AsyncTaskExecutor processFileTaskExecutor(
     @Value("${mod-linked-data-import.process-file.max-pool-size}") int maxPoolSize
   ) {
     var exec = new ThreadPoolTaskExecutor();
@@ -168,14 +132,13 @@ public class BatchConfig {
 
   @Bean
   public Step mappingStep(JobRepository jobRepository,
-                          PlatformTransactionManager transactionManager,
                           SynchronizedItemStreamReader<RdfLineWithNumber> databaseRdfLineItemReader,
                           Rdf2LdProcessor rdf2LdProcessor,
                           LdKafkaSender ldKafkaSender,
                           @Value("${mod-linked-data-import.chunk-size}") int chunkSize,
-                          TaskExecutor processFileTaskExecutor) {
+                          AsyncTaskExecutor processFileTaskExecutor) {
     return new StepBuilder("mappingStep", jobRepository)
-      .<RdfLineWithNumber, Set<ResourceWithLineNumber>>chunk(chunkSize, transactionManager)
+      .<RdfLineWithNumber, Set<ResourceWithLineNumber>>chunk(chunkSize)
       .reader(databaseRdfLineItemReader)
       .processor(rdf2LdProcessor)
       .writer(ldKafkaSender)
@@ -191,9 +154,7 @@ public class BatchConfig {
     EntityManagerFactory entityManagerFactory
   ) {
     var reader = new DatabaseRdfLineItemReader(jobExecutionId, entityManagerFactory, chunkSize);
-    var synchronizedReader = new SynchronizedItemStreamReader<RdfLineWithNumber>();
-    synchronizedReader.setDelegate(reader);
-    return synchronizedReader;
+    return new SynchronizedItemStreamReader<>(reader);
   }
 
 }

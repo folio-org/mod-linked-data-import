@@ -13,11 +13,11 @@ import org.folio.linked.data.imprt.model.RdfLineWithNumber;
 import org.folio.linked.data.imprt.model.entity.FailedRdfLine;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.rdf4ld.service.Rdf4LdService;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Log4j2

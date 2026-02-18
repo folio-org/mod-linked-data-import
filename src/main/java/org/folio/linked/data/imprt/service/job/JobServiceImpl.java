@@ -20,11 +20,13 @@ import org.folio.linked.data.imprt.repo.BatchJobExecutionRepo;
 import org.folio.linked.data.imprt.repo.BatchStepExecutionRepo;
 import org.folio.linked.data.imprt.repo.FailedRdfLineRepo;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.folio.spring.exception.NotFoundException;
+import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +46,7 @@ public class JobServiceImpl implements JobService {
   private final ImportResultEventRepo importResultEventRepo;
   private final FailedRdfLineRepo failedRdfLineRepo;
   private final JobOperator jobOperator;
-  private final JobExplorer jobExplorer;
+  private final JobRepository jobRepository;
 
   @Override
   public JobInfo getJobInfo(Long jobExecutionId) {
@@ -108,24 +110,24 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public void cancelJob(Long jobExecutionId) {
+  public void stopJob(Long jobExecutionId) {
     try {
-      var jobExecution = jobExplorer.getJobExecution(jobExecutionId);
+      var jobExecution = jobRepository.getJobExecution(jobExecutionId);
       if (jobExecution == null) {
         throw new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId);
       }
       var status = jobExecution.getStatus();
       if (!status.isRunning()) {
-        throw new IllegalStateException(
+        throw new IllegalArgumentException(
           "Job execution " + jobExecutionId + " is not running. Current status: " + status
         );
       }
-      jobOperator.stop(jobExecutionId);
+      jobOperator.stop(jobExecution);
       log.info("Job execution {} has been stopped", jobExecutionId);
-    } catch (NoSuchJobExecutionException e) {
-      throw new IllegalArgumentException("Job execution not found for jobExecutionId: " + jobExecutionId, e);
-    } catch (org.springframework.batch.core.launch.JobExecutionNotRunningException e) {
-      throw new IllegalStateException("Job execution " + jobExecutionId + " is not running", e);
+    } catch (EmptyResultDataAccessException e) {
+      throw new NotFoundException("Job execution not found for jobExecutionId: " + jobExecutionId);
+    } catch (JobExecutionNotRunningException e) {
+      throw new IllegalArgumentException("Job execution " + jobExecutionId + " is not running", e);
     }
   }
 

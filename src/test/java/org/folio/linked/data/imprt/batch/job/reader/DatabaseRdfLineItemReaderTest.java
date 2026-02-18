@@ -10,7 +10,7 @@ import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -60,6 +60,8 @@ class DatabaseRdfLineItemReaderTest {
       otherJobLine.setLineNumber(1L);
       otherJobLine.setContent("Other job content");
       rdfFileLineRepo.save(otherJobLine);
+
+      return null;
     });
   }
 
