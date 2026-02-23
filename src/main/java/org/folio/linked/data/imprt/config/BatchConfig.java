@@ -15,7 +15,6 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.configuration.support.MapJobRegistry;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.support.TaskExecutorJobOperator;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JdbcJobRepositoryFactoryBean;
@@ -28,7 +27,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -65,20 +64,20 @@ public class BatchConfig {
   }
 
   @Bean
-  public TaskExecutor jobLauncherTaskExecutor(@Value("${mod-linked-data-import.job-pool-size}") int jobPoolSize) {
-    var exec = new ThreadPoolTaskExecutor();
-    exec.setMaxPoolSize(jobPoolSize);
-    exec.setQueueCapacity(jobPoolSize);
-    exec.setThreadNamePrefix("job-launcher-");
-    exec.initialize();
-    return exec;
+  public AsyncTaskExecutor jobLauncherTaskExecutor() {
+    var simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+    simpleAsyncTaskExecutor.setVirtualThreads(true);
+    return simpleAsyncTaskExecutor;
   }
 
   @Bean
-  public JobOperator jobOperator(JobRepository jobRepository, JobRegistry jobRegistry) throws Exception {
+  public TaskExecutorJobOperator taskExecutorJobOperator(JobRepository jobRepository,
+                                                         JobRegistry jobRegistry,
+                                                         AsyncTaskExecutor jobLauncherTaskExecutor) throws Exception {
     var jobOperator = new TaskExecutorJobOperator();
     jobOperator.setJobRepository(jobRepository);
     jobOperator.setJobRegistry(jobRegistry);
+    jobOperator.setTaskExecutor(jobLauncherTaskExecutor);
     jobOperator.afterPropertiesSet();
     return jobOperator;
   }
@@ -126,6 +125,7 @@ public class BatchConfig {
     exec.setMaxPoolSize(maxPoolSize);
     exec.setQueueCapacity(0);
     exec.setThreadNamePrefix("process-file-");
+    exec.setVirtualThreads(true);
     exec.initialize();
     return exec;
   }

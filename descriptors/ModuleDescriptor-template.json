@@ -119,7 +119,6 @@
       { "name": "S3_IS_AWS", "value": "false" },
       { "name": "CHUNK_SIZE", "value": "1000" },
       { "name": "OUTPUT_CHUNK_SIZE", "value": "100" },
-      { "name": "JOB_POOL_SIZE", "value": "1" },
       { "name": "PROCESS_FILE_MAX_POOL_SIZE", "value": "1000" },
       { "name": "DATA_CLEANUP_CRON", "value": "0 0 2 * * *" },
       { "name": "DATA_CLEANUP_AGE_DAYS", "value": "2" }
