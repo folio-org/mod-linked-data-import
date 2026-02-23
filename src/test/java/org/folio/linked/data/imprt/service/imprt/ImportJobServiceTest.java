@@ -35,8 +35,8 @@ import org.springframework.batch.core.job.JobExecutionException;
 import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.JobRestartException;
+import org.springframework.batch.core.launch.support.TaskExecutorJobOperator;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -47,7 +47,7 @@ class ImportJobServiceTest {
   @Mock
   private Job rdfImportJob;
   @Mock
-  private JobOperator jobOperator;
+  private TaskExecutorJobOperator jobOperator;
   @Mock
   private S3Service s3Service;
   @Mock

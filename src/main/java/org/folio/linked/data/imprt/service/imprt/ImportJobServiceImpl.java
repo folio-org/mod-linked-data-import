@@ -19,7 +19,7 @@ import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecutionException;
 import org.springframework.batch.core.job.parameters.JobParameter;
 import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.launch.support.TaskExecutorJobOperator;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +28,7 @@ public class ImportJobServiceImpl implements ImportJobService {
 
   private static final String DEFAULT_CONTENT_TYPE = "application/ld+json";
   private final Job rdfImportJob;
-  private final JobOperator jobOperator;
+  private final TaskExecutorJobOperator jobOperator;
   private final S3Service s3Service;
   private final FolioExecutionContext folioExecutionContext;
 
