@@ -24,6 +24,12 @@
       "handlers": [
         {
           "methods": [ "POST" ],
+          "pathPattern": "/linked-data-import/files",
+          "permissionsRequired": [ "linked-data-import.files.collection.post" ],
+          "modulePermissions": []
+        },
+        {
+          "methods": [ "POST" ],
           "pathPattern": "/linked-data-import/start",
           "permissionsRequired": [ "linked-data-import.start.post" ],
           "modulePermissions": []
@@ -56,6 +62,11 @@
     }
   ],
   "permissionSets": [
+    {
+      "permissionName": "linked-data-import.files.collection.post",
+      "displayName": "Linked Data Import: Upload source file",
+      "description": "Upload a source file to tenant folder in S3"
+    },
     {
       "permissionName": "linked-data-import.start.post",
       "displayName": "Linked Data Import: Start Linked Data Import process",
