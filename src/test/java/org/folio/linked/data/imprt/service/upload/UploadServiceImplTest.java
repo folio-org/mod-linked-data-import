@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
@@ -74,13 +76,41 @@ class UploadServiceImplTest {
   }
 
   @Test
+  void upload_shouldFailForNullOriginalFileName() {
+    doReturn(false).when(multipartFile).isEmpty();
+    doReturn(null).when(multipartFile).getOriginalFilename();
+
+    assertThatThrownBy(() -> uploadService.upload(multipartFile, null))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("File name must not be empty");
+  }
+
+  @Test
+  void upload_shouldFailForPathTraversalFileName() {
+    doReturn(false).when(multipartFile).isEmpty();
+
+    assertThatThrownBy(() -> uploadService.upload(multipartFile, "../evil.rdf"))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("File name must not contain path separators");
+  }
+
+  @Test
+  void upload_shouldFailForNestedPathFileName() {
+    doReturn(false).when(multipartFile).isEmpty();
+
+    assertThatThrownBy(() -> uploadService.upload(multipartFile, "nested/file.rdf"))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("File name must not contain path separators");
+  }
+
+  @Test
   void upload_shouldWrapIoException() throws Exception {
     doReturn(false).when(multipartFile).isEmpty();
     doReturn("file.rdf").when(multipartFile).getOriginalFilename();
-    org.mockito.Mockito.doThrow(new IOException("boom")).when(multipartFile).getInputStream();
+    doThrow(new IOException("boom")).when(multipartFile).getInputStream();
 
     assertThatThrownBy(() -> uploadService.upload(multipartFile, null))
-      .isInstanceOf(java.io.UncheckedIOException.class)
+      .isInstanceOf(UncheckedIOException.class)
       .hasMessageContaining("Failed to upload file to S3");
   }
 }

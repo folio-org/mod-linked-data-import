@@ -1,5 +1,6 @@
 package org.folio.linked.data.imprt.controller;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -74,8 +75,21 @@ class UploadControllerTest {
     var multipartFile = new MockMultipartFile("file", "empty.rdf", MediaType.TEXT_PLAIN_VALUE, new byte[0]);
     doThrow(new IllegalArgumentException("File must not be empty")).when(uploadService).upload(any(), eq(null));
 
-    org.assertj.core.api.Assertions.assertThatCode(() -> mockMvc.perform(multipart("/linked-data-import/files")
+    assertThatCode(() -> mockMvc.perform(multipart("/linked-data-import/files")
         .file(multipartFile))
+      .andExpect(status().isBadRequest()))
+      .doesNotThrowAnyException();
+  }
+
+  @Test
+  void uploadFile_shouldFailForPathTraversalFileName() {
+    var multipartFile = new MockMultipartFile("file", "safe.rdf", MediaType.TEXT_PLAIN_VALUE, "test".getBytes());
+    doThrow(new IllegalArgumentException("File name must not contain path separators"))
+      .when(uploadService).upload(any(), eq("../evil.rdf"));
+
+    assertThatCode(() -> mockMvc.perform(multipart("/linked-data-import/files")
+        .file(multipartFile)
+        .param("fileName", "../evil.rdf"))
       .andExpect(status().isBadRequest()))
       .doesNotThrowAnyException();
   }

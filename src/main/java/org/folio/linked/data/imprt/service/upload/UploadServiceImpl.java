@@ -2,6 +2,7 @@ package org.folio.linked.data.imprt.service.upload;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.springframework.stereotype.Service;
@@ -20,10 +21,7 @@ public class UploadServiceImpl implements UploadService {
       throw new IllegalArgumentException("File must not be empty");
     }
 
-    var resolvedFileName = StringUtils.hasText(fileName) ? fileName : file.getOriginalFilename();
-    if (!StringUtils.hasText(resolvedFileName)) {
-      throw new IllegalArgumentException("File name must not be empty");
-    }
+    var resolvedFileName = resolveFileName(file, fileName);
 
     try (var inputStream = file.getInputStream()) {
       s3Service.upload(resolvedFileName, inputStream);
@@ -31,5 +29,22 @@ public class UploadServiceImpl implements UploadService {
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to upload file to S3", e);
     }
+  }
+
+  private String resolveFileName(MultipartFile file, String fileName) {
+    var resolvedFileName = StringUtils.hasText(fileName) ? fileName : file.getOriginalFilename();
+    if (!StringUtils.hasText(resolvedFileName)) {
+      throw new IllegalArgumentException("File name must not be empty");
+    }
+    if (resolvedFileName.contains("/") || resolvedFileName.contains("\\")) {
+      throw new IllegalArgumentException("File name must not contain path separators");
+    }
+
+    var normalizedPath = Path.of(resolvedFileName).normalize();
+    if (normalizedPath.isAbsolute() || normalizedPath.startsWith("..")
+      || normalizedPath.getNameCount() != 1 || ".".equals(normalizedPath.toString())) {
+      throw new IllegalArgumentException("Invalid file name");
+    }
+    return normalizedPath.toString();
   }
 }
