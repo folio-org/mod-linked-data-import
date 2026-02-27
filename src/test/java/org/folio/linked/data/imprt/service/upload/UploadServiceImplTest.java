@@ -94,6 +94,6 @@ class UploadServiceImplTest {
   }
 
   private static Stream<String> unsafeOriginalFileNames() {
-    return Stream.of("../another-tenant/sample-upload.rdf", "nested/file.rdf");
+    return Stream.of("../another-tenant/sample-upload.rdf", "nested/file.rdf", "nested\\file.rdf");
   }
 }
