@@ -11,13 +11,6 @@ paths:
       tags:
         - upload
       description: Uploads a local file into tenant-specific folder in configured S3 bucket
-      parameters:
-        - name: fileName
-          in: query
-          required: false
-          description: Optional file name to use in S3. Multipart original filename is used when omitted.
-          schema:
-            type: string
       requestBody:
         required: true
         content:

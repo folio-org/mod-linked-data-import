@@ -16,12 +16,12 @@ public class UploadServiceImpl implements UploadService {
   private final S3Service s3Service;
 
   @Override
-  public String upload(MultipartFile file, String fileName) {
+  public String upload(MultipartFile file) {
     if (file.isEmpty()) {
       throw new IllegalArgumentException("File must not be empty");
     }
 
-    var resolvedFileName = resolveFileName(file, fileName);
+    var resolvedFileName = resolveFileName(file);
 
     try (var inputStream = file.getInputStream()) {
       s3Service.upload(resolvedFileName, inputStream);
@@ -31,8 +31,8 @@ public class UploadServiceImpl implements UploadService {
     }
   }
 
-  private String resolveFileName(MultipartFile file, String fileName) {
-    var resolvedFileName = StringUtils.hasText(fileName) ? fileName : file.getOriginalFilename();
+  private String resolveFileName(MultipartFile file) {
+    var resolvedFileName = file.getOriginalFilename();
     if (!StringUtils.hasText(resolvedFileName)) {
       throw new IllegalArgumentException("File name must not be empty");
     }

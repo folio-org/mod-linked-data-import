@@ -14,7 +14,7 @@ public class UploadController implements UploadApi {
   private final UploadService uploadService;
 
   @Override
-  public ResponseEntity<String> uploadFile(MultipartFile file, String fileName) {
-    return ResponseEntity.ok(uploadService.upload(file, fileName));
+  public ResponseEntity<String> uploadFile(MultipartFile file) {
+    return ResponseEntity.ok(uploadService.upload(file));
   }
 }

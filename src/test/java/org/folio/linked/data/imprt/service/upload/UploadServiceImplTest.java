@@ -32,35 +32,23 @@ class UploadServiceImplTest {
   private MultipartFile multipartFile;
 
   @Test
-  void upload_shouldUseProvidedFileName() throws Exception {
-    var providedFileName = "override.rdf";
+  void upload_shouldUseOriginalFileName() throws Exception {
+    var fileName = "original.rdf";
     doReturn(false).when(multipartFile).isEmpty();
+    doReturn(fileName).when(multipartFile).getOriginalFilename();
     doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
 
-    var result = uploadService.upload(multipartFile, providedFileName);
+    var result = uploadService.upload(multipartFile);
 
-    assertThat(result).isEqualTo(providedFileName);
-    verify(s3Service).upload(eq(providedFileName), any());
-  }
-
-  @Test
-  void upload_shouldUseOriginalFileName_whenFileNameNotProvided() throws Exception {
-    var originalFileName = "original.rdf";
-    doReturn(false).when(multipartFile).isEmpty();
-    doReturn(originalFileName).when(multipartFile).getOriginalFilename();
-    doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
-
-    var result = uploadService.upload(multipartFile, null);
-
-    assertThat(result).isEqualTo(originalFileName);
-    verify(s3Service).upload(eq(originalFileName), any());
+    assertThat(result).isEqualTo(fileName);
+    verify(s3Service).upload(eq(fileName), any());
   }
 
   @Test
   void upload_shouldFailForEmptyFile() {
     doReturn(true).when(multipartFile).isEmpty();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile, null))
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("File must not be empty");
   }
@@ -70,7 +58,7 @@ class UploadServiceImplTest {
     doReturn(false).when(multipartFile).isEmpty();
     doReturn("").when(multipartFile).getOriginalFilename();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile, null))
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("File name must not be empty");
   }
@@ -80,25 +68,27 @@ class UploadServiceImplTest {
     doReturn(false).when(multipartFile).isEmpty();
     doReturn(null).when(multipartFile).getOriginalFilename();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile, null))
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("File name must not be empty");
   }
 
   @Test
-  void upload_shouldFailForPathTraversalFileName() {
+  void upload_shouldFailForPathTraversalOriginalFileName() {
     doReturn(false).when(multipartFile).isEmpty();
+    doReturn("../evil.rdf").when(multipartFile).getOriginalFilename();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile, "../evil.rdf"))
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("File name must not contain path separators");
   }
 
   @Test
-  void upload_shouldFailForNestedPathFileName() {
+  void upload_shouldFailForNestedPathOriginalFileName() {
     doReturn(false).when(multipartFile).isEmpty();
+    doReturn("nested/file.rdf").when(multipartFile).getOriginalFilename();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile, "nested/file.rdf"))
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("File name must not contain path separators");
   }
@@ -109,7 +99,7 @@ class UploadServiceImplTest {
     doReturn("file.rdf").when(multipartFile).getOriginalFilename();
     doThrow(new IOException("boom")).when(multipartFile).getInputStream();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile, null))
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(UncheckedIOException.class)
       .hasMessageContaining("Failed to upload file to S3");
   }
