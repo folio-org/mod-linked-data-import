@@ -35,17 +35,9 @@ public class UploadServiceImpl implements UploadService {
     if (!StringUtils.hasText(originalFileName)) {
       throw new IllegalArgumentException("File name must not be empty");
     }
-
-    var sanitizedFileName = originalFileName.strip()
-      .replaceAll("[^\\p{L}\\p{N}._-]", "_")
-      .replaceAll("_+", "_")
-      .replaceAll("^[._-]+", "")
-      .replaceAll("[._-]+$", "");
-
-    if (!StringUtils.hasText(sanitizedFileName)) {
-      throw new IllegalArgumentException("Invalid file name");
+    if (originalFileName.contains("/") || originalFileName.contains("\\")) {
+      throw new IllegalArgumentException("File name must not contain path separators");
     }
-
-    return sanitizedFileName;
+    return originalFileName;
   }
 }

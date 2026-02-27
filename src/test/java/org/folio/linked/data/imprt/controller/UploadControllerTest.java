@@ -79,15 +79,15 @@ class UploadControllerTest {
   }
 
   @Test
-  void uploadFile_shouldReturnSanitizedFileName() {
+  void uploadFile_shouldFailForPathTraversalOriginalFileName() {
     var multipartFile = new MockMultipartFile(
       "file", "../sample-upload.rdf", MediaType.TEXT_PLAIN_VALUE, "test".getBytes());
-    doReturn("sample-upload.rdf").when(uploadService).upload(any());
+    doThrow(new IllegalArgumentException("File name must not contain path separators"))
+      .when(uploadService).upload(any());
 
     assertThatCode(() -> mockMvc.perform(multipart("/linked-data-import/files")
         .file(multipartFile))
-      .andExpect(status().isOk())
-      .andExpect(content().string("sample-upload.rdf")))
+      .andExpect(status().isBadRequest()))
       .doesNotThrowAnyException();
   }
 }

@@ -17,7 +17,6 @@ import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -70,15 +69,13 @@ class UploadServiceImplTest {
 
   @ParameterizedTest
   @MethodSource("unsafeOriginalFileNames")
-  void upload_shouldSanitizeUnsafeOriginalFileName(String originalFileName, String expectedFileName) throws Exception {
+  void upload_shouldFailForPathLikeOriginalFileName(String originalFileName) {
     doReturn(false).when(multipartFile).isEmpty();
     doReturn(originalFileName).when(multipartFile).getOriginalFilename();
-    doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
 
-    var result = uploadService.upload(multipartFile);
-
-    assertThat(result).isEqualTo(expectedFileName);
-    verify(s3Service).upload(eq(expectedFileName), any());
+    assertThatThrownBy(() -> uploadService.upload(multipartFile))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("File name must not contain path separators");
   }
 
   @Test
@@ -96,10 +93,7 @@ class UploadServiceImplTest {
     return Stream.of("", " ", null);
   }
 
-  private static Stream<Arguments> unsafeOriginalFileNames() {
-    return Stream.of(
-      Arguments.of("../another-tenant/sample-upload.rdf", "another-tenant_sample-upload.rdf"),
-      Arguments.of("nested/file.rdf", "nested_file.rdf")
-    );
+  private static Stream<String> unsafeOriginalFileNames() {
+    return Stream.of("../another-tenant/sample-upload.rdf", "nested/file.rdf");
   }
 }
