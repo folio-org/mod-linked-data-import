@@ -93,7 +93,7 @@ class UploadServiceImplTest {
   }
 
   private static Stream<String> invalidOriginalFileNames() {
-    return Stream.of("", null);
+    return Stream.of("", " ", null);
   }
 
   private static Stream<Arguments> unsafeOriginalFileNames() {
