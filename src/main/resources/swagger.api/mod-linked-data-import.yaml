@@ -5,6 +5,36 @@ info:
   description: Linked Data Import API
 
 paths:
+  /linked-data-import/files:
+    post:
+      operationId: uploadFile
+      tags:
+        - upload
+      description: Uploads a local file into tenant-specific folder in configured S3 bucket
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Uploaded file name in S3
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid upload request
+        '500':
+          description: Internal Server Error
+
   /linked-data-import/start:
     post:
       operationId: startImport
@@ -133,4 +163,3 @@ components:
       $ref: kafka/result/importResultEvent.json
     jobInfo:
       $ref: jobInfo.json
-

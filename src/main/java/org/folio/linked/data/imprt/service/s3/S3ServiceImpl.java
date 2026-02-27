@@ -4,6 +4,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +22,12 @@ public class S3ServiceImpl implements S3Service {
   @Override
   public boolean exists(String fileName) {
     return !folioS3Client.list(filePathWithTenantFolder(fileName)).isEmpty();
+  }
+
+  @Override
+  public void upload(String fileName, InputStream inputStream) throws IOException {
+    folioS3Client.write(filePathWithTenantFolder(fileName), inputStream);
+    log.info("File {} uploaded successfully", fileName);
   }
 
   @Override

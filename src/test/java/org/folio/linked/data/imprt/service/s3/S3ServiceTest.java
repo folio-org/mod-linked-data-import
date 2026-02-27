@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.EMPTY_LIST;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -56,6 +57,21 @@ class S3ServiceTest {
 
     // then
     assertThat(result).isFalse();
+  }
+
+  @Test
+  void upload_shouldWriteFileToTenantFolderInS3() throws Exception {
+    // given
+    var fileName = "file.txt";
+    var tenantId = "test-tenant";
+    var is = new ByteArrayInputStream("content".getBytes(UTF_8));
+    doReturn(tenantId).when(folioExecutionContext).getTenantId();
+
+    // when
+    s3Service.upload(fileName, is);
+
+    // then
+    verify(folioS3Client).write(tenantId + "/" + fileName, is);
   }
 
   @Test
