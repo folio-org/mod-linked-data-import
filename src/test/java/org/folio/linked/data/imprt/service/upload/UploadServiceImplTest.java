@@ -11,10 +11,14 @@ import static org.mockito.Mockito.verify;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.stream.Stream;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.folio.spring.testing.type.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -53,48 +57,28 @@ class UploadServiceImplTest {
       .hasMessage("File must not be empty");
   }
 
-  @Test
-  void upload_shouldFailForMissingFileName() {
+  @ParameterizedTest
+  @MethodSource("invalidOriginalFileNames")
+  void upload_shouldFailForInvalidOriginalFileName(String originalFileName) {
     doReturn(false).when(multipartFile).isEmpty();
-    doReturn("").when(multipartFile).getOriginalFilename();
+    doReturn(originalFileName).when(multipartFile).getOriginalFilename();
 
     assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("File name must not be empty");
   }
 
-  @Test
-  void upload_shouldFailForNullOriginalFileName() {
+  @ParameterizedTest
+  @MethodSource("unsafeOriginalFileNames")
+  void upload_shouldSanitizeUnsafeOriginalFileName(String originalFileName, String expectedFileName) throws Exception {
     doReturn(false).when(multipartFile).isEmpty();
-    doReturn(null).when(multipartFile).getOriginalFilename();
-
-    assertThatThrownBy(() -> uploadService.upload(multipartFile))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("File name must not be empty");
-  }
-
-  @Test
-  void upload_shouldSanitizePathTraversalOriginalFileName() throws Exception {
-    doReturn(false).when(multipartFile).isEmpty();
-    doReturn("../another-tenant/sample-upload.rdf").when(multipartFile).getOriginalFilename();
+    doReturn(originalFileName).when(multipartFile).getOriginalFilename();
     doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
 
     var result = uploadService.upload(multipartFile);
 
-    assertThat(result).isEqualTo("another-tenant_sample-upload.rdf");
-    verify(s3Service).upload(eq("another-tenant_sample-upload.rdf"), any());
-  }
-
-  @Test
-  void upload_shouldSanitizeNestedPathOriginalFileName() throws Exception {
-    doReturn(false).when(multipartFile).isEmpty();
-    doReturn("nested/file.rdf").when(multipartFile).getOriginalFilename();
-    doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
-
-    var result = uploadService.upload(multipartFile);
-
-    assertThat(result).isEqualTo("nested_file.rdf");
-    verify(s3Service).upload(eq("nested_file.rdf"), any());
+    assertThat(result).isEqualTo(expectedFileName);
+    verify(s3Service).upload(eq(expectedFileName), any());
   }
 
   @Test
@@ -106,5 +90,16 @@ class UploadServiceImplTest {
     assertThatThrownBy(() -> uploadService.upload(multipartFile))
       .isInstanceOf(UncheckedIOException.class)
       .hasMessageContaining("Failed to upload file to S3");
+  }
+
+  private static Stream<String> invalidOriginalFileNames() {
+    return Stream.of("", null);
+  }
+
+  private static Stream<Arguments> unsafeOriginalFileNames() {
+    return Stream.of(
+      Arguments.of("../another-tenant/sample-upload.rdf", "another-tenant_sample-upload.rdf"),
+      Arguments.of("nested/file.rdf", "nested_file.rdf")
+    );
   }
 }
