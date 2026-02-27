@@ -46,14 +46,23 @@ class UploadIT {
   }
 
   @Test
-  void uploadFile_shouldRejectPathTraversalOriginalFileName() throws Exception {
+  void uploadFile_shouldSanitizePathTraversalOriginalFileName() throws Exception {
     // given
-    var file = new MockMultipartFile("file", "../evil.rdf", "text/plain", "rdf content".getBytes(UTF_8));
+    var fileContent = "rdf content";
+    var file = new MockMultipartFile("file", "../sample-upload.rdf", "text/plain", fileContent.getBytes(UTF_8));
 
-    // when/then
-    mockMvc.perform(multipart(PATH_UPLOAD_FILE)
+    // when
+    var response = mockMvc.perform(multipart(PATH_UPLOAD_FILE)
         .file(file)
         .headers(defaultHeaders()))
-      .andExpect(status().isBadRequest());
+      .andExpect(status().isOk())
+      .andReturn()
+      .getResponse();
+
+    // then
+    assertThat(response.getContentAsString()).isEqualTo("sample-upload.rdf");
+    try (var s3File = s3Client.read(TENANT_ID + "/sample-upload.rdf")) {
+      assertThat(new String(s3File.readAllBytes(), UTF_8)).isEqualTo(fileContent);
+    }
   }
 }

@@ -2,7 +2,6 @@ package org.folio.linked.data.imprt.service.upload;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import org.folio.linked.data.imprt.service.s3.S3Service;
 import org.springframework.stereotype.Service;
@@ -32,19 +31,21 @@ public class UploadServiceImpl implements UploadService {
   }
 
   private String resolveFileName(MultipartFile file) {
-    var resolvedFileName = file.getOriginalFilename();
-    if (!StringUtils.hasText(resolvedFileName)) {
+    var originalFileName = file.getOriginalFilename();
+    if (!StringUtils.hasText(originalFileName)) {
       throw new IllegalArgumentException("File name must not be empty");
     }
-    if (resolvedFileName.contains("/") || resolvedFileName.contains("\\")) {
-      throw new IllegalArgumentException("File name must not contain path separators");
-    }
 
-    var normalizedPath = Path.of(resolvedFileName).normalize();
-    if (normalizedPath.isAbsolute() || normalizedPath.startsWith("..")
-      || normalizedPath.getNameCount() != 1 || ".".equals(normalizedPath.toString())) {
+    var sanitizedFileName = originalFileName.strip()
+      .replaceAll("[^\\p{L}\\p{N}._-]", "_")
+      .replaceAll("_+", "_")
+      .replaceAll("^[._-]+", "")
+      .replaceAll("[._-]+$", "");
+
+    if (!StringUtils.hasText(sanitizedFileName)) {
       throw new IllegalArgumentException("Invalid file name");
     }
-    return normalizedPath.toString();
+
+    return sanitizedFileName;
   }
 }

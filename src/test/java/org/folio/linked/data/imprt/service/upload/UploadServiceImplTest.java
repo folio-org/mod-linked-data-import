@@ -74,23 +74,27 @@ class UploadServiceImplTest {
   }
 
   @Test
-  void upload_shouldFailForPathTraversalOriginalFileName() {
+  void upload_shouldSanitizePathTraversalOriginalFileName() throws Exception {
     doReturn(false).when(multipartFile).isEmpty();
-    doReturn("../evil.rdf").when(multipartFile).getOriginalFilename();
+    doReturn("../another-tenant/sample-upload.rdf").when(multipartFile).getOriginalFilename();
+    doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("File name must not contain path separators");
+    var result = uploadService.upload(multipartFile);
+
+    assertThat(result).isEqualTo("another-tenant_sample-upload.rdf");
+    verify(s3Service).upload(eq("another-tenant_sample-upload.rdf"), any());
   }
 
   @Test
-  void upload_shouldFailForNestedPathOriginalFileName() {
+  void upload_shouldSanitizeNestedPathOriginalFileName() throws Exception {
     doReturn(false).when(multipartFile).isEmpty();
     doReturn("nested/file.rdf").when(multipartFile).getOriginalFilename();
+    doReturn(new ByteArrayInputStream("test".getBytes())).when(multipartFile).getInputStream();
 
-    assertThatThrownBy(() -> uploadService.upload(multipartFile))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("File name must not contain path separators");
+    var result = uploadService.upload(multipartFile);
+
+    assertThat(result).isEqualTo("nested_file.rdf");
+    verify(s3Service).upload(eq("nested_file.rdf"), any());
   }
 
   @Test
