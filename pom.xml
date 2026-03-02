@@ -55,7 +55,7 @@
     <maven-openapi-generator-plugin.version>7.20.0</maven-openapi-generator-plugin.version>
     <maven-copy-rename-plugin.version>1.0.1</maven-copy-rename-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
-    <maven-checkstyle-plugin.checkstyle.version>13.2.0</maven-checkstyle-plugin.checkstyle.version>
+    <maven-checkstyle-plugin.checkstyle.version>13.3.0</maven-checkstyle-plugin.checkstyle.version>
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
   </properties>
 
