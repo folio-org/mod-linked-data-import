@@ -31,7 +31,7 @@
     <swagger.yaml.file>${project.basedir}/src/main/resources/swagger.api/mod-linked-data-import.yaml</swagger.yaml.file>
 
     <!-- Folio dependencies versions -->
-    <folio-spring-base.version>10.0.0-RC1</folio-spring-base.version>
+    <folio-spring-base.version>10.0.0</folio-spring-base.version>
     <folio-service-tools.version>6.0.0-SNAPSHOT</folio-service-tools.version>
     <folio-kafka-wrapper.version>4.0.0-SNAPSHOT</folio-kafka-wrapper.version>
     <folio-s3-client.version>3.0.0-SNAPSHOT</folio-s3-client.version>
