@@ -48,8 +48,8 @@
         },
         {
           "methods": [ "PUT" ],
-          "pathPattern": "/linked-data-import/jobs/{jobExecutionId}/cancel",
-          "permissionsRequired": [ "linked-data-import.jobs.item.cancel.put" ],
+          "pathPattern": "/linked-data-import/jobs/{jobExecutionId}/stop",
+          "permissionsRequired": [ "linked-data-import.jobs.item.stop.put" ],
           "modulePermissions": []
         }
       ]
@@ -83,9 +83,9 @@
       "description": "Download CSV file with failed RDF lines for a job"
     },
     {
-      "permissionName": "linked-data-import.jobs.item.cancel.put",
-      "displayName": "Linked Data Import: Cancel running import job",
-      "description": "Cancel a running import job by job execution ID"
+      "permissionName": "linked-data-import.jobs.item.stop.put",
+      "displayName": "Linked Data Import: stop running import job",
+      "description": "Stop a running import job by job execution ID"
     }
   ],
   "launchDescriptor": {

@@ -59,9 +59,9 @@ The CSV file contains:
 - `description`: Error description
 - `failedRdfLine`: The RDF line content that failed
 
-## To cancel a running import job:
+## To stop a running import job:
 ```
-PUT /linked-data-import/jobs/{jobExecutionId}/cancel
+PUT /linked-data-import/jobs/{jobExecutionId}/stop
 x-okapi-tenant: {tenantId}
 x-okapi-token: {token}
 ```
