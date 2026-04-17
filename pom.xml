@@ -37,7 +37,7 @@
     <folio-s3-client.version>3.0.0</folio-s3-client.version>
 
     <!-- LD dependencies versions -->
-    <lib-linked-data-rdf4ld.version>1.0.0-SNAPSHOT</lib-linked-data-rdf4ld.version>
+    <lib-linked-data-rdf4ld.version>1.0.0</lib-linked-data-rdf4ld.version>
 
     <!-- Dependencies versions -->
     <apache-commons-collections.version>4.5.0</apache-commons-collections.version>
