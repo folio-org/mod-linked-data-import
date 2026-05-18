@@ -48,7 +48,7 @@
 
     <!-- Test dependencies versions -->
     <testcontainers.version>1.21.4</testcontainers.version>
-    <wiremock.version>2.27.2</wiremock.version>
+    <wiremock.version>3.0.1</wiremock.version>
     <jsonassert.version>1.5.3</jsonassert.version>
 
     <!-- Plugins versions -->
