@@ -8,8 +8,10 @@ import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.createImportResultEventDto;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.stream.Stream;
 import org.folio.linked.data.imprt.domain.dto.FailedResource;
 import org.folio.linked.data.imprt.domain.dto.ImportResultEvent;
 import org.folio.linked.data.imprt.repo.ImportResultEventRepo;
@@ -17,6 +19,9 @@ import org.folio.linked.data.imprt.service.tenant.TenantScopedExecutionService;
 import org.folio.linked.data.imprt.test.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -71,6 +76,11 @@ class ImportResultEventHandlerIT {
       assertThat(savedEvents).hasSize(1);
 
       var savedEvent = savedEvents.getFirst();
+      assertThat(savedEvent.getResourcesCount()).isEqualTo(10);
+      assertThat(savedEvent.getCreatedCount()).isEqualTo(8);
+      assertThat(savedEvent.getUpdatedCount()).isEqualTo(2);
+      assertThat(savedEvent.getOriginalEventTs()).isEqualTo("original-ts");
+      assertThat(savedEvent.getEventTs()).isEqualTo("event-ts");
       assertThat(savedEvent.getFailedRdfLines()).hasSize(2);
 
       var failedLines = savedEvent.getFailedRdfLines().stream()
@@ -80,11 +90,153 @@ class ImportResultEventHandlerIT {
       assertThat(failedLines.getFirst().getLineNumber()).isEqualTo(2L);
       assertThat(failedLines.getFirst().getFailedRdfLine()).isEqualTo("Line 2 content");
       assertThat(failedLines.getFirst().getDescription()).isEqualTo("Error 1");
+      assertThat(failedLines.getFirst().getJobExecutionId()).isEqualTo(456L);
 
       assertThat(failedLines.get(1).getLineNumber()).isEqualTo(5L);
       assertThat(failedLines.get(1).getFailedRdfLine()).isEqualTo("Line 5 content");
       assertThat(failedLines.get(1).getDescription()).isEqualTo("Error 2");
+      assertThat(failedLines.get(1).getJobExecutionId()).isEqualTo(456L);
     });
+  }
+
+  @ParameterizedTest
+  @MethodSource("countCombinations")
+  void handleImportResultEvent_shouldSaveEntityWithCorrectCounts(int createdCount, int updatedCount) {
+    // given
+    var jobExecutionId = 789L;
+    var event = new ImportResultEvent(
+      "original-ts",
+      jobExecutionId,
+      OffsetDateTime.now(),
+      OffsetDateTime.now(),
+      createdCount + updatedCount,
+      createdCount,
+      updatedCount
+    );
+    event.setTs("event-ts");
+    event.setTenant(TENANT_ID);
+
+    createBatchJobExecutionParams(jobExecutionId);
+
+    // when
+    sendImportResultEvent(event, importResultEventProducer);
+
+    // then
+    awaitAndAssert(() -> {
+      var savedEvents = tenantScopedExecutionService.execute(TENANT_ID,
+        () -> importResultEventRepo.findAll());
+      assertThat(savedEvents).hasSize(1);
+
+      var savedEvent = savedEvents.getFirst();
+      assertThat(savedEvent.getResourcesCount()).isEqualTo(createdCount + updatedCount);
+      assertThat(savedEvent.getCreatedCount()).isEqualTo(createdCount);
+      assertThat(savedEvent.getUpdatedCount()).isEqualTo(updatedCount);
+      assertThat(savedEvent.getOriginalEventTs()).isEqualTo("original-ts");
+      assertThat(savedEvent.getEventTs()).isEqualTo("event-ts");
+      assertThat(savedEvent.getFailedRdfLines()).isEmpty();
+    });
+  }
+
+  @Test
+  void handleImportResultEvent_shouldSaveFallbackContent_givenMissingRdfFileLine() {
+    // given
+    var jobExecutionId = 111L;
+    var event = new ImportResultEvent(
+      "original-ts",
+      jobExecutionId,
+      OffsetDateTime.now(),
+      OffsetDateTime.now(),
+      5,
+      4,
+      0
+    );
+    event.setTs("event-ts");
+    event.setTenant(TENANT_ID);
+
+    var failedResources = new LinkedHashSet<FailedResource>();
+    failedResources.add(new FailedResource(8L, "Line not in DB"));
+    event.setFailedResources(failedResources);
+
+    createBatchJobExecutionParams(jobExecutionId);
+
+    // when
+    sendImportResultEvent(event, importResultEventProducer);
+
+    // then
+    awaitAndAssert(() -> {
+      var savedEvents = tenantScopedExecutionService.execute(TENANT_ID,
+        () -> importResultEventRepo.findAll());
+      assertThat(savedEvents).hasSize(1);
+
+      var savedEvent = savedEvents.getFirst();
+      assertThat(savedEvent.getFailedRdfLines()).hasSize(1);
+
+      var failedLine = savedEvent.getFailedRdfLines().iterator().next();
+      assertThat(failedLine.getLineNumber()).isEqualTo(8L);
+      assertThat(failedLine.getDescription()).isEqualTo("Line not in DB");
+      assertThat(failedLine.getFailedRdfLine())
+        .isEqualTo("Line number 8 not found in database for jobExecutionId 111");
+    });
+  }
+
+  @Test
+  void handleImportResultEvent_shouldSaveMultipleEvents_givenSameJobExecutionId() {
+    // given
+    var jobExecutionId = 222L;
+    createBatchJobExecutionParams(jobExecutionId);
+
+    var event1 = new ImportResultEvent(
+      "original-ts",
+      jobExecutionId,
+      OffsetDateTime.now(),
+      OffsetDateTime.now(),
+      3,
+      3,
+      0
+    );
+    event1.setTs("event-ts-1");
+    event1.setTenant(TENANT_ID);
+
+    var event2 = new ImportResultEvent(
+      "original-ts",
+      jobExecutionId,
+      OffsetDateTime.now(),
+      OffsetDateTime.now(),
+      3,
+      2,
+      1
+    );
+    event2.setTs("event-ts-2");
+    event2.setTenant(TENANT_ID);
+
+    // when
+    sendImportResultEvent(event1, importResultEventProducer);
+    sendImportResultEvent(event2, importResultEventProducer);
+
+    // then
+    awaitAndAssert(() -> {
+      var savedEvents = tenantScopedExecutionService.execute(TENANT_ID,
+        () -> importResultEventRepo.findAll());
+      assertThat(savedEvents).hasSize(2);
+
+      var totalCreated = savedEvents.stream()
+        .mapToInt(org.folio.linked.data.imprt.model.entity.ImportResultEvent::getCreatedCount)
+        .sum();
+      assertThat(totalCreated).isEqualTo(5);
+
+      var totalUpdated = savedEvents.stream()
+        .mapToInt(org.folio.linked.data.imprt.model.entity.ImportResultEvent::getUpdatedCount)
+        .sum();
+      assertThat(totalUpdated).isEqualTo(1);
+    });
+  }
+
+  static Stream<Arguments> countCombinations() {
+    return Stream.of(
+      Arguments.of(10, 0),   // CREATE_INSTANCE only
+      Arguments.of(0, 10),   // UPDATE_INSTANCE only
+      Arguments.of(5, 5)     // mixed
+    );
   }
 
   private void createBatchJobExecutionParams(Long jobExecutionId) {

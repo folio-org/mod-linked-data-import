@@ -53,14 +53,18 @@ public class ImportOutputEventResponder {
       )
       .collect(Collectors.toSet());
 
+    var updatedCount = (int) outputEvent.getResourcesWithLineNumbers().stream()
+      .filter(rwl -> rwl.getResource().getLabel().contains("UPDATE_INSTANCE"))
+      .count();
+
     var resultEvent = new ImportResultEvent(
       outputEvent.getTs(),
       outputEvent.getJobExecutionId(),
       OffsetDateTime.now(),
       OffsetDateTime.now(),
       resourcesCount,
-      resourcesCount - failedResources.size(),
-      0
+      resourcesCount - failedResources.size() - updatedCount,
+      updatedCount
     );
     resultEvent.setTs(OffsetDateTime.now().toString());
     resultEvent.setTenant(TENANT_ID);

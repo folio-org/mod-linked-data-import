@@ -83,6 +83,11 @@ class ImportIT {
       .mapToInt(ImportResultEvent::getCreatedCount)
       .sum();
     assertThat(totalCreatedCount).isEqualTo(10);
+
+    var totalUpdatedCount = importResultEvents.stream()
+      .mapToInt(ImportResultEvent::getUpdatedCount)
+      .sum();
+    assertThat(totalUpdatedCount).isEqualTo(0);
   }
 
   @Test
@@ -113,6 +118,16 @@ class ImportIT {
       .mapToInt(ImportResultEvent::getResourcesCount)
       .sum();
     assertThat(totalResourcesCount).isEqualTo(2);
+
+    var totalCreatedCount = importResultEvents.stream()
+      .mapToInt(ImportResultEvent::getCreatedCount)
+      .sum();
+    assertThat(totalCreatedCount).isEqualTo(2);
+
+    var totalUpdatedCount = importResultEvents.stream()
+      .mapToInt(ImportResultEvent::getUpdatedCount)
+      .sum();
+    assertThat(totalUpdatedCount).isEqualTo(0);
   }
 
   @Test
@@ -211,6 +226,45 @@ class ImportIT {
       {"@id":"http://test-tobe-changed.folio.com/resources/PRIMARY_TITLE_ID",\
       "@type":["http://id.loc.gov/ontologies/bibframe/Title"],\
       "http://id.loc.gov/ontologies/bibframe/mainTitle":[{"@value":"FAIL_SAVING_LINE"}]}]""");
+  }
+
+  @Test
+  void checkSuccessfullyImportedResources_withUpdatedInstances() throws Exception {
+    // given
+    var fileName = "2_records_update_instance_json.rdf";
+    var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
+    writeFileToS3(s3Client, fileName, input);
+    var requestBuilder = post(PATH_START_IMPORT)
+      .param(FILE_NAME, fileName)
+      .headers(defaultHeaders());
+
+    // when
+    var resultActions = mockMvc.perform(requestBuilder);
+
+    // then
+    var result = resultActions.andExpect(status().isOk()).andReturn();
+    var jobExecutionId = Long.parseLong(result.getResponse().getContentAsString());
+
+    awaitJobCompletion(jobExecutionId, jdbcTemplate, tenantScopedExecutionService);
+    assertThat(new File(TMP_DIR, fileName)).doesNotExist();
+
+    var importResultEvents = tenantScopedExecutionService.execute(TENANT_ID,
+      () -> importResultEventRepo.findAll());
+
+    var totalResourcesCount = importResultEvents.stream()
+      .mapToInt(ImportResultEvent::getResourcesCount)
+      .sum();
+    assertThat(totalResourcesCount).isEqualTo(2);
+
+    var totalCreatedCount = importResultEvents.stream()
+      .mapToInt(ImportResultEvent::getCreatedCount)
+      .sum();
+    assertThat(totalCreatedCount).isEqualTo(0);
+
+    var totalUpdatedCount = importResultEvents.stream()
+      .mapToInt(ImportResultEvent::getUpdatedCount)
+      .sum();
+    assertThat(totalUpdatedCount).isEqualTo(2);
   }
 
 }
