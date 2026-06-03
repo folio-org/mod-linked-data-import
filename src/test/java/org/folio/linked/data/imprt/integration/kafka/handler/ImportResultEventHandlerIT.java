@@ -231,11 +231,75 @@ class ImportResultEventHandlerIT {
     });
   }
 
+  @ParameterizedTest
+  @MethodSource("countCombinationsWithFailures")
+  void handleImportResultEvent_shouldSaveEntityWithMixedSuccessAndFailure(
+    long jobExecutionId, int createdCount, int updatedCount, int failedCount) {
+    // given
+    var event = new ImportResultEvent(
+      "original-ts",
+      jobExecutionId,
+      OffsetDateTime.now(),
+      OffsetDateTime.now(),
+      createdCount + updatedCount + failedCount,
+      createdCount,
+      updatedCount
+    );
+    event.setTs("event-ts");
+    event.setTenant(TENANT_ID);
+
+    var failedResources = new LinkedHashSet<FailedResource>();
+    for (int i = 1; i <= failedCount; i++) {
+      failedResources.add(new FailedResource((long) i, "Error for line " + i));
+    }
+    event.setFailedResources(failedResources);
+
+    createBatchJobExecutionParams(jobExecutionId);
+
+    // when
+    sendImportResultEvent(event, importResultEventProducer);
+
+    // then
+    awaitAndAssert(() -> {
+      var savedEvents = tenantScopedExecutionService.execute(TENANT_ID,
+        () -> importResultEventRepo.findAll());
+      assertThat(savedEvents).hasSize(1);
+
+      var savedEvent = savedEvents.getFirst();
+      assertThat(savedEvent.getResourcesCount()).isEqualTo(createdCount + updatedCount + failedCount);
+      assertThat(savedEvent.getCreatedCount()).isEqualTo(createdCount);
+      assertThat(savedEvent.getUpdatedCount()).isEqualTo(updatedCount);
+      assertThat(savedEvent.getOriginalEventTs()).isEqualTo("original-ts");
+      assertThat(savedEvent.getEventTs()).isEqualTo("event-ts");
+      assertThat(savedEvent.getFailedRdfLines()).hasSize(failedCount);
+
+      var failedLines = savedEvent.getFailedRdfLines().stream()
+        .sorted(Comparator.comparing(org.folio.linked.data.imprt.model.entity.FailedRdfLine::getLineNumber))
+        .toList();
+
+      for (int i = 0; i < failedCount; i++) {
+        assertThat(failedLines.get(i).getLineNumber()).isEqualTo((long) (i + 1));
+        assertThat(failedLines.get(i).getFailedRdfLine()).isEqualTo("Line " + (i + 1) + " content");
+        assertThat(failedLines.get(i).getDescription()).isEqualTo("Error for line " + (i + 1));
+        assertThat(failedLines.get(i).getJobExecutionId()).isEqualTo(jobExecutionId);
+      }
+    });
+  }
+
   static Stream<Arguments> countCombinations() {
     return Stream.of(
       Arguments.of(10, 0),   // CREATE_INSTANCE only
       Arguments.of(0, 10),   // UPDATE_INSTANCE only
       Arguments.of(5, 5)     // mixed
+    );
+  }
+
+  static Stream<Arguments> countCombinationsWithFailures() {
+    return Stream.of(
+      Arguments.of(333L, 2, 0, 1),  // create-dominant batch with failures
+      Arguments.of(334L, 0, 2, 1),  // update-dominant batch with failures
+      Arguments.of(335L, 1, 1, 1),  // mixed create+update with failures
+      Arguments.of(336L, 0, 0, 2)   // all-failed batch
     );
   }
 
