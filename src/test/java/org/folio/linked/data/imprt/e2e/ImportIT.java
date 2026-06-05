@@ -229,7 +229,7 @@ class ImportIT {
   }
 
   @Test
-  void checkMixedBibAndAuthorityRecordsBatch() throws Exception {
+  void checkBibRecordsImportedAndAuthorityRecordsFailedInMixedBatch() throws Exception {
     // given
     var fileName = "mixed_bib_authority_records_json.rdf";
     var input = this.getClass().getResourceAsStream("/rdf/" + fileName);
