@@ -1,6 +1,6 @@
 package org.folio.linked.data.imprt.test;
 
-import static org.folio.linked.data.imprt.test.TestUtil.FIXED_DATE;
+import static org.folio.linked.data.imprt.test.TestUtil.STUB_DATE;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 import static org.folio.linked.data.imprt.util.JsonUtil.JSON_MAPPER;
@@ -60,13 +60,13 @@ public class ImportOutputEventResponder {
     var resultEvent = new ImportResultEvent(
       outputEvent.getTs(),
       outputEvent.getJobExecutionId(),
-      FIXED_DATE,
-      FIXED_DATE,
+      STUB_DATE,
+      STUB_DATE,
       resourcesCount,
       resourcesCount - failedResources.size() - updatedCount,
       updatedCount
     );
-    resultEvent.setTs(FIXED_DATE.toString());
+    resultEvent.setTs(STUB_DATE.toString());
     resultEvent.setTenant(TENANT_ID);
     resultEvent.setFailedResources(failedResources);
 

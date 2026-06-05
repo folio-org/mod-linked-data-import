@@ -2,7 +2,7 @@ package org.folio.linked.data.imprt.integration.kafka.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
-import static org.folio.linked.data.imprt.test.TestUtil.FIXED_DATE;
+import static org.folio.linked.data.imprt.test.TestUtil.STUB_DATE;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
