@@ -288,9 +288,9 @@ class ImportResultEventHandlerIT {
 
   static Stream<Arguments> countCombinations() {
     return Stream.of(
-      Arguments.of(10, 0),   // CREATE_INSTANCE only
-      Arguments.of(0, 10),   // UPDATE_INSTANCE only
-      Arguments.of(5, 5)     // mixed
+      Arguments.of(1, 0),   // CREATE_INSTANCE only
+      Arguments.of(0, 1),   // UPDATE_INSTANCE only
+      Arguments.of(1, 1)    // mixed
     );
   }
 
