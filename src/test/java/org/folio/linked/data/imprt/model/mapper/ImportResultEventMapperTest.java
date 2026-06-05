@@ -1,9 +1,8 @@
 package org.folio.linked.data.imprt.model.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.linked.data.imprt.test.TestUtil.STUB_DATE;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import org.folio.linked.data.imprt.domain.dto.FailedResource;
@@ -15,22 +14,17 @@ import org.mapstruct.factory.Mappers;
 @UnitTest
 class ImportResultEventMapperTest {
 
-  private static final OffsetDateTime FIXED_START_DATE = OffsetDateTime.of(2025, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC);
-  private static final OffsetDateTime FIXED_END_DATE = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
-
   private final ImportResultEventMapper mapper = Mappers.getMapper(ImportResultEventMapper.class);
 
   @Test
   void toEntity_shouldMapDtoToEntity() {
     // given
     var jobExecutionId = 123L;
-    var startDate = FIXED_START_DATE;
-    var endDate = FIXED_END_DATE;
     var dto = new ImportResultEvent(
       "original-ts-123",
       jobExecutionId,
-      startDate,
-      endDate,
+      STUB_DATE,
+      STUB_DATE,
       100,
       80,
       20
@@ -48,8 +42,8 @@ class ImportResultEventMapperTest {
     assertThat(entity.getResourcesCount()).isEqualTo(100);
     assertThat(entity.getCreatedCount()).isEqualTo(80);
     assertThat(entity.getUpdatedCount()).isEqualTo(20);
-    assertThat(entity.getStartDate()).isEqualTo(startDate);
-    assertThat(entity.getEndDate()).isEqualTo(endDate);
+    assertThat(entity.getStartDate()).isEqualTo(STUB_DATE);
+    assertThat(entity.getEndDate()).isEqualTo(STUB_DATE);
     assertThat(entity.getOriginalEventTs()).isEqualTo("original-ts-123");
     assertThat(entity.getEventTs()).isEqualTo("event-ts-456");
     assertThat(entity.getFailedRdfLines()).isEmpty();
@@ -62,8 +56,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      FIXED_START_DATE,
-      FIXED_END_DATE,
+      STUB_DATE,
+      STUB_DATE,
       10,
       8,
       2
@@ -112,8 +106,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       123L,
-      FIXED_START_DATE,
-      FIXED_END_DATE,
+      STUB_DATE,
+      STUB_DATE,
       10,
       10,
       0
@@ -135,8 +129,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       123L,
-      FIXED_START_DATE,
-      FIXED_END_DATE,
+      STUB_DATE,
+      STUB_DATE,
       10,
       10,
       0
