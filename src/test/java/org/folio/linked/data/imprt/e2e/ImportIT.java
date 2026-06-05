@@ -309,5 +309,4 @@ class ImportIT {
       .sum();
     assertThat(totalUpdatedCount).isEqualTo(2);
   }
-
 }
