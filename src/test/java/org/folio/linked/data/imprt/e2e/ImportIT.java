@@ -87,7 +87,7 @@ class ImportIT {
     var totalUpdatedCount = importResultEvents.stream()
       .mapToInt(ImportResultEvent::getUpdatedCount)
       .sum();
-    assertThat(totalUpdatedCount).isEqualTo(0);
+    assertThat(totalUpdatedCount).isZero();
   }
 
   @Test
@@ -127,7 +127,7 @@ class ImportIT {
     var totalUpdatedCount = importResultEvents.stream()
       .mapToInt(ImportResultEvent::getUpdatedCount)
       .sum();
-    assertThat(totalUpdatedCount).isEqualTo(0);
+    assertThat(totalUpdatedCount).isZero();
   }
 
   @Test
@@ -302,7 +302,7 @@ class ImportIT {
     var totalCreatedCount = importResultEvents.stream()
       .mapToInt(ImportResultEvent::getCreatedCount)
       .sum();
-    assertThat(totalCreatedCount).isEqualTo(0);
+    assertThat(totalCreatedCount).isZero();
 
     var totalUpdatedCount = importResultEvents.stream()
       .mapToInt(ImportResultEvent::getUpdatedCount)

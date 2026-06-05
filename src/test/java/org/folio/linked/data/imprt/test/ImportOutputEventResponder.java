@@ -1,10 +1,10 @@
 package org.folio.linked.data.imprt.test;
 
+import static org.folio.linked.data.imprt.test.TestUtil.FIXED_DATE;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 import static org.folio.linked.data.imprt.util.JsonUtil.JSON_MAPPER;
 
-import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -60,13 +60,13 @@ public class ImportOutputEventResponder {
     var resultEvent = new ImportResultEvent(
       outputEvent.getTs(),
       outputEvent.getJobExecutionId(),
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       resourcesCount,
       resourcesCount - failedResources.size() - updatedCount,
       updatedCount
     );
-    resultEvent.setTs(OffsetDateTime.now().toString());
+    resultEvent.setTs(FIXED_DATE.toString());
     resultEvent.setTenant(TENANT_ID);
     resultEvent.setFailedResources(failedResources);
 

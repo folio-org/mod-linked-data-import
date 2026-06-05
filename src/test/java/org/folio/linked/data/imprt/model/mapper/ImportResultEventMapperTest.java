@@ -3,6 +3,7 @@ package org.folio.linked.data.imprt.model.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import org.folio.linked.data.imprt.domain.dto.FailedResource;
@@ -14,14 +15,17 @@ import org.mapstruct.factory.Mappers;
 @UnitTest
 class ImportResultEventMapperTest {
 
+  private static final OffsetDateTime FIXED_START_DATE = OffsetDateTime.of(2025, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC);
+  private static final OffsetDateTime FIXED_END_DATE = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
+
   private final ImportResultEventMapper mapper = Mappers.getMapper(ImportResultEventMapper.class);
 
   @Test
   void toEntity_shouldMapDtoToEntity() {
     // given
     var jobExecutionId = 123L;
-    var startDate = OffsetDateTime.now();
-    var endDate = OffsetDateTime.now();
+    var startDate = FIXED_START_DATE;
+    var endDate = FIXED_END_DATE;
     var dto = new ImportResultEvent(
       "original-ts-123",
       jobExecutionId,
@@ -58,8 +62,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_START_DATE,
+      FIXED_END_DATE,
       10,
       8,
       2
@@ -108,8 +112,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       123L,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_START_DATE,
+      FIXED_END_DATE,
       10,
       10,
       0
@@ -131,8 +135,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       123L,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_START_DATE,
+      FIXED_END_DATE,
       10,
       10,
       0

@@ -2,13 +2,13 @@ package org.folio.linked.data.imprt.integration.kafka.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.linked.data.imprt.batch.job.Parameters.FILE_NAME;
+import static org.folio.linked.data.imprt.test.TestUtil.FIXED_DATE;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.awaitAndAssert;
 import static org.folio.linked.data.imprt.test.TestUtil.cleanTables;
 import static org.folio.linked.data.imprt.test.TestUtil.createImportResultEventDto;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 
-import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.stream.Stream;
@@ -107,8 +107,8 @@ class ImportResultEventHandlerIT {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       createdCount + updatedCount,
       createdCount,
       updatedCount
@@ -144,8 +144,8 @@ class ImportResultEventHandlerIT {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       5,
       4,
       0
@@ -188,8 +188,8 @@ class ImportResultEventHandlerIT {
     var event1 = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       3,
       3,
       0
@@ -200,8 +200,8 @@ class ImportResultEventHandlerIT {
     var event2 = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       3,
       2,
       1
@@ -239,8 +239,8 @@ class ImportResultEventHandlerIT {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       createdCount + updatedCount + failedCount,
       createdCount,
       updatedCount

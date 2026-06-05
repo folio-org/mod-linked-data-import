@@ -11,6 +11,8 @@ import static org.testcontainers.shaded.org.awaitility.Durations.TWO_MINUTES;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import lombok.experimental.UtilityClass;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -29,6 +31,7 @@ import org.testcontainers.shaded.org.awaitility.core.ThrowingRunnable;
 public class TestUtil {
 
   public static final String TENANT_ID = "test_tenant";
+  public static final OffsetDateTime FIXED_DATE = OffsetDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
   private static final String FOLIO_OKAPI_URL = "folio.okapi-url";
   private static final String IMPORT_RESULT_TOPIC = "folio.test_tenant.linked_data_import.result";
 
@@ -61,8 +64,8 @@ public class TestUtil {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      java.time.OffsetDateTime.now(),
-      java.time.OffsetDateTime.now(),
+      FIXED_DATE,
+      FIXED_DATE,
       10,
       8,
       2
@@ -78,8 +81,8 @@ public class TestUtil {
       .setResourcesCount(10)
       .setCreatedCount(8)
       .setUpdatedCount(2)
-      .setStartDate(java.time.OffsetDateTime.now())
-      .setEndDate(java.time.OffsetDateTime.now())
+      .setStartDate(FIXED_DATE)
+      .setEndDate(FIXED_DATE)
       .setOriginalEventTs("original-ts")
       .setEventTs("event-ts");
   }
