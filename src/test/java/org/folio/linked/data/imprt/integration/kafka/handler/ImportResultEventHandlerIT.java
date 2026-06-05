@@ -107,8 +107,8 @@ class ImportResultEventHandlerIT {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      FIXED_DATE,
-      FIXED_DATE,
+      STUB_DATE,
+      STUB_DATE,
       createdCount + updatedCount,
       createdCount,
       updatedCount
@@ -144,8 +144,8 @@ class ImportResultEventHandlerIT {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      FIXED_DATE,
-      FIXED_DATE,
+      STUB_DATE,
+      STUB_DATE,
       5,
       4,
       0
@@ -188,8 +188,8 @@ class ImportResultEventHandlerIT {
     var event1 = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      FIXED_DATE,
-      FIXED_DATE,
+      STUB_DATE,
+      STUB_DATE,
       3,
       3,
       0
@@ -200,8 +200,8 @@ class ImportResultEventHandlerIT {
     var event2 = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      FIXED_DATE,
-      FIXED_DATE,
+      STUB_DATE,
+      STUB_DATE,
       3,
       2,
       1
@@ -239,8 +239,8 @@ class ImportResultEventHandlerIT {
     var event = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      FIXED_DATE,
-      FIXED_DATE,
+      STUB_DATE,
+      STUB_DATE,
       createdCount + updatedCount + failedCount,
       createdCount,
       updatedCount
