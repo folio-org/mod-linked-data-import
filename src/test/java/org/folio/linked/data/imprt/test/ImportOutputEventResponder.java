@@ -1,10 +1,10 @@
 package org.folio.linked.data.imprt.test;
 
+import static org.folio.linked.data.imprt.test.TestUtil.STUB_DATE;
 import static org.folio.linked.data.imprt.test.TestUtil.TENANT_ID;
 import static org.folio.linked.data.imprt.test.TestUtil.sendImportResultEvent;
 import static org.folio.linked.data.imprt.util.JsonUtil.JSON_MAPPER;
 
-import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -53,16 +53,20 @@ public class ImportOutputEventResponder {
       )
       .collect(Collectors.toSet());
 
+    var updatedCount = (int) outputEvent.getResourcesWithLineNumbers().stream()
+      .filter(rwl -> rwl.getResource().getLabel().contains("UPDATE_INSTANCE"))
+      .count();
+
     var resultEvent = new ImportResultEvent(
       outputEvent.getTs(),
       outputEvent.getJobExecutionId(),
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      STUB_DATE,
+      STUB_DATE,
       resourcesCount,
-      resourcesCount - failedResources.size(),
-      0
+      resourcesCount - failedResources.size() - updatedCount,
+      updatedCount
     );
-    resultEvent.setTs(OffsetDateTime.now().toString());
+    resultEvent.setTs(STUB_DATE.toString());
     resultEvent.setTenant(TENANT_ID);
     resultEvent.setFailedResources(failedResources);
 

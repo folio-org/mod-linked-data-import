@@ -1,8 +1,8 @@
 package org.folio.linked.data.imprt.model.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.linked.data.imprt.test.TestUtil.STUB_DATE;
 
-import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import org.folio.linked.data.imprt.domain.dto.FailedResource;
@@ -20,13 +20,11 @@ class ImportResultEventMapperTest {
   void toEntity_shouldMapDtoToEntity() {
     // given
     var jobExecutionId = 123L;
-    var startDate = OffsetDateTime.now();
-    var endDate = OffsetDateTime.now();
     var dto = new ImportResultEvent(
       "original-ts-123",
       jobExecutionId,
-      startDate,
-      endDate,
+      STUB_DATE,
+      STUB_DATE,
       100,
       80,
       20
@@ -44,8 +42,8 @@ class ImportResultEventMapperTest {
     assertThat(entity.getResourcesCount()).isEqualTo(100);
     assertThat(entity.getCreatedCount()).isEqualTo(80);
     assertThat(entity.getUpdatedCount()).isEqualTo(20);
-    assertThat(entity.getStartDate()).isEqualTo(startDate);
-    assertThat(entity.getEndDate()).isEqualTo(endDate);
+    assertThat(entity.getStartDate()).isEqualTo(STUB_DATE);
+    assertThat(entity.getEndDate()).isEqualTo(STUB_DATE);
     assertThat(entity.getOriginalEventTs()).isEqualTo("original-ts-123");
     assertThat(entity.getEventTs()).isEqualTo("event-ts-456");
     assertThat(entity.getFailedRdfLines()).isEmpty();
@@ -58,8 +56,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       jobExecutionId,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      STUB_DATE,
+      STUB_DATE,
       10,
       8,
       2
@@ -108,8 +106,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       123L,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      STUB_DATE,
+      STUB_DATE,
       10,
       10,
       0
@@ -131,8 +129,8 @@ class ImportResultEventMapperTest {
     var dto = new ImportResultEvent(
       "original-ts",
       123L,
-      OffsetDateTime.now(),
-      OffsetDateTime.now(),
+      STUB_DATE,
+      STUB_DATE,
       10,
       10,
       0
