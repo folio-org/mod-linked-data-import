@@ -40,7 +40,7 @@
     <lib-linked-data-rdf4ld.version>2.0.0-SNAPSHOT</lib-linked-data-rdf4ld.version>
 
     <!-- Dependencies versions -->
-    <apache-commons-collections.version>4.5.0</apache-commons-collections.version>
+    <apache-commons-collections.version>4.6.0</apache-commons-collections.version>
     <apache-commons-csv.version>1.14.1</apache-commons-csv.version>
     <mapstruct.version>1.6.3</mapstruct.version>
     <lombok.version>1.18.46</lombok.version>
@@ -55,7 +55,7 @@
     <maven-openapi-generator-plugin.version>7.24.0</maven-openapi-generator-plugin.version>
     <maven-copy-rename-plugin.version>1.0.1</maven-copy-rename-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
-    <maven-checkstyle-plugin.checkstyle.version>13.9.0</maven-checkstyle-plugin.checkstyle.version>
+    <maven-checkstyle-plugin.checkstyle.version>13.10.0</maven-checkstyle-plugin.checkstyle.version>
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
   </properties>
 
