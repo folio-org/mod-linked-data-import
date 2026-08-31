@@ -18,7 +18,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
     <relativePath />
   </parent>
 
@@ -52,7 +52,7 @@
     <jsonassert.version>1.5.3</jsonassert.version>
 
     <!-- Plugins versions -->
-    <maven-openapi-generator-plugin.version>7.24.0</maven-openapi-generator-plugin.version>
+    <maven-openapi-generator-plugin.version>7.25.0</maven-openapi-generator-plugin.version>
     <maven-copy-rename-plugin.version>1.0.1</maven-copy-rename-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-checkstyle-plugin.checkstyle.version>14.0.0</maven-checkstyle-plugin.checkstyle.version>
