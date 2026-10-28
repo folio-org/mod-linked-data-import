@@ -18,7 +18,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.6</version>
+    <version>4.1.1</version>
     <relativePath />
   </parent>
 
@@ -31,8 +31,8 @@
     <swagger.yaml.file>${project.basedir}/src/main/resources/swagger.api/mod-linked-data-import.yaml</swagger.yaml.file>
 
     <!-- Folio dependencies versions -->
-    <folio-spring-base.version>10.0.0</folio-spring-base.version>
-    <folio-service-tools.version>6.0.0</folio-service-tools.version>
+    <folio-spring-base.version>10.0.1</folio-spring-base.version>
+    <folio-service-tools.version>6.0.1</folio-service-tools.version>
     <folio-kafka-wrapper.version>4.0.0</folio-kafka-wrapper.version>
     <folio-s3-client.version>3.0.1</folio-s3-client.version>
 
@@ -45,6 +45,7 @@
     <mapstruct.version>1.6.3</mapstruct.version>
     <lombok.version>1.18.46</lombok.version>
     <lombok.mapstruct-binding.version>0.2.0</lombok.mapstruct-binding.version>
+    <liquibase.version>4.33.0</liquibase.version>
 
     <!-- Test dependencies versions -->
     <testcontainers.version>1.21.4</testcontainers.version>
